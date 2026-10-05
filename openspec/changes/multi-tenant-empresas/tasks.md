@@ -1,11 +1,11 @@
 ## 1. Preparar o modelo e a migração
 
-- [ ] 1.1 Inventariar tabelas, relações, índices únicos, padrões WHERE/ORDER BY e consultas mais frequentes/caras; registrar contagens e tamanho por tabela/tenant como baseline.
+- [x] 1.1 Inventariar tabelas, relações, índices únicos, padrões WHERE/ORDER BY e consultas mais frequentes/caras; registrar contagens e tamanho por tabela/tenant como baseline.
 - [x] 1.2 Criar migração aditiva que renomeia `companies` para `empresa`, cria `usuario_empresa` e preserva o ID da iSolutis.
 - [x] 1.3 Mapear membros existentes para iSolutis e migrar `usuarios.admin` para papel administrativo da associação, sem elevar privilégios globais.
 - [x] 1.4 Adicionar `empresa_id` nullable a todas as tabelas operacionais e filhas; preencher por backfill com a iSolutis existente.
 - [x] 1.5 Tenantizar sequência/função/número de orçamento e backfill dos contadores por empresa e ano.
-- [ ] 1.6 Validar órfãos, relações cross-tenant, colisões de unicidade e contagens antes de tornar as colunas NOT NULL.
+- [x] 1.6 Validar órfãos, relações cross-tenant, colisões de unicidade e contagens antes de tornar as colunas NOT NULL.
 - [x] 1.7 Adicionar uniques `(id, empresa_id)` e chaves estrangeiras compostas; verificar índices do lado filho, pois o PostgreSQL não os cria automaticamente.
 - [x] 1.8 Substituir/ampliar índices atuais com candidatos por padrão real de consulta e evitar duplicatas para os mesmos prefixos e ordenações.
 - [x] 1.9 Tornar `empresa_id` NOT NULL, definir constraints de tenant e registrar estratégia de restore/roll-forward da migração.
@@ -29,7 +29,7 @@
 - [x] 3.5 Aplicar escopo e ownership a faturamento, despesas, categorias, investidores/investimentos e relatórios financeiros existentes.
 - [x] 3.6 Aplicar escopo e ownership a projetos/etapas, tarefas/checklists, equipe e consultas de autoria/responsáveis.
 - [x] 3.7 Verificar que exportações, buscas, painéis, relatórios e cargas em lote sempre restringem empresa e relações.
-- [ ] 3.8 Atualizar referências API/OpenAPI para `empresa` e `empresa_id`, adicionar `X-Empresa-ID` e regenerar tipos do frontend.
+- [x] 3.8 Atualizar referências API/OpenAPI para `empresa` e `empresa_id`, adicionar `X-Empresa-ID` e regenerar tipos do frontend.
 - [x] 3.9 Implementar seleção de empresa ativa na interface e enviar o header em todas as chamadas HTTP e WebSocket.
 
 ## 4. Defesa no banco com RLS
@@ -42,12 +42,12 @@
 
 ## 5. Verificação e rollout
 
-- [ ] 5.1 Adicionar testes de serviço/API para leitura, escrita, membership, papéis, alternância de empresa e respostas sem vazamento.
-- [ ] 5.2 Expandir testes SQL para FKs compostas, uniques tenant-local, sequência de orçamento e policies RLS sob papel runtime.
+- [x] 5.1 Adicionar testes de serviço/API para leitura, escrita, membership, papéis, alternância de empresa e respostas sem vazamento.
+- [x] 5.2 Expandir testes SQL para FKs compostas, uniques tenant-local, sequência de orçamento e policies RLS sob papel runtime.
 - [ ] 5.3 Atualizar E2E para selecionar empresas e validar isolamento com duas empresas e usuários com memberships distintos.
 - [ ] 5.4 Cobrir nomes de tags duplicados após normalização, arquivo de tags usadas, associação cross-tenant e filtros OR/AND.
 - [x] 5.5 Documentar criação de empresa, associação de usuários, credenciais de banco, migração, backup, cutover e recuperação.
 - [ ] 5.6 Ensaiar migração e cutover em cópia representativa; comparar contagens, chaves e totais financeiros antes de habilitar tráfego multi-tenant.
-- [ ] 5.7 Reescrever filtros de ano/mês em datas como intervalos semiabertos e usar ordenação estável com desempate por ID.
+- [x] 5.7 Reescrever filtros de ano/mês em datas como intervalos semiabertos e usar ordenação estável com desempate por ID.
 - [ ] 5.8 Após backfill e `ANALYZE`, comparar planos `EXPLAIN (ANALYZE, BUFFERS, WAL, SETTINGS)` das consultas críticas sob runtime role/RLS para tenants pequenos e grandes.
 - [ ] 5.9 Medir latência p50/p95, leituras, escrita, tamanho de índices e concorrência de orçamento; manter particionamento, covering e índices opcionais condicionados à evidência.

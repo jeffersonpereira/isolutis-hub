@@ -1,7 +1,7 @@
 from datetime import date
 from uuid import UUID, uuid4
 
-from sqlalchemy import extract, func, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -22,6 +22,12 @@ def _ano(coluna, ano: int | None):  # noqa: ANN001
     return (coluna >= date(ano, 1, 1)) & (coluna < date(ano + 1, 1, 1))
 
 
+def _mes(coluna, ano: int, mes: int):  # noqa: ANN001
+    inicio = date(ano, mes, 1)
+    fim = date(ano + 1, 1, 1) if mes == 12 else date(ano, mes + 1, 1)
+    return (coluna >= inicio) & (coluna < fim)
+
+
 # ----------------------------------------------------------------------------- despesas
 async def listar(sessao: AsyncSession, ano: int | None = None, mes: int | None = None) -> list[Despesa]:
     consulta = select(Despesa).options(joinedload(Despesa.categoria)).order_by(Despesa.data, Despesa.criado_em, Despesa.id)
@@ -34,7 +40,7 @@ async def listar(sessao: AsyncSession, ano: int | None = None, mes: int | None =
             consulta = consulta.where(_ano(Despesa.data, ano))
     if mes:
         if not ano:
-            consulta = consulta.where(extract("month", Despesa.data) == mes)
+            consulta = consulta.where(_mes(Despesa.data, date.today().year, mes))
     return list((await sessao.scalars(consulta)).all())
 
 

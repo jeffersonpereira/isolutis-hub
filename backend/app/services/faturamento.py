@@ -16,6 +16,12 @@ from app.schemas.faturamento import FaturamentoEmLote, LancamentoAtualizar, Lanc
 from app.services.base import aplicar, conferir_versao, confirmar, obter
 from app.services.parceiros import exigir_cliente
 
+
+def _mes(coluna, ano: int, mes: int):  # noqa: ANN001
+    inicio = date(ano, mes, 1)
+    fim = date(ano + 1, 1, 1) if mes == 12 else date(ano, mes + 1, 1)
+    return (coluna >= inicio) & (coluna < fim)
+
 ROTULO_TIPO = {
     "projeto": "Projeto sob medida",
     "mensal": "Manutenção mensal",
@@ -39,7 +45,7 @@ async def listar(sessao: AsyncSession, ano: int | None = None, mes: int | None =
             LancamentoReceita.vencimento >= date(ano, 1, 1), LancamentoReceita.vencimento < date(ano + 1, 1, 1)
         )
     elif mes:
-        consulta = consulta.where(extract("month", LancamentoReceita.vencimento) == mes)
+        consulta = consulta.where(_mes(LancamentoReceita.vencimento, date.today().year, mes))
     return list((await sessao.scalars(consulta)).all())
 
 
