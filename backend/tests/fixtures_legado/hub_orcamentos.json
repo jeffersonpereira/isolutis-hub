@@ -1,0 +1,39 @@
+[
+ {
+  "id": "o1",
+  "dados": {
+   "numero": "2025-007",
+   "clienteId": "c1",
+   "negocioId": "n1",
+   "data": "2025-03-10",
+   "validade": 15,
+   "status": "aprovado",
+   "desconto": 500,
+   "itens": [
+    {
+     "produtoId": "p1",
+     "descricao": "Sistema",
+     "qtd": 1,
+     "preco": 10500
+    },
+    {
+     "descricao": "Manutenção",
+     "qtd": 1,
+     "preco": 800,
+     "mensal": true
+    }
+   ]
+  }
+ },
+ {
+  "id": "o2",
+  "dados": {
+   "numero": "2025-008",
+   "clienteId": "c2",
+   "negocioId": "n1",
+   "data": "2025-03-11",
+   "status": "vencido",
+   "itens": []
+  }
+ }
+]

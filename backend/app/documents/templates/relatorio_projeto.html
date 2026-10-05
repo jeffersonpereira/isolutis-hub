@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Plano de entrega · {{ p.titulo }} · iSolutis</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+{{ css | safe }}
+</style>
+</head>
+<body>
+<div class="capa"><div class="in">
+  <img src="{{ logo }}" alt="iSolutis">
+  <div class="eyebrow">Plano de entrega do projeto</div>
+  <h1>{{ p.titulo }}</h1>
+  <div class="cli">{{ p.cliente_nome }}{% if contato %} · A/C {{ contato }}{% endif %}</div>
+  <div class="meta">
+    <div>Início<b>{{ p.inicio | data_br if p.inicio else "a definir" }}</b></div>
+    <div>Entrega prevista<b>{{ p.entrega | data_br if p.entrega else "a definir" }}</b></div>
+    {% if semanas %}<div>Duração<b>{{ semanas }} semana{{ "" if semanas == 1 else "s" }}</b></div>{% endif %}
+    <div>Situação<b>{{ status_rotulo }} · {{ p.progresso }}%</b></div>
+    {% if responsavel %}<div>Responsável<b>{{ responsavel }}</b></div>{% endif %}
+  </div>
+  <div class="barra"><i style="width:{{ p.progresso }}%"></i></div>
+</div></div>
+<div class="page">
+{% if p.objetivo %}<section><h2>Objetivo</h2><p class="obj">{{ p.objetivo }}</p></section>{% endif %}
+{% if escopo or fora_escopo %}
+<section class="duas">
+  {% if escopo %}<div><h2>O que será entregue</h2><ul>{% for l in escopo %}<li>{{ l }}</li>{% endfor %}</ul></div>{% endif %}
+  {% if fora_escopo %}<div><h2>Fora do escopo</h2><ul class="fora">{% for l in fora_escopo %}<li>{{ l }}</li>{% endfor %}</ul></div>{% endif %}
+</section>
+{% endif %}
+{% if gantt %}
+<section><h2>Cronograma</h2><div class="gantt">
+  <div class="g-meses">{% for m in gantt.marcas %}<span style="left:{{ m.x }}%">{{ m.rotulo }}</span>{% endfor %}</div>
+  {% for l in gantt.linhas %}
+    <div class="g-row"><span class="g-l"><b>{{ l.n }}</b> {{ l.titulo }}</span><span class="g-track">{% if l.barra %}<i class="g-bar {{ l.status }}" style="left:{{ l.barra.esquerda }}%;width:{{ l.barra.largura }}%"></i>{% endif %}</span></div>
+  {% endfor %}
+</div><div class="g-leg"><span><i class="concluida"></i>Concluída</span><span><i class="andamento"></i>Em andamento</span><span><i class="a_fazer"></i>A fazer</span></div></section>
+{% endif %}
+{% if passos %}
+<section><h2>Passo a passo da construção</h2><ol class="passos">
+  {% for e in passos %}
+  <li class="passo {{ e.status }}"><span class="n">{{ e.n }}</span>
+    <h3>{{ e.titulo }}<span class="chip {{ e.status }}">{{ e.status_rotulo }}</span></h3>
+    <div class="q">{{ e.periodo }}{% if e.responsavel %} · {{ e.responsavel }}{% endif %}</div>
+    {% if e.descricao %}<p>{{ e.descricao }}</p>{% endif %}
+    {% if e.entregaveis %}<div class="ent"><b>Entregáveis</b><ul>{% for l in e.entregaveis %}<li>{{ l }}</li>{% endfor %}</ul></div>{% endif %}
+  </li>
+  {% endfor %}
+</ol></section>
+{% endif %}
+{% if p.pos_entrega %}<section class="pos"><h2>Depois da entrega</h2><p style="margin:0">{{ p.pos_entrega }}</p></section>{% endif %}
+<footer><span><b><span>i</span>Solutis</b> · Soluções e Inovações Tecnológicas · +55 71 99239-0992</span><span>Documento emitido em {{ emitido_em | data_br }}</span></footer>
+</div>
+</body>
+</html>

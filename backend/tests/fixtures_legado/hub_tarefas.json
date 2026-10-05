@@ -1,0 +1,17 @@
+[
+ {
+  "id": "t1",
+  "dados": {
+   "titulo": "Ligar",
+   "coluna": "concluido",
+   "responsavel": "gileard@x.com.br",
+   "checklist": [
+    {
+     "texto": "a",
+     "feito": true
+    }
+   ]
+  },
+  "atualizado_em": "2025-06-01T10:00:00+00:00"
+ }
+]

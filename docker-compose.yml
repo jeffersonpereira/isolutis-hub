@@ -1,0 +1,45 @@
+# Ambiente local completo: docker compose up --build  ->  http://localhost:8000
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: hub
+      POSTGRES_PASSWORD: ${HUB_MIGRATION_PASSWORD:-hub}
+      POSTGRES_DB: hub
+      HUB_RUNTIME_PASSWORD: ${HUB_RUNTIME_PASSWORD:-hub_runtime_dev}
+    volumes:
+      - dados:/var/lib/postgresql/data
+      - ./backend/docker/init-runtime-role.sh:/docker-entrypoint-initdb.d/10-runtime-role.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hub -d hub"]
+      interval: 3s
+      retries: 20
+    ports: ["5432:5432"]
+
+  app:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      HUB_DATABASE_URL: postgresql+psycopg://hub_runtime:${HUB_RUNTIME_PASSWORD:-hub_runtime_dev}@db:5432/hub
+      HUB_SECRET_KEY: ${HUB_SECRET_KEY:?defina HUB_SECRET_KEY (mínimo 32 caracteres)}
+    ports: ["8000:8000"]
+
+  migrate:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    profiles: ["migrate"]
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      HUB_DATABASE_URL: postgresql+psycopg://hub:${HUB_MIGRATION_PASSWORD:-hub}@db:5432/hub
+      HUB_MIGRATION_DATABASE_URL: postgresql+psycopg://hub:${HUB_MIGRATION_PASSWORD:-hub}@db:5432/hub
+      HUB_SECRET_KEY: ${HUB_SECRET_KEY:?defina HUB_SECRET_KEY (mínimo 32 caracteres)}
+    entrypoint: ["alembic"]
+    command: ["upgrade", "head"]
+
+volumes:
+  dados:

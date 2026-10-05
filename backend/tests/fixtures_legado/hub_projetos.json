@@ -1,0 +1,29 @@
+[
+ {
+  "id": "j1",
+  "dados": {
+   "titulo": "Portal",
+   "clienteId": "c1",
+   "negocioId": "n1",
+   "inicio": "2025-05-01",
+   "entrega": "2025-04-01",
+   "responsavel": "Gileade",
+   "etapas": [
+    {
+     "titulo": "Dev",
+     "status": "andamento",
+     "inicio": "2025-05-01",
+     "fim": "2025-05-10"
+    }
+   ]
+  }
+ },
+ {
+  "id": "j2",
+  "dados": {
+   "titulo": "Segundo no mesmo negócio",
+   "clienteId": "c1",
+   "negocioId": "n1"
+  }
+ }
+]

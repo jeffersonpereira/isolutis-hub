@@ -1,0 +1,19 @@
+/* Tela de login */
+/* login (Supabase) */
+.login{position:fixed;inset:0;z-index:40;background:#111b30;display:grid;place-items:center;padding:24px 16px;overflow-y:auto}
+.login:before{content:"";position:fixed;right:-140px;top:-140px;width:420px;height:420px;border-radius:50%;border:56px solid #22C3CE;opacity:.12;pointer-events:none}
+.lg-box{position:relative;width:min(400px,100%);display:flex;flex-direction:column;gap:18px}
+.lg-topo{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.lg-topo img{width:200px;height:auto}
+.lg-topo span{font:600 11px var(--f-display);letter-spacing:.18em;text-transform:uppercase;color:#93a3bd;padding-left:4px}
+.lg-form{background:#ffffff;color:#16223b;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:8px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.lg-form h1{font-size:22px;margin:0 0 6px;color:#1B2B4B}
+.lg-form label{font-size:12px;font-weight:600;color:#56647a;margin-top:6px}
+.lg-form input{border:1px solid #d3dbe6;background:#eef1f6;border-radius:6px;padding:10px 11px;font:inherit;color:#16223b}
+.lg-form input:focus-visible{outline:2px solid #0d8792;outline-offset:1px}
+.lg-form .btn{margin-top:12px;padding:10px 14px;background:#1B2B4B;color:#fff;border-color:#1B2B4B}
+.lg-form .btn:not(.primary){background:#fff;color:#1B2B4B}
+.lg-link{all:unset;cursor:pointer;align-self:center;margin-top:6px;font-size:13px;color:#0d8792;text-decoration:underline;text-underline-offset:3px}
+.lg-link:focus-visible{outline:2px solid #0d8792;outline-offset:2px}
+.lg-msg{margin:0;min-height:1.4em;color:#c6d0de;font-size:13px;text-align:center}
+.lg-msg.erro{color:#f19189}

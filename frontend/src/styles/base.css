@@ -1,0 +1,9 @@
+/* Reset e base */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 var(--f-body)}
+button,input,select,textarea{font:inherit;color:inherit}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}

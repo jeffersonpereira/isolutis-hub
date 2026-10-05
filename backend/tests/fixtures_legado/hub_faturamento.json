@@ -1,0 +1,38 @@
+[
+ {
+  "id": "f1",
+  "dados": {
+   "clienteId": "c1",
+   "tipo": "mensal",
+   "descricao": "Manutenção mensal · Portal · 1/2",
+   "valor": 800,
+   "data": "2025-05-10",
+   "status": "recebido",
+   "negocioId": "n1",
+   "orcamentoId": "o1"
+  }
+ },
+ {
+  "id": "f2",
+  "dados": {
+   "clienteId": "c1",
+   "tipo": "mensal",
+   "descricao": "Manutenção mensal · Portal · 2/2",
+   "valor": 800,
+   "data": "2025-06-10",
+   "status": "previsto",
+   "negocioId": "n1"
+  }
+ },
+ {
+  "id": "f3",
+  "dados": {
+   "clienteId": "c1",
+   "tipo": "projeto",
+   "descricao": "Avulso",
+   "valor": 1500.5,
+   "data": "",
+   "status": "recebido"
+  }
+ }
+]

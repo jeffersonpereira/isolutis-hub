@@ -1,0 +1,11 @@
+[
+ {
+  "id": "p1",
+  "dados": {
+   "nome": "Sistema Simples",
+   "tipo": "projeto",
+   "preco": 15000,
+   "ativo": true
+  }
+ }
+]

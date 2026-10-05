@@ -1,45 +1,57 @@
 # Hub Comercial iSolutis
 
-Sistema comercial interno da iSolutis: clientes, negócios e funil, orçamentos, projetos com relatório de entrega, faturamento, despesas e investimentos, e produtos.
+Sistema comercial interno da iSolutis: clientes, negócios e funil, orçamentos, projetos com plano de entrega,
+faturamento, despesas e investimentos, produtos, tarefas da equipe e gestão de usuários.
 
-É uma página só (`index.html`), sem build. Os dados ficam no Supabase, no projeto `dqpatgyqyqonikbbgymu`.
+| Camada | Tecnologia | Pasta |
+|---|---|---|
+| Frontend | TypeScript + Vite (sem framework; mesmo visual do sistema anterior) | [`frontend/`](frontend) |
+| Backend | Python 3.11+, FastAPI, SQLAlchemy 2 (async), Alembic | [`backend/`](backend) |
+| Banco | PostgreSQL 16+, modelagem relacional ([docs](docs/banco-de-dados.md)) | [`backend/migrations/`](backend/migrations) |
 
-## Como funciona o acesso
+> Módulo financeiro (plano de contas, contas bancárias, parceiros, títulos, fluxo de caixa): [`docs/modulo-financeiro.md`](docs/modulo-financeiro.md)
+>
+> Arquitetura, decisões e fluxos: [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) · Migração dos dados do sistema anterior:
+> [`docs/MIGRACAO.md`](docs/MIGRACAO.md) · Modelo de dados: [`docs/banco-de-dados.md`](docs/banco-de-dados.md)
 
-- Cada pessoa entra com e-mail e senha (Supabase Auth).
-- Só os e-mails cadastrados na tabela `hub_membros` conseguem ler ou gravar dados. Isso é garantido pelas regras do banco (RLS), não pela página.
-- A chave que aparece no `index.html` é a **publishable**, feita para ficar visível. **Nunca coloque a chave secreta (`sb_secret_...`) neste repositório.**
+## Rodar localmente
 
-## Preparar o Supabase (uma vez)
+Requisitos: Python 3.11+, Node 20+, PostgreSQL 16+ (ou Docker).
 
-1. **SQL Editor → New query**: cole o conteúdo de `supabase.sql` e clique em **Run**.
-2. **Authentication → Sign In / Providers**: desligue **Allow new users to sign up**, para que ninguém crie conta sozinho.
-3. **Authentication → URL Configuration**: em **Site URL**, coloque o endereço onde o Hub foi publicado (por exemplo `https://hub.isolutis.com.br`). Adicione o mesmo endereço em **Redirect URLs**.
-4. **Authentication → Users → Add user → Send invitation**: convide cada pessoa da equipe pelo e-mail. Ela recebe um link, abre o Hub e cria a própria senha.
-
-## Incluir ou tirar alguém da equipe
-
-No SQL Editor:
-
-```sql
-insert into public.hub_membros (email, nome) values ('email@exemplo.com', 'Nome');
-delete from public.hub_membros where email = 'email@exemplo.com';
+```bash
+make instalar                       # dependências
+make banco                          # PostgreSQL (docker compose) + migrações
+cp backend/.env.example backend/.env
+cd backend && python -m app.scripts.criar_admin --email voce@empresa.com.br --nome "Seu Nome"
+make api                            # terminal 1: http://localhost:8000/api/docs
+make web                            # terminal 2: http://localhost:5173
 ```
 
-Depois convide (ou remova) o usuário em **Authentication → Users**.
+Sem Docker: crie o banco (`createdb hub_dev`), ajuste `HUB_DATABASE_URL` no `.env` e rode `alembic upgrade head` em `backend/`.
 
-## Tabelas
+## Testes
 
-`hub_clientes`, `hub_negocios`, `hub_orcamentos`, `hub_faturamento`, `hub_produtos`, `hub_despesas`, `hub_projetos` e `hub_tarefas` (Kanban da equipe; em bancos já criados, rode `supabase/tarefas.sql`). Cada linha tem `id`, `dados` (o registro em JSON), `criado_em`, `atualizado_em` e `atualizado_por`.
+```bash
+cd backend  && pytest -q                      # API + regras de negócio + importador (PostgreSQL real, schema via Alembic)
+psql -d hub_sql -v ON_ERROR_STOP=1 -f backend/tests_sql/test_schema.sql   # constraints e triggers do schema (base vazia)
+cd frontend && npm test && npm run lint && npm run typecheck && npm run build
+```
 
-## Painel de usuários (aba Equipe)
+O teste de ponta a ponta no navegador está em [`e2e/`](e2e/README.md). A CI (`.github/workflows/ci.yml`) roda tudo isso.
 
-Só administradores (`hub_membros.admin = true`) veem a aba **Equipe**, onde dá para criar usuários com senha, trocar a senha de qualquer pessoa, definir administradores e remover alguém. Nada disso depende de e-mail.
+## Produção
 
-A troca de senha precisa da chave secreta, que **fica só no Supabase**, dentro da Edge Function `hub-admin` (`supabase/functions/hub-admin/index.ts`). A página nunca vê essa chave.
+Uma imagem única (API + site): `docker compose build` (defina `HUB_SECRET_KEY`), aplique as migrações uma vez com
+`docker compose --profile migrate run --rm migrate` e inicie a aplicação com `docker compose up -d app`.
+Separar a migração permite executá-la como etapa única do release antes de iniciar ou atualizar as réplicas da API.
+Em deploys com banco gerenciado, rode `alembic upgrade head` como job de release usando a mesma imagem e configuração.
+Variáveis em
+[`backend/.env.example`](backend/.env.example). Coloque atrás de HTTPS (o login usa token no cabeçalho `Authorization`).
 
-Para ativar:
+## Acesso e equipe
 
-1. Rode `supabase/admin.sql` no SQL Editor (cria a coluna `admin` e marca a Soraya como administradora).
-2. **Edge Functions → Deploy a new function → Via Editor**, com o nome `hub-admin-` (é o nome que o Hub chama; foi publicada assim). Cole o conteúdo de `supabase/functions/hub-admin/index.ts` e clique em **Deploy**.
-3. Nas configurações da função, desligue **Verify JWT** (ou "Enforce JWT verification"). A própria função confere o login e se a pessoa é administradora.
+- Cada pessoa entra com e-mail e senha. Quem administra cria usuários, define e troca senhas na aba **Equipe**.
+  O primeiro administrador é criado por `python -m app.scripts.criar_admin`.
+- "Remover da equipe" desativa a pessoa (o histórico de quem criou/alterou cada registro é preservado).
+- Edição concorrente: se duas pessoas editam o mesmo registro, a segunda gravação é recusada com aviso (controle de versão
+  no banco), em vez de sobrescrever em silêncio.
