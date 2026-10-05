@@ -1,24 +1,24 @@
-/* Paleta iSolutis: azul-marinho do ícone + turquesa do "i". O turquesa puro só aparece sobre o marinho; sobre fundo claro usa-se o tom escurecido (--gold). */
+/* Paleta iSolutis: azul-marinho (#1a2d47) e turquesa (#3b9ca8) dessaturados para reduzir fadiga visual mantendo identidade de marca. */
 :root{
-  --navy:#1B2B4B; --navy-deep:#111b30; --teal:#22C3CE; --gold:#0d8792; --gold-soft:#dbf3f5;
-  --bg:#eef1f6; --surface:#ffffff; --sunk:#e5eaf1; --line:#d3dbe6;
-  --ink:#16223b; --muted:#56647a; --accent:#1B2B4B; --accent-ink:#ffffff;
-  --bar-a:#1B2B4B; --bar-b:#9fdde2;
-  --ok:#1f7a4d; --ok-bg:#e1f2e8; --warn:#9a6a00; --warn-bg:#fbefd2; --bad:#b0362f; --bad-bg:#f9e1df; --info:#2d5b94; --info-bg:#e1ebf7; --wa:#128c4a; --wa-ink:#ffffff;
+  --navy:#1a2d47; --navy-deep:#0f1b2e; --teal:#3b9ca8; --gold:#0d8792; --gold-soft:#dbf3f5;
+  --bg:#f5f7fb; --surface:#ffffff; --sunk:#e8ecf2; --line:#dce4f0;
+  --ink:#16223b; --muted:#56647a; --accent:#1a2d47; --accent-ink:#ffffff;
+  --bar-a:#1a2d47; --bar-b:#b5d4d8;
+  --ok:#4a9d6f; --ok-bg:#e9f3ee; --warn:#b89a3d; --warn-bg:#f9f5e5; --bad:#a85d52; --bad-bg:#f9ede9; --info:#5b8dd9; --info-bg:#e8eef9; --wa:#3cc37a; --wa-ink:#ffffff;
   --f-display:"Montserrat",system-ui,sans-serif;
   --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
   --r:8px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0e1729; --surface:#16223b; --sunk:#111c32; --line:#2a3a57;
-  --ink:#e8edf4; --muted:#a0afc4; --accent:#22C3CE; --accent-ink:#0e1729; --gold:#4fd3dc; --gold-soft:#123a44;
-  --bar-a:#22C3CE; --bar-b:#33506e;
-  --ok:#6fd19f; --ok-bg:#16352a; --warn:#f0c569; --warn-bg:#3a2f14; --bad:#f19189; --bad-bg:#3d1c1b; --info:#9cc2f0; --info-bg:#1a2d47; --wa:#3cc37a; --wa-ink:#07210f;
+  --bg:#0d1520; --surface:#151e2f; --sunk:#0f1829; --line:#232f44;
+  --ink:#e8edf4; --muted:#a0afc4; --accent:#3b9ca8; --accent-ink:#0d1520; --gold:#5bb8c2; --gold-soft:#123a44;
+  --bar-a:#3b9ca8; --bar-b:#3e556f;
+  --ok:#6fd19f; --ok-bg:#16352a; --warn:#d9b860; --warn-bg:#3a2f14; --bad:#d98a7f; --bad-bg:#3d1c1b; --info:#9cc2f0; --info-bg:#1a2d47; --wa:#5fd1a8; --wa-ink:#07210f;
   color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0e1729; --surface:#16223b; --sunk:#111c32; --line:#2a3a57;
-  --ink:#e8edf4; --muted:#a0afc4; --accent:#22C3CE; --accent-ink:#0e1729; --gold:#4fd3dc; --gold-soft:#123a44;
-  --bar-a:#22C3CE; --bar-b:#33506e;
-  --ok:#6fd19f; --ok-bg:#16352a; --warn:#f0c569; --warn-bg:#3a2f14; --bad:#f19189; --bad-bg:#3d1c1b; --info:#9cc2f0; --info-bg:#1a2d47; --wa:#3cc37a; --wa-ink:#07210f;
+  --bg:#0d1520; --surface:#151e2f; --sunk:#0f1829; --line:#232f44;
+  --ink:#e8edf4; --muted:#a0afc4; --accent:#3b9ca8; --accent-ink:#0d1520; --gold:#5bb8c2; --gold-soft:#123a44;
+  --bar-a:#3b9ca8; --bar-b:#3e556f;
+  --ok:#6fd19f; --ok-bg:#16352a; --warn:#d9b860; --warn-bg:#3a2f14; --bad:#d98a7f; --bad-bg:#3d1c1b; --info:#9cc2f0; --info-bg:#1a2d47; --wa:#5fd1a8; --wa-ink:#07210f;
   color-scheme:dark}

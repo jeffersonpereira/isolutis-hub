@@ -1,8 +1,8 @@
 /* Módulo financeiro: submenu do menu lateral, árvore do plano de contas e linhas de ação nas tabelas.
    Usa só os tokens existentes (tokens.css), então acompanha o tema claro/escuro. */
 nav .nav-grupo{all:unset;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:9px 10px;border-radius:8px;color:#c6d0de;font-weight:500}
-nav .nav-grupo:hover{background:#1B2B4B;color:#fff}
-nav .nav-grupo:focus-visible{outline:2px solid #22C3CE;outline-offset:1px}
+nav .nav-grupo:hover{background:var(--navy);color:var(--accent-ink)}
+nav .nav-grupo:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 nav .nav-grupo .seta{font-size:16px;line-height:1;transition:transform .15s}
 nav .nav-grupo[aria-expanded="true"] .seta{transform:rotate(90deg)}
 nav .nav-sub{display:block}
@@ -33,6 +33,6 @@ nav .nav-sub button{padding-left:26px;font-size:13px;width:100%;box-sizing:borde
   nav .nav-grupo{display:none}
   nav .nav-sub,nav .nav-sub.fechado{display:block;flex:none}
   nav .nav-sub button{padding-left:10px;width:auto}
-  nav .nav-sub button[aria-current="true"]{box-shadow:inset 0 -3px 0 #22C3CE}
+  nav .nav-sub button[aria-current="true"]{box-shadow:inset 0 -3px 0 var(--accent)}
   .tree-pills{display:none}
 }
