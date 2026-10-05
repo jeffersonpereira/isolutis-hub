@@ -87,7 +87,8 @@ async function iniciarApp(usuario: Usuario): Promise<void> {
 
 async function selecionarEmpresa(): Promise<boolean> {
   const empresas = await api.empresas.listar();
-  if (!empresas.length) throw new Error("Usuário sem associação ativa a uma empresa.");
+  const primeiraEmpresa = empresas[0];
+  if (!primeiraEmpresa) throw new Error("Usuário sem associação ativa a uma empresa.");
   const seletor = obrigatorio<HTMLSelectElement>("#empresaAtiva");
   seletor.replaceChildren(...empresas.map((e) => {
     const opcao = document.createElement("option");
@@ -95,10 +96,9 @@ async function selecionarEmpresa(): Promise<boolean> {
     opcao.textContent = e.nome;
     return opcao;
   }));
-  const salvo = sessaoToken.empresa();
-  seletor.value = empresas.some((e) => e.id === salvo) ? salvo! : empresas[0].id;
+  const ativa = empresas.find((empresa) => empresa.id === sessaoToken.empresa()) ?? primeiraEmpresa;
+  seletor.value = ativa.id;
   sessaoToken.definirEmpresa(seletor.value);
-  const ativa = empresas.find((e) => e.id === seletor.value)!;
   seletor.hidden = empresas.length < 2;
   seletor.addEventListener("change", () => {
     sessaoToken.definirEmpresa(seletor.value);
