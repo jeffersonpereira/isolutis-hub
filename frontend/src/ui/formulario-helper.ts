@@ -1,6 +1,6 @@
 /** Helper para simplificar validação e submissão de formulários. */
 
-import { fv, campoDe } from "./campos";
+import { fv } from "./campos";
 import type { ErroValidacao, Schema } from "./validators";
 import { toast } from "./toast";
 
@@ -78,14 +78,16 @@ function mostrarErros(formulario: HTMLFormElement, erros: ErroValidacao) {
       continue;
     }
 
-    const el = formulario.elements.namedItem(campo);
+    const el = formulario.elements.namedItem(campo) as HTMLElement | null;
     if (!el) continue;
 
     const erro = document.createElement("span");
     erro.className = "erro-campo sub";
     erro.style.color = "var(--bad)";
     erro.textContent = mensagem;
-    el.parentElement?.appendChild(erro);
+    if (el instanceof HTMLElement && el.parentElement) {
+      el.parentElement.appendChild(erro);
+    }
   }
 
   toast("Verifique os erros no formulário.");

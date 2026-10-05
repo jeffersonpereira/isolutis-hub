@@ -3,7 +3,6 @@
  * Elimina duplicação do padrão: validar → mostrar loading → chamar API → recarregar → fechar
  */
 
-import type { Safe } from "@/core/html";
 import { recarregar } from "@/state/nucleo";
 import { toast } from "./toast";
 
@@ -32,7 +31,6 @@ export interface OpcoesSalvar {
  */
 export async function salvarComValidacao(opcoes: OpcoesSalvar): Promise<void> {
   const {
-    form,
     botaoSalvar,
     validar,
     operacao,

@@ -3,26 +3,25 @@
  * Garante que inputs têm labels semânticos corretos, roles apropriados, etc.
  */
 
-import { $ } from "@/core/dom";
-
 /**
  * Associa label com input via atributo "for".
  * Se a label não tem "for", cria com ID automático.
  */
 export function associarLabel(
   inputElement: HTMLInputElement,
-  labelElement?: HTMLLabelElement,
+  labelElement?: HTMLLabelElement | undefined,
 ): void {
-  if (!labelElement) {
+  let label = labelElement;
+  if (!label) {
     // Encontrar label anterior
-    labelElement = inputElement.previousElementSibling as HTMLLabelElement;
-    if (!labelElement?.tagName === "LABEL") {
+    label = inputElement.previousElementSibling as HTMLLabelElement | undefined;
+    if (label?.tagName !== "LABEL") {
       const pai = inputElement.parentElement;
-      labelElement = pai?.querySelector("label") as HTMLLabelElement | null;
+      label = pai?.querySelector("label") as HTMLLabelElement | undefined;
     }
   }
 
-  if (!labelElement) return;
+  if (!label) return;
 
   // Garantir que input tem ID
   if (!inputElement.id) {
@@ -30,7 +29,7 @@ export function associarLabel(
   }
 
   // Associar label ao input
-  labelElement.htmlFor = inputElement.id;
+  label.htmlFor = inputElement.id;
 }
 
 /**

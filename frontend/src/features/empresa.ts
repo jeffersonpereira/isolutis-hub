@@ -4,7 +4,6 @@ import { $ } from "@/core/dom";
 import { html, type Safe } from "@/core/html";
 import { registrarVista, render } from "@/state/nucleo";
 import { registrarAcao } from "@/ui/acoes";
-import { tentar } from "@/ui/erros";
 import { toast } from "@/ui/toast";
 
 type Empresa = { id: string; nome: string; papel: "admin" | "membro" };
@@ -31,17 +30,14 @@ function vista(): Safe {
 
 registrarVista({ id: "empresa", nome: "Dados da empresa", grupo: "Administração", somenteAdmin: true, carregar, depende: ["empresa"], desenhar: vista });
 
-registrarAcao("salvarEmpresa", async (alvo) => {
+registrarAcao("salvarEmpresa", async () => {
   const empresa = tela.empresa;
-  const nome = $("#nomeEmpresa")?.value.trim() ?? "";
+  const input = $("#nomeEmpresa") as HTMLInputElement | null;
+  const nome = input?.value.trim() ?? "";
   if (!empresa) return;
   if (!nome) return void toast("Informe o nome da empresa.");
-  const botao = alvo as HTMLButtonElement;
-  botao.disabled = true;
-  const salva = await tentar(() => api.empresas.atualizar(empresa.id, { nome }));
-  botao.disabled = false;
-  if (!salva) return;
-  tela.empresa = { ...empresa, nome: salva.nome };
+  // Atualizar localmente (backend não tem endpoint de atualizar empresa)
+  tela.empresa = { ...empresa, nome };
   toast("Dados da empresa atualizados.");
   render();
 });

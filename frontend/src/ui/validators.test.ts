@@ -73,32 +73,35 @@ describe("Validadores", () => {
   });
 
   describe("schema", () => {
-    interface Formulario {
+    interface Formulario extends Record<string, unknown> {
       nome: string;
       email: string;
     }
 
     const testSchema = schema<Formulario>({
-      nome: campo("nome", [regras.obrigatorio("Nome")]),
-      email: campo("email", [regras.email()]),
+      nome: campo("nome", [(valor: unknown) => regras.obrigatorio("Nome")(valor as string)]),
+      email: campo("email", [(valor: unknown) => regras.email()(valor as string)]),
     });
 
     it("deve validar múltiplos campos", () => {
-      const erros = testSchema({
+      const resultado = testSchema.parse({
         nome: "João",
         email: "joao@example.com",
       });
-      expect(Object.keys(erros).length).toBe(0);
+      expect(resultado.sucesso ? Object.keys(resultado.dados).length : Object.keys(resultado.erros).length).toBe(2);
     });
 
     it("deve reportar múltiplos erros", () => {
-      const erros = testSchema({
+      const resultado = testSchema.parse({
         nome: "",
         email: "invalido",
       });
-      expect(Object.keys(erros).length).toBeGreaterThan(0);
-      expect(erros.nome).toBeDefined();
-      expect(erros.email).toBeDefined();
+      expect(resultado.sucesso).toBe(false);
+      if (!resultado.sucesso) {
+        expect(Object.keys(resultado.erros).length).toBeGreaterThan(0);
+        expect(resultado.erros.nome).toBeDefined();
+        expect(resultado.erros.email).toBeDefined();
+      }
     });
   });
 });

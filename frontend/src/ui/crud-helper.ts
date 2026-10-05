@@ -35,7 +35,7 @@ export interface OpcoesCrudHelper<T> {
 
 /** Cria um feature CRUD com handlers padrão. */
 export function setupCrud<T extends { id: string }>(opcoes: OpcoesCrudHelper<T>) {
-  const { recurso, renderizarLista, renderizarFormulario, aoSalvar, aoExcluir, aoSucesso } = opcoes;
+  const { recurso, renderizarFormulario, aoSalvar, aoSucesso } = opcoes;
 
   // Registrar ação "novo"
   registrarAcao(`novo${primeiraLetraMaiuscula(recurso)}`, async () => {
