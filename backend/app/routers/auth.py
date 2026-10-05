@@ -20,6 +20,8 @@ async def login(dados: LoginEntrada, sessao: Sessao, request: Request) -> TokenS
         limitador_de_login.registrar_falha(chave)
         raise
     limitador_de_login.zerar(chave)
+    # Forçar carregamento de atributos lazy-loaded antes de sair da sessão
+    await sessao.refresh(usuario, ["senha_definida"])
     return TokenSaida(
         access_token=criar_token(usuario.id, usuario.versao_sessao), usuario=UsuarioLeitura.model_validate(usuario)
     )

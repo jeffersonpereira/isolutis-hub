@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import EmailStr, Field
+from pydantic import ConfigDict, EmailStr, Field
 
 from app.schemas.comum import ComVersao, Entrada, Leitura
 
@@ -9,6 +9,8 @@ SENHA = Field(min_length=8, max_length=128)
 
 
 class UsuarioLeitura(Leitura):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
     id: UUID
     email: str
     nome: str
@@ -16,7 +18,7 @@ class UsuarioLeitura(Leitura):
     ativo: bool
     senha_definida: bool
     ultimo_acesso: datetime | None
-    versao: int
+    versao: int = Field(alias="versao_sessao")
 
 
 class MembroEquipe(Leitura):
