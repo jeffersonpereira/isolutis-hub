@@ -6,13 +6,13 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm.attributes import set_committed_value
 
 from app.errors import ErroApp, NaoAutenticado, RegraDeNegocio
 from app.models import Usuario, UsuarioEmpresa
 from app.schemas.usuario import UsuarioAtualizar, UsuarioCriar
 from app.security import gerar_hash, precisa_rehash, verificar_senha
 from app.services.base import aplicar, conferir_versao, confirmar, obter
-from sqlalchemy.orm.attributes import set_committed_value
 
 # Hash fictício para gastar o mesmo tempo quando o e-mail não existe (evita revelar quem é da equipe).
 _HASH_FALSO = gerar_hash("senha-inexistente")
@@ -29,6 +29,7 @@ async def autenticar(sessao: AsyncSession, email: str, senha: str) -> Usuario:
     if precisa_rehash(usuario.senha_hash):
         usuario.senha_hash = gerar_hash(senha)
     await confirmar(sessao)
+    await sessao.refresh(usuario)
     return usuario
 
 
@@ -64,7 +65,9 @@ async def criar(sessao: AsyncSession, empresa_id: UUID, dados: UsuarioCriar) -> 
             raise RegraDeNegocio("Este usuário já faz parte da equipe da empresa.")
         usuario = existente
     else:
-        usuario = Usuario(email=str(dados.email).lower(), nome=dados.nome, admin=False, senha_hash=gerar_hash(dados.senha))
+        usuario = Usuario(
+            email=str(dados.email).lower(), nome=dados.nome, admin=False, senha_hash=gerar_hash(dados.senha)
+        )
         sessao.add(usuario)
         await sessao.flush()
     sessao.add(UsuarioEmpresa(empresa_id=empresa_id, usuario_id=usuario.id, papel="admin" if dados.admin else "membro"))
@@ -72,7 +75,9 @@ async def criar(sessao: AsyncSession, empresa_id: UUID, dados: UsuarioCriar) -> 
     return usuario
 
 
-async def atualizar(sessao: AsyncSession, quem: Usuario, empresa_id: UUID, id_: UUID, dados: UsuarioAtualizar) -> Usuario:
+async def atualizar(
+    sessao: AsyncSession, quem: Usuario, empresa_id: UUID, id_: UUID, dados: UsuarioAtualizar
+) -> Usuario:
     usuario = await obter(sessao, Usuario, id_, "Usuário")
     membership = await sessao.get(UsuarioEmpresa, (empresa_id, id_))
     if membership is None:

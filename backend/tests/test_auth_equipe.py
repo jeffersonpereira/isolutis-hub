@@ -10,6 +10,7 @@ async def test_login_e_eu(http: AsyncClient, admin):
     assert r.status_code == 200
     corpo = r.json()
     assert corpo["usuario"]["nome"] == "Ana Admin" and "senha_hash" not in corpo["usuario"]
+    assert corpo["usuario"]["senha_definida"] is True and corpo["usuario"]["versao"] >= 1
     r = await http.get(f"{API}/auth/eu", headers={"Authorization": f"Bearer {corpo['access_token']}"})
     assert r.json()["admin"] is True
 

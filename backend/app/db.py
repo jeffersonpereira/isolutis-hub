@@ -5,12 +5,14 @@ Contrato de auditoria com o banco: antes de gravar, a requisição executa
 preenche criado_por/atualizado_por/versao a partir dele.
 """
 
+import os
 from collections.abc import AsyncIterator
 from uuid import UUID
 
 from sqlalchemy import event, text
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import Session
+from sqlalchemy.pool import NullPool
 
 from app.config import get_settings
 from app.realtime import agendar_publicacao
@@ -43,6 +45,13 @@ RECURSO_DA_TABELA = {
 def criar_engine(url: str | None = None) -> AsyncEngine:
     cfg = get_settings()
     # Fuso do negócio: "hoje" e vencimentos calculados pelo banco seguem o horário de Brasília.
+    if os.getenv("VERCEL") == "1":
+        return create_async_engine(
+            url or cfg.database_url,
+            echo=cfg.sql_echo,
+            poolclass=NullPool,
+            connect_args={"options": "-c timezone=America/Sao_Paulo"},
+        )
     return create_async_engine(
         url or cfg.database_url,
         echo=cfg.sql_echo,
