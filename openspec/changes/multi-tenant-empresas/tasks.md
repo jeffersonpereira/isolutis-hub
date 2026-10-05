@@ -37,17 +37,17 @@
 - [x] 4.1 Criar papel runtime sem ownership e sem `BYPASSRLS`, papel de migração separado e configuração segura no Compose/deploy.
 - [x] 4.2 Habilitar e forçar RLS em cada tabela tenant-scoped com políticas `USING` e `WITH CHECK` baseadas em `app.empresa_id`.
 - [x] 4.3 Confirmar que tabelas globais se limitam às identidades e catálogos compartilhados definidos no design.
-- [ ] 4.4 Confirmar que contexto ausente, inválido ou transação subsequente no pool não expõe dados de outro tenant.
+- [x] 4.4 Confirmar que contexto ausente, inválido ou transação subsequente no pool não expõe dados de outro tenant.
 - [x] 4.5 Revisar views, funções e triggers com acesso a tabelas tenant; usar `security_invoker=true` nas views tenant-aware sob PostgreSQL 16.
 
 ## 5. Verificação e rollout
 
 - [x] 5.1 Adicionar testes de serviço/API para leitura, escrita, membership, papéis, alternância de empresa e respostas sem vazamento.
 - [x] 5.2 Expandir testes SQL para FKs compostas, uniques tenant-local, sequência de orçamento e policies RLS sob papel runtime.
-- [ ] 5.3 Atualizar E2E para selecionar empresas e validar isolamento com duas empresas e usuários com memberships distintos.
-- [ ] 5.4 Cobrir nomes de tags duplicados após normalização, arquivo de tags usadas, associação cross-tenant e filtros OR/AND.
+- [x] 5.3 Atualizar E2E para selecionar empresas e validar isolamento com duas empresas e usuários com memberships distintos.
+- [x] 5.4 Cobrir nomes de tags duplicados após normalização, arquivo de tags usadas, associação cross-tenant e filtros OR/AND.
 - [x] 5.5 Documentar criação de empresa, associação de usuários, credenciais de banco, migração, backup, cutover e recuperação.
-- [ ] 5.6 Ensaiar migração e cutover em cópia representativa; comparar contagens, chaves e totais financeiros antes de habilitar tráfego multi-tenant.
+- [x] 5.6 Ensaiar migração e cutover em cópia representativa; comparar contagens, chaves e totais financeiros antes de habilitar tráfego multi-tenant.
 - [x] 5.7 Reescrever filtros de ano/mês em datas como intervalos semiabertos e usar ordenação estável com desempate por ID.
-- [ ] 5.8 Após backfill e `ANALYZE`, comparar planos `EXPLAIN (ANALYZE, BUFFERS, WAL, SETTINGS)` das consultas críticas sob runtime role/RLS para tenants pequenos e grandes.
-- [ ] 5.9 Medir latência p50/p95, leituras, escrita, tamanho de índices e concorrência de orçamento; manter particionamento, covering e índices opcionais condicionados à evidência.
+- [x] 5.8 Após backfill e `ANALYZE`, comparar planos `EXPLAIN (ANALYZE, BUFFERS, WAL, SETTINGS)` das consultas críticas sob runtime role/RLS para tenants pequenos e grandes.
+- [x] 5.9 Medir latência p50/p95, leituras, escrita, tamanho de índices e concorrência de orçamento; manter particionamento, covering e índices opcionais condicionados à evidência.
