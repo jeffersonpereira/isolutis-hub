@@ -14,3 +14,6 @@ __pycache__/
 node_modules/
 dist/
 e2e/*.png
+test-results/
+playwright-report/
+.last-run.json
