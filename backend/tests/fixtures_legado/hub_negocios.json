@@ -1,0 +1,31 @@
+[
+ {
+  "id": "n1",
+  "dados": {
+   "titulo": "Portal",
+   "clienteId": "c1",
+   "etapa": "ganho",
+   "valor": 10000,
+   "mensal": 800,
+   "responsavel": "Soraya",
+   "fechadoEm": "2025-04-01",
+   "faturado": true
+  }
+ },
+ {
+  "id": "n2",
+  "dados": {
+   "titulo": "Perdido sem motivo",
+   "clienteId": "c2",
+   "etapa": "perdido"
+  }
+ },
+ {
+  "id": "n3",
+  "dados": {
+   "titulo": "Órfão",
+   "clienteId": "inexistente",
+   "etapa": "lead"
+  }
+ }
+]

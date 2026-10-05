@@ -6,10 +6,7 @@ type S = components["schemas"];
 const ano = (a: number) => ({ ano: a });
 
 export const api = {
-  empresas: {
-    listar: () => http.get<Array<{ id: string; nome: string; papel: "admin" | "membro" }>>("/empresas"),
-    atualizar: (id: string, d: { nome: string }) => http.put<{ id: string; nome: string }>(`/empresas/${id}`, d),
-  },
+  empresas: { listar: () => http.get<Array<{ id: string; nome: string; papel: "admin" | "membro" }>>("/empresas") },
   auth: {
     login: (email: string, senha: string) => http.post<S["TokenSaida"]>("/auth/login", { email, senha }),
     eu: () => http.get<T.Usuario>("/auth/eu"),
@@ -60,6 +57,21 @@ export const api = {
     receber: (id: string) => http.post<T.Lancamento>(`/faturamento/${id}/receber`),
     excluir: (id: string) => http.delete(`/faturamento/${id}`),
     exportar: (a: number) => http.baixar("/faturamento/exportar", ano(a)),
+  },
+  despesas: {
+    listar: (a: number) => http.get<T.Despesa[]>("/despesas", ano(a)),
+    opcoes: () => http.get<T.OpcoesDespesa>("/despesas/opcoes"),
+    resumo: (a: number) => http.get<T.ResumoDespesas>("/despesas/resumo", ano(a)),
+    criar: (d: T.DespesaEntrada) => http.post<T.Despesa[]>("/despesas", d),
+    atualizar: (id: string, d: S["DespesaAtualizar"]) => http.put<T.Despesa>(`/despesas/${id}`, d),
+    pagar: (id: string) => http.post<T.Despesa>(`/despesas/${id}/pagar`),
+    excluir: (id: string) => http.delete(`/despesas/${id}`),
+  },
+  investimentos: {
+    listar: (a: number) => http.get<T.Investimento[]>("/investimentos", ano(a)),
+    criar: (d: T.InvestimentoEntrada) => http.post<T.Investimento>("/investimentos", d),
+    atualizar: (id: string, d: T.InvestimentoEntrada & { versao: number }) => http.put<T.Investimento>(`/investimentos/${id}`, d),
+    excluir: (id: string) => http.delete(`/investimentos/${id}`),
   },
   projetos: {
     listar: () => http.get<T.Projeto[]>("/projetos"),

@@ -39,7 +39,7 @@ function vista(): Safe {
   }`;
 }
 
-registrarVista({ id: "produtos", nome: "Produtos", grupo: "Cadastros", contagem: () => dados.produtos.length, desenhar: vista });
+registrarVista({ id: "produtos", nome: "Produtos", contagem: () => dados.produtos.length, desenhar: vista });
 
 function formProduto(p?: Produto): void {
   abrirGaveta({

@@ -1,0 +1,24 @@
+/* Paleta iSolutis: azul-marinho do ícone + turquesa do "i". O turquesa puro só aparece sobre o marinho; sobre fundo claro usa-se o tom escurecido (--gold). */
+:root{
+  --navy:#1B2B4B; --navy-deep:#111b30; --teal:#22C3CE; --gold:#0d8792; --gold-soft:#dbf3f5;
+  --bg:#eef1f6; --surface:#ffffff; --sunk:#e5eaf1; --line:#d3dbe6;
+  --ink:#16223b; --muted:#56647a; --accent:#1B2B4B; --accent-ink:#ffffff;
+  --bar-a:#1B2B4B; --bar-b:#9fdde2;
+  --ok:#1f7a4d; --ok-bg:#e1f2e8; --warn:#9a6a00; --warn-bg:#fbefd2; --bad:#b0362f; --bad-bg:#f9e1df; --info:#2d5b94; --info-bg:#e1ebf7; --wa:#128c4a; --wa-ink:#ffffff;
+  --f-display:"Montserrat",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --r:8px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1729; --surface:#16223b; --sunk:#111c32; --line:#2a3a57;
+  --ink:#e8edf4; --muted:#a0afc4; --accent:#22C3CE; --accent-ink:#0e1729; --gold:#4fd3dc; --gold-soft:#123a44;
+  --bar-a:#22C3CE; --bar-b:#33506e;
+  --ok:#6fd19f; --ok-bg:#16352a; --warn:#f0c569; --warn-bg:#3a2f14; --bad:#f19189; --bad-bg:#3d1c1b; --info:#9cc2f0; --info-bg:#1a2d47; --wa:#3cc37a; --wa-ink:#07210f;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1729; --surface:#16223b; --sunk:#111c32; --line:#2a3a57;
+  --ink:#e8edf4; --muted:#a0afc4; --accent:#22C3CE; --accent-ink:#0e1729; --gold:#4fd3dc; --gold-soft:#123a44;
+  --bar-a:#22C3CE; --bar-b:#33506e;
+  --ok:#6fd19f; --ok-bg:#16352a; --warn:#f0c569; --warn-bg:#3a2f14; --bad:#f19189; --bad-bg:#3d1c1b; --info:#9cc2f0; --info-bg:#1a2d47; --wa:#3cc37a; --wa-ink:#07210f;
+  color-scheme:dark}

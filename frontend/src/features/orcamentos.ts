@@ -45,7 +45,7 @@ function vista(): Safe {
   }`;
 }
 
-registrarVista({ id: "orcamentos", nome: "Orçamentos", grupo: "Comercial", contagem: () => dados.orcamentos.length, desenhar: vista });
+registrarVista({ id: "orcamentos", nome: "Orçamentos", contagem: () => dados.orcamentos.length, desenhar: vista });
 
 const itemVazio = (): ItemDigitado & { id?: string; produto_id: string } => ({ produto_id: "", descricao: "", qtd: 1, preco_unitario: 0, mensal: false });
 type ItemTela = ReturnType<typeof itemVazio>;

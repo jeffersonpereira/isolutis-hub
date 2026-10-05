@@ -14,8 +14,6 @@ import { abrirGaveta } from "@/ui/gaveta";
 import { espaco } from "@/ui/formularios";
 import { excluir } from "@/ui/gravacao";
 import { toast } from "@/ui/toast";
-import { schema, regras } from "@/ui/validators";
-import { salvarComValidacao } from "@/ui/salvar-helper";
 
 const pagina: { lista: Usuario[] | null; erro: string } = { lista: null, erro: "" };
 
@@ -31,7 +29,7 @@ async function carregar(): Promise<void> {
 }
 
 function vista(): Safe {
-  const cabecalho = html`<div class="head"><div><h1>Usuários do sistema</h1><p>Cadastre usuários, gerencie senhas e defina quem é administrador.</p></div>
+  const cabecalho = html`<div class="head"><div><h1>Equipe</h1><p>Quem pode entrar no Hub. Aqui você cadastra pessoas, define e troca senhas e escolhe quem é administrador.</p></div>
     <div class="tools"><button class="btn" data-act="recarregarEquipe">Atualizar</button><button class="btn primary" data-act="novoUsuario">Novo usuário</button></div></div>`;
   if (pagina.erro) return html`${cabecalho}<div class="banner" style="background:var(--bad-bg);color:var(--bad)">${pagina.erro}</div>`;
   if (!pagina.lista) return html`${cabecalho}<p class="sub">Carregando a equipe…</p>`;
@@ -45,7 +43,7 @@ function vista(): Safe {
   </tbody></table></div>`;
 }
 
-registrarVista({ id: "equipe", nome: "Usuários do sistema", grupo: "Administração", somenteAdmin: true, carregar, depende: ["equipe"], desenhar: vista });
+registrarVista({ id: "equipe", nome: "Equipe", somenteAdmin: true, carregar, depende: ["equipe"], desenhar: vista });
 
 const SENHA_CARACTERES = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
 export function senhaAleatoria(tamanho = 12): string {
@@ -76,80 +74,48 @@ function formUsuario(u?: Usuario): void {
       });
       $("[data-salvar]", L)?.addEventListener("click", async (e) => {
         const botao = e.target as HTMLButtonElement;
-
-        // Validação centralizada
-        const validar = () => {
-          const erros: Record<string, string> = {};
-          const nome = fv(f, "nome");
-          const email = fv(f, "email").toLowerCase();
-          const senha = fv(f, "senha");
-
-          if (!nome) erros["nome"] = "Informe o nome.";
-          if (novo && !email) erros["email"] = "Informe o e-mail.";
-          if (novo && !senha) erros["senha"] = 'Defina uma senha ou clique em "Gerar senha".';
-          if (senha && senha.length < 8) erros["senha"] = "A senha precisa ter pelo menos 8 caracteres.";
-
-          return Object.keys(erros).length > 0 ? erros : null;
-        };
-
-        // Operação de salvar
-        const operacao = async () => {
-          const nome = fv(f, "nome");
-          const email = fv(f, "email").toLowerCase();
-          const senha = fv(f, "senha");
-          const admin = souEu ? true : (f.elements.namedItem("admin") as HTMLInputElement).checked;
-
-          return tentar(() =>
-            u
-              ? api.usuarios.atualizar(u.id, { nome, admin, ativo: u.ativo || !!(f.elements.namedItem("ativo") as HTMLInputElement | null)?.checked, senha: senha || null, versao: u.versao })
-              : api.usuarios.criar({ nome, email, senha, admin }),
-          );
-        };
-
-        // Callback pós-sucesso (mostrar dados da senha)
-        const onSucesso = (ok: any) => {
-          const senha = fv(f, "senha");
-          if (senha && ok?.email) {
-            const caixa = $("#senhaFeita", L)!;
-            caixa.hidden = false;
-            const endereco = location.origin;
-            caixa.innerHTML = `<b>${novo ? "Usuário criado." : "Senha alterada."}</b> Envie para <span id="nomeSenha"></span>: endereço <b id="endSenha"></b>, e-mail <b id="emailSenha"></b> e senha <b class="num" id="valSenha"></b>. <button class="btn" type="button" id="copiarAcesso" style="margin-left:6px">Copiar</button>`;
-            const nome = fv(f, "nome");
-            $("#nomeSenha", L)!.textContent = primeiroNome(nome);
-            $("#endSenha", L)!.textContent = endereco;
-            $("#emailSenha", L)!.textContent = ok.email;
-            $("#valSenha", L)!.textContent = senha;
-            $("#copiarAcesso", L)?.addEventListener("click", async () => {
-              const texto = `Hub Comercial iSolutis\nEndereço: ${endereco}\nE-mail: ${ok.email}\nSenha: ${senha}\nVocê pode trocar a senha depois, em "Trocar senha".`;
-              try {
-                await navigator.clipboard.writeText(texto);
-                toast("Copiado");
-              } catch {
-                toast("Não foi possível copiar. Selecione o texto e copie.");
-              }
-            });
-            const temporizador = setTimeout(() => {
-              caixa.hidden = true;
-              caixa.innerHTML = "";
-            }, 5000);
-            const limparAoFechar = () => {
-              clearTimeout(temporizador);
-              caixa.hidden = true;
-              caixa.innerHTML = "";
-            };
-            caixa.addEventListener("click", limparAoFechar);
-          }
-        };
-
-        await salvarComValidacao({
-          form: f,
-          botaoSalvar: botao,
-          validar,
-          operacao,
-          recarregarRecurso: "equipe",
-          fechar,
-          onSucesso,
-        });
+        const nome = fv(f, "nome");
+        const email = fv(f, "email").toLowerCase();
+        const senha = fv(f, "senha");
+        if (!nome) return void toast("Informe o nome.");
+        if (novo && !email) return void toast("Informe o e-mail.");
+        if (novo && !senha) return void toast('Defina uma senha ou clique em "Gerar senha".');
+        if (senha && senha.length < 8) return void toast("A senha precisa ter pelo menos 8 caracteres.");
+        botao.disabled = true;
+        const admin = souEu ? true : (f.elements.namedItem("admin") as HTMLInputElement).checked;
+        const ok = await tentar(() =>
+          u
+            ? api.usuarios.atualizar(u.id, { nome, admin, ativo: u.ativo || !!(f.elements.namedItem("ativo") as HTMLInputElement | null)?.checked, senha: senha || null, versao: u.versao })
+            : api.usuarios.criar({ nome, email, senha, admin }),
+        );
+        if (!ok) {
+          botao.disabled = false;
+          return;
+        }
+        await recarregar("equipe");
+        if (senha) {
+          const caixa = $("#senhaFeita", L)!;
+          caixa.hidden = false;
+          const endereco = location.origin;
+          caixa.innerHTML = `<b>${novo ? "Usuário criado." : "Senha alterada."}</b> Envie para <span id="nomeSenha"></span>: endereço <b id="endSenha"></b>, e-mail <b id="emailSenha"></b> e senha <b class="num" id="valSenha"></b>. <button class="btn" type="button" id="copiarAcesso" style="margin-left:6px">Copiar</button>`;
+          $("#nomeSenha", L)!.textContent = primeiroNome(nome);
+          $("#endSenha", L)!.textContent = endereco;
+          $("#emailSenha", L)!.textContent = ok.email;
+          $("#valSenha", L)!.textContent = senha;
+          $("#copiarAcesso", L)?.addEventListener("click", async () => {
+            const texto = `Hub Comercial iSolutis\nEndereço: ${endereco}\nE-mail: ${ok.email}\nSenha: ${senha}\nVocê pode trocar a senha depois, em "Trocar senha".`;
+            try {
+              await navigator.clipboard.writeText(texto);
+              toast("Copiado");
+            } catch {
+              toast("Não foi possível copiar. Selecione o texto e copie.");
+            }
+          });
+          botao.textContent = "Salvo";
+          return;
+        }
+        toast("Salvo");
+        fechar();
       });
       $("[data-excluir]", L)?.addEventListener("click", () => {
         if (u) void excluir({ recarregar: ["equipe"], mensagem: `${u.nome} removido da equipe`, fechar, operacao: () => api.usuarios.remover(u.id) });

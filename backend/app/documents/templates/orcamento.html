@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Orçamento {{ o.numero }} · iSolutis</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+{{ css | safe }}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><img src="{{ logo }}" width="72" height="72" alt="iSolutis"><div><div class="mark">iSolutis</div><div class="sm">Soluções e Inovações Tecnológicas</div></div></div>
+  <div style="text-align:right"><b>Orçamento Nº {{ o.numero }}</b><br>{{ o.data | data_br }}<br>Válido até {{ o.valido_ate | data_br }}</div>
+</header>
+<h1>{{ c.nome }}</h1>
+{% if c.contato %}<div>A/C {{ c.contato }}{% if c.cargo %} · {{ c.cargo }}{% endif %}</div>{% endif %}
+{% if c.cpf_cnpj %}<div>{{ "CPF" if c.tipo_pessoa == "PF" else "CNPJ" }} {{ c.cpf_cnpj | cnpj }}</div>{% endif %}
+<table>
+  <thead><tr><th>Descrição</th><th class="r">Qtd</th><th class="r">Valor unitário</th><th class="r">Total</th></tr></thead>
+  <tbody>
+  {% for i in o.itens %}
+    <tr><td>{{ i.descricao }}{% if i.mensal %} <em>(mensal)</em>{% endif %}</td><td class="r">{{ i.qtd | qtd }}</td><td class="r">{{ i.preco_unitario | brl }}</td><td class="r">{{ i.subtotal | brl }}{% if i.mensal %}/mês{% endif %}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+<div class="tot">
+  {% if o.desconto %}Desconto: −{{ o.desconto | brl }}<br>{% endif %}
+  Valor do projeto: <b>{{ o.total_projeto | brl }}</b>
+  {% if o.total_mensal %}<br>Manutenção mensal: <b>{{ o.total_mensal | brl }}/mês</b>{% endif %}
+</div>
+{% if o.obs %}<div class="box">{{ o.obs }}</div>{% endif %}
+<footer>iSolutis · Soluções e Inovações Tecnológicas · +55 71 99239-0992</footer>
+</body>
+</html>

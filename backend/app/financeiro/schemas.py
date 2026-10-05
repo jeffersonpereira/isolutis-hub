@@ -1,60 +1,24 @@
-"""Contratos Pydantic do módulo financeiro."""
-
-from __future__ import annotations
+"""Contrato da API do módulo financeiro (snake_case; dinheiro como número JSON)."""
 
 from datetime import date
 from decimal import Decimal
 from typing import Annotated, Literal
 from uuid import UUID
 
-from pydantic import (
-    BaseModel,
-    BeforeValidator,
-    ConfigDict,
-    Field,
-    PlainSerializer,
-    model_validator,
-)
+from pydantic import BaseModel, ConfigDict, Field, PlainSerializer, model_validator
 
+from app.schemas.comum import Entrada, Leitura, TextoLongo
 
-NaturezaFinanceira = Literal[
-    "RECEITAS",
-    "CUSTOS",
-    "DESPESAS",
-    "INVESTIMENTOS",
-    "MOVIMENTAÇÕES FINANCEIRAS",
-    "EMPRÉSTIMOS E FINANCIAMENTOS",
-]
-
-
-def _texto_ou_none(valor: object) -> object:
-    if isinstance(valor, str):
-        return valor.strip() or None
-    return valor
-
-
+# Valores monetários do plano: numeric(13,2)
 Valor = Annotated[
     Decimal,
     Field(max_digits=13, decimal_places=2),
-    PlainSerializer(float, return_type=float, when_used="json"),
+    PlainSerializer(lambda v: float(v), return_type=float, when_used="json"),
 ]
 Nome = Annotated[str, Field(min_length=1, max_length=150)]
-TextoLongo = Annotated[
-    Annotated[str, Field(max_length=20_000)] | None,
-    BeforeValidator(_texto_ou_none),
-]
 
 
-class Entrada(BaseModel):
-    """Payload de escrita: rejeita campos desconhecidos e apara espaços."""
-
-    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
-
-
-class Leitura(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-
+# ----------------------------------------------------------------------------- referências
 class MunicipioLeitura(Leitura):
     id: UUID
     nome: str
@@ -67,17 +31,19 @@ class InstituicaoLeitura(Leitura):
     nome: str
 
 
+# ----------------------------------------------------------------------------- plano de contas
 class PlanoContaEntrada(Entrada):
     plano_pai_id: UUID | None = None
     codigo: Annotated[str, Field(min_length=1, max_length=20)]
     nome: Nome
     tipo_conta: Literal["A", "S"]
-    natureza: NaturezaFinanceira | None = None
+    # Obrigatória nas contas de nível 1; nas demais é herdada da conta pai (o valor enviado é ignorado).
+    natureza: Literal["R", "D"] | None = None
 
     @model_validator(mode="after")
-    def _natureza_da_raiz(self) -> PlanoContaEntrada:
+    def _natureza_da_raiz(self) -> "PlanoContaEntrada":
         if self.plano_pai_id is None and self.natureza is None:
-            raise ValueError("Informe a natureza da conta de primeiro nível.")
+            raise ValueError("Informe a natureza (receita ou despesa) da conta de primeiro nível.")
         return self
 
 
@@ -97,6 +63,7 @@ class ProximoCodigo(Leitura):
     codigo: str
 
 
+# ----------------------------------------------------------------------------- contas bancárias
 class ContaBancariaEntrada(Entrada):
     instituicao_financeira_id: UUID
     nome: Nome
@@ -112,6 +79,7 @@ class ContaBancariaLeitura(Leitura):
     saldo_inicial: Valor
 
 
+# ----------------------------------------------------------------------------- títulos
 class TituloEntrada(Entrada):
     tipo_conta: Literal["P", "R"]
     conta_bancaria_id: UUID
@@ -125,6 +93,7 @@ class TituloEntrada(Entrada):
     valor_juros: Valor = Field(default=Decimal("0.00"), ge=0)
     status: Literal["A", "Q", "C"] = "A"
     data_pagamento: date | None = None
+    # Em título quitado, se vier vazio assume o valor devido.
     valor_quitacao: Valor | None = Field(default=None, ge=0)
     anotacao: TextoLongo = None
 
@@ -150,10 +119,11 @@ class TituloLeitura(BaseModel):
     valor_devido: Valor
     status: str
     data_pagamento: date | None
-    valor_quitacao: Valor | None
+    valor_quitacao: Valor
     anotacao: str | None
 
 
+# ----------------------------------------------------------------------------- fluxo de caixa
 class MesFluxo(Leitura):
     mes: int
     entradas_realizadas: Valor

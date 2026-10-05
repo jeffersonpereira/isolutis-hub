@@ -1,0 +1,46 @@
+[
+ {
+  "id": "d1",
+  "dados": {
+   "tipo": "despesa",
+   "data": "2025-02-01",
+   "descricao": "Hospedagem",
+   "valor": 100,
+   "categoria": "Servidores e infraestrutura",
+   "status": "pago"
+  }
+ },
+ {
+  "id": "d2",
+  "dados": {
+   "tipo": "despesa",
+   "data": "2025-03-01",
+   "descricao": "Contador",
+   "valor": 300,
+   "categoria": "Contabilidade Nova",
+   "status": "a_pagar"
+  }
+ },
+ {
+  "id": "d3",
+  "dados": {
+   "tipo": "investimento",
+   "data": "2025-01-15",
+   "descricao": "Aporte",
+   "valor": 5000,
+   "investidor": "Soraya Sá",
+   "forma": "Dinheiro (aporte)"
+  }
+ },
+ {
+  "id": "d4",
+  "dados": {
+   "tipo": "investimento",
+   "data": "2025-01-16",
+   "descricao": "Notebook",
+   "valor": 3000,
+   "investidor": "Sócio Externo",
+   "forma": "Equipamento"
+  }
+ }
+]

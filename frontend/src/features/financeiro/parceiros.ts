@@ -38,7 +38,7 @@ function vista(): Safe {
   }`;
 }
 
-registrarVista({ id: "fin-parceiros", nome: "Parceiros de negócio", grupo: GRUPO, somenteAdmin: true, carregar, depende: ["financeiro", "clientes"], desenhar: vista });
+registrarVista({ id: "fin-parceiros", nome: "Parceiro de Negócio", grupo: GRUPO, somenteAdmin: true, carregar, depende: ["financeiro", "clientes"], desenhar: vista });
 
 function formParceiro(p?: Parceiro): void {
   abrirGaveta({

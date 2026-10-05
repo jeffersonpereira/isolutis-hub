@@ -1,5 +1,4 @@
 import "./styles/index.css";
-import "./styles/loading.css";
 
 import { api } from "@/api/endpoints";
 import { sessaoToken } from "@/api/http";
@@ -22,9 +21,9 @@ import "@/features/orcamentos";
 import "@/features/projetos";
 import "@/features/tarefas";
 import "@/features/faturamento";
+import "@/features/despesas";
 import "@/features/produtos";
 import "@/features/equipe";
-import "@/features/empresa";
 import "@/features/financeiro";
 import "@/features/periodo";
 

@@ -1,4 +1,16 @@
 .DS_Store
 Thumbs.db
 *.log
-.env*
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+node_modules/
+dist/
+e2e/*.png

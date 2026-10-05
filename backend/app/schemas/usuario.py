@@ -1,80 +1,58 @@
-"""Schemas de validação para usuários e equipe."""
-
-from __future__ import annotations
-
+from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import EmailStr, Field
+
+from app.schemas.comum import ComVersao, Entrada, Leitura
+
+SENHA = Field(min_length=8, max_length=128)
 
 
-class UsuarioBase(BaseModel):
-    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
-
-    nome: str = Field(min_length=1, max_length=150)
-
-
-class UsuarioCriar(UsuarioBase):
-    """Payload para criar novo usuário."""
-
-    email: EmailStr
-    senha: str = Field(min_length=8, max_length=128)
-    admin: bool = False
-
-    @field_validator("email")
-    @classmethod
-    def email_lowercase(cls, v: str) -> str:
-        return v.lower().strip()
-
-    @field_validator("senha")
-    @classmethod
-    def senha_validar(cls, v: str) -> str:
-        """Validar força mínima de senha."""
-        if not any(c.isupper() for c in v):
-            raise ValueError("Senha deve conter pelo menos uma letra maiúscula.")
-        if not any(c.islower() for c in v):
-            raise ValueError("Senha deve conter pelo menos uma letra minúscula.")
-        if not any(c.isdigit() for c in v):
-            raise ValueError("Senha deve conter pelo menos um dígito.")
-        return v
-
-
-class UsuarioAtualizar(UsuarioBase):
-    """Payload para atualizar usuário. Admin não pode ser alterado (apenas em desativação)."""
-
-    senha: str | None = Field(default=None, min_length=8, max_length=128)
-    ativo: bool = True
+class UsuarioLeitura(Leitura):
+    id: UUID
+    email: str
+    nome: str
+    admin: bool
+    ativo: bool
+    senha_definida: bool
+    ultimo_acesso: datetime | None
     versao: int
 
-    @field_validator("senha", mode="before")
-    @classmethod
-    def senha_validar(cls, v: str | None) -> str | None:
-        """Validar força de senha se fornecida."""
-        if v is None:
-            return None
-        if not any(c.isupper() for c in v):
-            raise ValueError("Senha deve conter pelo menos uma letra maiúscula.")
-        if not any(c.islower() for c in v):
-            raise ValueError("Senha deve conter pelo menos uma letra minúscula.")
-        if not any(c.isdigit() for c in v):
-            raise ValueError("Senha deve conter pelo menos um dígito.")
-        return v
 
-
-class MembroEquipe(BaseModel):
-    """Resposta para listar membros da equipe."""
-
-    model_config = ConfigDict(from_attributes=True)
+class MembroEquipe(Leitura):
+    """Visão mínima da equipe, disponível a qualquer pessoa logada (responsáveis, autoria)."""
 
     id: UUID
     nome: str
     email: str
-    admin: bool
     ativo: bool
 
 
-class UsuarioLeitura(MembroEquipe):
-    """Resposta completa de usuário (com último acesso)."""
+class LoginEntrada(Entrada):
+    email: EmailStr
+    senha: str = Field(min_length=1, max_length=128)
 
-    senha_definida: bool
-    ultimo_acesso: str | None
-    versao: int
+
+class TokenSaida(Leitura):
+    access_token: str
+    token_type: str = "bearer"
+    usuario: UsuarioLeitura
+
+
+class TrocarSenhaEntrada(Entrada):
+    senha_atual: str = Field(min_length=1, max_length=128)
+    nova_senha: str = SENHA
+
+
+class UsuarioCriar(Entrada):
+    nome: str = Field(min_length=1, max_length=200)
+    email: EmailStr
+    senha: str = SENHA
+    admin: bool = False
+
+
+class UsuarioAtualizar(ComVersao):
+    nome: str = Field(min_length=1, max_length=200)
+    admin: bool
+    ativo: bool = True
+    senha: str | None = Field(default=None, min_length=8, max_length=128)

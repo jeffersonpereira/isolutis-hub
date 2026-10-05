@@ -16,8 +16,6 @@ import { acoesDaLinha, confirmarExclusao, formatarDocumento, GRUPO } from "./com
 
 const STATUS: Record<string, readonly [string, string]> = { A: ["Aberto", "info"], Q: ["Quitado", "ok"], C: ["Cancelado", ""] };
 const TIPO: Record<string, string> = { P: "A pagar", R: "A receber" };
-const NATUREZAS_RECEBER = ["RECEITAS", "MOVIMENTAÇÕES FINANCEIRAS", "EMPRÉSTIMOS E FINANCIAMENTOS"];
-const NATUREZAS_PAGAR = ["CUSTOS", "DESPESAS", "INVESTIMENTOS", "MOVIMENTAÇÕES FINANCEIRAS", "EMPRÉSTIMOS E FINANCIAMENTOS"];
 
 const tela: { titulos: Titulo[] | null } = { titulos: null };
 
@@ -62,21 +60,17 @@ async function formTitulo(t?: Titulo): Promise<void> {
   const [plano, contas, parceiros]: [PlanoConta[], ContaBancaria[], Parceiro[]] = apoio;
   const analiticas = plano.filter((c) => c.tipo_conta === "A");
   const tipoInicial = t?.tipo_conta ?? "R";
-  const contasDoTitulo = (natureza: string): PlanoConta[] => analiticas.filter((c) => c.natureza === natureza);
-  const naturezasDoTipo = (tipo: string): string[] => tipo === "P" ? NATUREZAS_PAGAR : NATUREZAS_RECEBER;
-  const naturezaAtual = t ? analiticas.find((c) => c.id === t.plano_conta_id)?.natureza ?? "" : "";
-  const opcoesNatureza = (tipo: string, atual = ""): Safe =>
-    html`<option value="">Selecione a natureza…</option>${naturezasDoTipo(tipo).map((n) => html`<option value="${n}"${raw(n === atual ? " selected" : "")}>${n}</option>`)}`;
-  const opcoesPlano = (natureza: string, atual?: string): Safe =>
-    html`<option value="">Selecione uma conta…</option>${contasDoTitulo(natureza).map((c) => html`<option value="${c.id}"${raw(c.id === atual ? " selected" : "")}>${c.codigo} ${c.nome}</option>`)}`;
+  /** RN04: contas a pagar mostram só despesas; a receber, só receitas. */
+  const contasDoTipo = (tipo: string): PlanoConta[] => analiticas.filter((c) => c.natureza === (tipo === "P" ? "D" : "R"));
+  const opcoesPlano = (tipo: string, atual?: string): Safe =>
+    html`<option value="">Selecione…</option>${contasDoTipo(tipo).map((c) => html`<option value="${c.id}"${raw(c.id === atual ? " selected" : "")}>${c.codigo} ${c.nome}</option>`)}`;
 
   abrirGaveta({
     titulo: t ? `Título · ${t.parceiro_nome}` : "Novo título financeiro",
     corpo: html`<div class="fields">
       ${campo("Tipo", sel("tipo_conta", [["R", "A receber (receita)"], ["P", "A pagar (despesa)"]], tipoInicial))}
-      <div class="field"><label for="f-natureza">Natureza da operação</label><select name="natureza" id="f-natureza">${opcoesNatureza(tipoInicial, naturezaAtual)}</select></div>
       ${campo("Situação", sel("status", [["A", "Aberto"], ["Q", "Quitado"], ["C", "Cancelado"]], t?.status ?? "A"))}
-      <div class="field full"><label for="f-plano_conta_id">Conta do plano de contas</label><select name="plano_conta_id" id="f-plano_conta_id">${opcoesPlano(naturezaAtual, t?.plano_conta_id)}</select><span class="sub" id="dicaPlano"></span></div>
+      <div class="field full"><label for="f-plano_conta_id">Conta do plano de contas</label><select name="plano_conta_id" id="f-plano_conta_id">${opcoesPlano(tipoInicial, t?.plano_conta_id)}</select><span class="sub" id="dicaPlano"></span></div>
       ${campo("Conta bancária", sel("conta_bancaria_id", [["", "Selecione…"], ...contas.map((c) => [c.id, `${c.nome} (${c.instituicao_codigo})`] as const)], t?.conta_bancaria_id ?? ""))}
       ${campo("Parceiro de negócio", sel("parceiro_id", [["", "Selecione…"], ...parceiros.map((p) => [p.id, `${p.nome} · ${formatarDocumento(p.cpf_cnpj)}`] as const)], t?.parceiro_id ?? ""))}
       ${campo("Data de emissão", inp("data_emissao", t?.data_emissao, 'type="date"'))}${campo("Data de vencimento", inp("data_vencimento", t?.data_vencimento ?? hoje(), 'type="date"'))}
@@ -90,28 +84,14 @@ async function formTitulo(t?: Titulo): Promise<void> {
     rodape: html`<button class="btn primary" data-salvar>Salvar</button>${espaco}`,
     montar: (f, fechar, L) => {
       const tipo = f.elements.namedItem("tipo_conta") as HTMLSelectElement;
-      const natureza = f.elements.namedItem("natureza") as HTMLSelectElement;
       const planoSel = f.elements.namedItem("plano_conta_id") as HTMLSelectElement;
       const status = f.elements.namedItem("status") as HTMLSelectElement;
       const dica = $("#dicaPlano", L)!;
       const mostrarDica = (): void => {
-        if (!natureza.value) {
-          dica.textContent = "Selecione a natureza da operação para carregar as contas correspondentes.";
-          return;
-        }
-        dica.textContent = contasDoTitulo(natureza.value).length
-          ? `Somente contas analíticas de natureza ${natureza.value}.`
-          : `Não há contas analíticas de natureza ${natureza.value} no plano de contas.`;
+        dica.textContent = contasDoTipo(tipo.value).length ? `Somente contas analíticas de ${tipo.value === "P" ? "despesa" : "receita"}.` : `Não há conta analítica de ${tipo.value === "P" ? "despesa" : "receita"} no plano de contas. Cadastre uma antes.`;
       };
       tipo.addEventListener("change", () => {
-        const atual = naturezasDoTipo(tipo.value).includes(natureza.value) ? natureza.value : "";
-        natureza.innerHTML = String(opcoesNatureza(tipo.value, atual));
-        natureza.value = atual;
-        planoSel.innerHTML = String(opcoesPlano(atual));
-        mostrarDica();
-      });
-      natureza.addEventListener("change", () => {
-        planoSel.innerHTML = String(opcoesPlano(natureza.value));
+        planoSel.innerHTML = String(opcoesPlano(tipo.value));
         mostrarDica();
       });
       mostrarDica();
@@ -125,10 +105,7 @@ async function formTitulo(t?: Titulo): Promise<void> {
       atualizar();
 
       $("[data-salvar]", L)?.addEventListener("click", async () => {
-        if (!fv(f, "natureza")) return void avisar("Selecione a natureza da operação.");
         if (!fv(f, "plano_conta_id")) return void avisar("Escolha a conta do plano de contas.");
-        const contaEscolhida = analiticas.find((c) => c.id === fv(f, "plano_conta_id"));
-        if (!contaEscolhida || contaEscolhida.natureza !== fv(f, "natureza")) return void avisar("Escolha uma conta com a mesma natureza da operação.");
         if (!fv(f, "conta_bancaria_id")) return void avisar("Escolha a conta bancária.");
         if (!fv(f, "parceiro_id")) return void avisar("Escolha o parceiro de negócio.");
         if (!numero(fv(f, "valor_titulo"))) return void avisar("Informe o valor do título.");

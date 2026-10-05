@@ -16,7 +16,7 @@ import { registrarAbertura, registrarSoltar } from "@/ui/eventos";
 import { abrirGaveta } from "@/ui/gaveta";
 import { linhaAutoria } from "@/ui/autoria";
 import { botaoExcluir, botaoSalvar, espaco, ligarNovoCliente, opcoesEquipe, resolverCliente, seletorCliente } from "@/ui/formularios";
-import { excluir } from "@/ui/gravacao";
+import { excluir, gravar } from "@/ui/gravacao";
 import { toast } from "@/ui/toast";
 import { botaoNovo } from "./comum";
 import { abrirFormulario, registrarFormulario } from "./ponte";
@@ -32,34 +32,27 @@ export function valorNegocio(n: Pick<Negocio, "valor" | "mensal">): string {
 
 function vista(): Safe {
   const etapas = ui.mostrarFechados ? ETAPAS : ETAPAS.filter((e) => ABERTAS.includes(e.id));
+  const h = hoje();
   const escrever = podeEscrever();
   return html`<div class="head"><div><h1>Negócios e funil de vendas</h1><p>Arraste um cartão para mudar a etapa. Ao marcar como Ganho, o Hub Comercial oferece lançar o faturamento.</p></div>
     <div class="tools"><label class="check"><input type="checkbox" id="fechados" data-act="alternarFechados"${ui.mostrarFechados ? " checked" : ""}> Mostrar ganhos e perdidos</label>${botaoNovo("novoNegocio", "Novo negócio")}</div></div>
   ${!dados.negocios.length ? html`<div class="empty"><b>Nenhum negócio no funil</b>Cada conversa comercial vira um negócio: começa como Lead, passa pelo diagnóstico e pela proposta, e termina como Ganho ou Perdido.${escrever ? html`<br><button class="btn primary" data-act="novoNegocio">Abrir o primeiro negócio</button>` : ""}</div>` : ""}
-  ${renderizarBoard(etapas, escrever)}`;
-}
-
-function renderizarBoard(etapas: typeof ETAPAS, escrever: boolean): Safe {
-  const h = hoje();
-  return html`<div class="board">${etapas.map((e) => {
+  <div class="board">${etapas.map((e) => {
     const ns = dados.negocios.filter((n) => n.etapa === e.id).sort((a, b) => (a.previsao ?? "9").localeCompare(b.previsao ?? "9"));
     const total = ns.reduce((s, n) => s + numero(n.valor), 0);
     const totalM = ns.reduce((s, n) => s + numero(n.mensal), 0);
     return html`<section class="col ${e.id}" data-etapa="${e.id}"><div class="col-h"><b>${e.nome} <span class="num">${ns.length}</span></b><span class="num">${brlCurto(total)}${totalM ? " + " + brlCurto(totalM) + "/mês" : ""}</span></div>
-      ${ns.map((n) => renderizarCartao(n, h, escrever))}
+      ${ns.map(
+        (n) => html`<article class="card" draggable="${escrever}" data-id="${n.id}" data-open="negocio:${n.id}" tabindex="0"><span class="t">${n.titulo}</span><span class="sub">${n.cliente_nome}</span>
+        <span class="m"><span class="num">${valorNegocio(n)}</span><span class="${ABERTAS.includes(n.etapa) && n.previsao && n.previsao < h ? "late" : ""}">${n.previsao ? dataBR(n.previsao) : ""}</span></span>${n.responsavel_id ? html`<span class="sub">${nomeMembro(n.responsavel_id)}</span>` : ""}</article>`,
+      )}
     </section>`;
   })}</div>`;
-}
-
-function renderizarCartao(n: Negocio, h: string, escrever: boolean): Safe {
-  return html`<article class="card" draggable="${escrever}" data-id="${n.id}" data-open="negocio:${n.id}" tabindex="0"><span class="t">${n.titulo}</span><span class="sub">${n.cliente_nome}</span>
-    <span class="m"><span class="num">${valorNegocio(n)}</span><span class="${ABERTAS.includes(n.etapa) && n.previsao && n.previsao < h ? "late" : ""}">${n.previsao ? dataBR(n.previsao) : ""}</span></span>${n.responsavel_id ? html`<span class="sub">${nomeMembro(n.responsavel_id)}</span>` : ""}</article>`;
 }
 
 registrarVista({
   id: "negocios",
   nome: "Negócios e funil",
-  grupo: "Comercial",
   contagem: () => dados.negocios.filter((n) => ABERTAS.includes(n.etapa)).length,
   desenhar: vista,
 });
@@ -92,7 +85,26 @@ export function formNegocio(n: Inicial = { etapa: "lead" }, existente?: Negocio)
         const motivo = $("#motivoBox");
         if (motivo) motivo.hidden = etapaSel.value !== "perdido";
       });
-      $("[data-salvar]", L)?.addEventListener("click", () => salvarNegocio(f, reg, fechar, L));
+      $("[data-salvar]", L)?.addEventListener("click", async () => {
+        const titulo = fv(f, "titulo");
+        if (!titulo) return void toast("Dê um título ao negócio.");
+        if (!fv(f, "cliente_id")) return void toast("Escolha o cliente.");
+        const etapa = fv(f, "etapa") as NegocioEntrada["etapa"];
+        if (etapa === "perdido" && !fv(f, "motivo_perda")) return void toast("Informe o motivo da perda.");
+        const clienteId = await resolverCliente(f);
+        if (!clienteId) return;
+        const corpo: NegocioEntrada = {
+          titulo, cliente_id: clienteId, etapa, valor: numero(fv(f, "valor")), mensal: numero(fv(f, "mensal")),
+          previsao: fv(f, "previsao") || null, responsavel_id: fv(f, "responsavel_id") || null, origem: (fv(f, "origem") || null) as NegocioEntrada["origem"],
+          motivo_perda: (fv(f, "motivo_perda") || null) as NegocioEntrada["motivo_perda"], obs: fv(f, "obs") || null,
+        };
+        const salvo = await gravar({
+          recarregar: ["negocios", "clientes"], mensagem: "Negócio salvo", fechar,
+          operacao: () => (reg ? api.negocios.atualizar(reg.id, { ...corpo, versao: reg.versao }) : api.negocios.criar(corpo)),
+        });
+        // Ganhou agora e ainda não tem lançamentos: oferece lançar o faturamento.
+        if (salvo && salvo.etapa === "ganho" && reg?.etapa !== "ganho" && !salvo.faturado) oferecerFaturamento(salvo);
+      });
       $("[data-orc]", L)?.addEventListener("click", () => reg && abrirFormulario("orcamento", { cliente_id: reg.cliente_id, negocio_id: reg.id }));
       $("[data-proj]", L)?.addEventListener("click", () => reg && (projeto ? abrirFormulario("projeto", projeto) : abrirFormulario("projetoDoNegocio", reg.id)));
       $("[data-excluir]", L)?.addEventListener("click", () => {
@@ -100,47 +112,6 @@ export function formNegocio(n: Inicial = { etapa: "lead" }, existente?: Negocio)
       });
     },
   });
-}
-
-async function salvarNegocio(f: HTMLFormElement, reg: Negocio | undefined, fechar: () => void, L: HTMLElement): Promise<void> {
-  const titulo = fv(f, "titulo");
-  if (!titulo) return void toast("Dê um título ao negócio.");
-  if (!fv(f, "cliente_id")) return void toast("Escolha o cliente.");
-  const etapa = fv(f, "etapa") as NegocioEntrada["etapa"];
-  if (etapa === "perdido" && !fv(f, "motivo_perda")) return void toast("Informe o motivo da perda.");
-
-  const clienteId = await resolverCliente(f);
-  if (!clienteId) return;
-
-  const corpo: NegocioEntrada = {
-    titulo,
-    cliente_id: clienteId,
-    etapa,
-    valor: numero(fv(f, "valor")),
-    mensal: numero(fv(f, "mensal")),
-    previsao: fv(f, "previsao") || null,
-    responsavel_id: fv(f, "responsavel_id") || null,
-    origem: (fv(f, "origem") || null) as NegocioEntrada["origem"],
-    motivo_perda: (fv(f, "motivo_perda") || null) as NegocioEntrada["motivo_perda"],
-    obs: fv(f, "obs") || null,
-  };
-
-  const botao = L.querySelector("[data-salvar]") as HTMLButtonElement | null;
-  if (botao) botao.disabled = true;
-
-  const salvo = await tentar(() =>
-    reg ? api.negocios.atualizar(reg.id, { ...corpo, versao: reg.versao }) : api.negocios.criar(corpo),
-  );
-
-  if (botao) botao.disabled = false;
-  if (!salvo) return;
-
-  await recarregar("negocios", "clientes");
-  toast("Negócio salvo");
-  fechar();
-
-  // Ganhou agora e ainda não tem lançamentos: oferece lançar o faturamento.
-  if (salvo.etapa === "ganho" && reg?.etapa !== "ganho" && !salvo.faturado) oferecerFaturamento(salvo);
 }
 
 export async function moverEtapa(id: string, etapa: string): Promise<void> {

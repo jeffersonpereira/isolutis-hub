@@ -87,7 +87,6 @@ function cartao(t: Tarefa, h: string, escrever: boolean): Safe {
 registrarVista({
   id: "tarefas",
   nome: "Tarefas",
-  grupo: "Operação",
   contagem: () => dados.tarefas.filter((t) => t.coluna !== "concluido" && t.responsavel_id === eu.id).length,
   desenhar: vista,
 });

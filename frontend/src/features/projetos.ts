@@ -59,7 +59,6 @@ function vista(): Safe {
 registrarVista({
   id: "projetos",
   nome: "Projetos",
-  grupo: "Operação",
   contagem: () => dados.projetos.filter((p) => p.status !== "entregue").length,
   desenhar: vista,
 });

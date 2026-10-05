@@ -65,7 +65,7 @@ function vista(): Safe {
   </div>`;
 }
 
-registrarVista({ id: "faturamento", nome: "Faturamento", grupo: "Comercial", carregar, depende: ["faturamento", "negocios"], desenhar: vista });
+registrarVista({ id: "faturamento", nome: "Faturamento", carregar, depende: ["faturamento", "negocios"], desenhar: vista });
 
 function formLanc(l?: Lancamento): void {
   abrirGaveta({

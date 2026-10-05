@@ -22,8 +22,6 @@ export interface Vista {
   somenteAdmin?: boolean;
   /** Agrupa a vista num submenu recolhível do menu lateral (ex.: "Financeiro"). */
   grupo?: string;
-  /** Mantém a vista disponível para vínculos internos, mas fora da navegação principal. */
-  mostrarNoMenu?: boolean;
 }
 
 const vistas = new Map<string, Vista>();
@@ -32,8 +30,8 @@ const CHAVE_ABA = "hub.aba";
 
 /** Ordem do menu lateral (independe da ordem em que os módulos são importados). */
 const ORDEM_MENU = [
-  "painel", "negocios", "orcamentos", "faturamento", "produtos", "projetos", "tarefas",
-  "fin-plano", "fin-contas", "fin-parceiros", "fin-titulos", "fin-fluxo", "empresa", "equipe",
+  "painel", "clientes", "negocios", "orcamentos", "projetos", "tarefas", "faturamento", "despesas", "produtos",
+  "fin-plano", "fin-contas", "fin-parceiros", "fin-titulos", "fin-fluxo", "equipe",
 ];  // fmt: skip
 const posicao = (id: string): number => {
   const i = ORDEM_MENU.indexOf(id);
@@ -94,7 +92,7 @@ registrarAcao("alternarGrupo", (alvo) => {
 });
 
 export function renderMenu(): void {
-  const itens = [...vistas.values()].filter((v) => v.mostrarNoMenu !== false && (!v.somenteAdmin || eu.admin)).sort((a, b) => posicao(a.id) - posicao(b.id));
+  const itens = [...vistas.values()].filter((v) => !v.somenteAdmin || eu.admin).sort((a, b) => posicao(a.id) - posicao(b.id));
   const botao = (v: Vista, sub: boolean): Safe => {
     const c = v.contagem?.() ?? "";
     return html`<button class="${sub ? "item-sub" : ""}" data-go="${v.id}" aria-current="${atual === v.id}">${v.nome}<span class="count">${c}</span></button>`;
@@ -110,7 +108,7 @@ export function renderMenu(): void {
     desenhados.add(v.grupo);
     const filhos = itens.filter((x) => x.grupo === v.grupo);
     const aberto = gruposAbertos.has(v.grupo) || filhos.some((x) => x.id === atual);
-    blocos.push(html`<section class="nav-section"><button class="nav-grupo" data-act="alternarGrupo" data-valor="${v.grupo}" aria-expanded="${aberto}">${v.grupo}<span class="seta" aria-hidden="true">›</span></button><div class="nav-items${aberto ? "" : " fechado"}">${filhos.map((x) => html`<span class="nav-sub">${botao(x, true)}</span>`)}</div></section>`);
+    blocos.push(html`<button class="nav-grupo" data-act="alternarGrupo" data-valor="${v.grupo}" aria-expanded="${aberto}">${v.grupo}<span class="seta" aria-hidden="true">›</span></button>${filhos.map((x) => html`<span class="nav-sub${aberto ? "" : " fechado"}">${botao(x, true)}</span>`)}`);
   }
   obrigatorio("#nav").innerHTML = String(html`${blocos}`);
 }
@@ -154,7 +152,7 @@ export async function ir(id: string): Promise<void> {
 export function abaSalva(): string {
   try {
     const salva = localStorage.getItem(CHAVE_ABA);
-    if (salva && vistas.has(salva) && vistas.get(salva)?.mostrarNoMenu !== false) return salva;
+    if (salva && vistas.has(salva)) return salva;
   } catch {
     /* ignora */
   }

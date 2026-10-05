@@ -1,0 +1,16 @@
+[
+ {
+  "id": "soydeoliveira@gmail.com",
+  "dados": {
+   "nome": "Soraya Sá",
+   "admin": true
+  }
+ },
+ {
+  "id": "gileard@x.com.br",
+  "dados": {
+   "nome": "Gileade Teixeira",
+   "admin": false
+  }
+ }
+]
