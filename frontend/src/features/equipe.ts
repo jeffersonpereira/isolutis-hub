@@ -14,6 +14,7 @@ import { abrirGaveta } from "@/ui/gaveta";
 import { espaco } from "@/ui/formularios";
 import { excluir } from "@/ui/gravacao";
 import { toast } from "@/ui/toast";
+import { schema, regras } from "@/ui/validators";
 
 const pagina: { lista: Usuario[] | null; erro: string } = { lista: null, erro: "" };
 
@@ -77,10 +78,19 @@ function formUsuario(u?: Usuario): void {
         const nome = fv(f, "nome");
         const email = fv(f, "email").toLowerCase();
         const senha = fv(f, "senha");
-        if (!nome) return void toast("Informe o nome.");
-        if (novo && !email) return void toast("Informe o e-mail.");
-        if (novo && !senha) return void toast('Defina uma senha ou clique em "Gerar senha".');
-        if (senha && senha.length < 8) return void toast("A senha precisa ter pelo menos 8 caracteres.");
+
+        // Validar campos obrigatórios
+        const errosValidacao: Record<string, string> = {};
+        if (!nome) errosValidacao["nome"] = "Informe o nome.";
+        if (novo && !email) errosValidacao["email"] = "Informe o e-mail.";
+        if (novo && !senha) errosValidacao["senha"] = 'Defina uma senha ou clique em "Gerar senha".';
+        if (senha && senha.length < 8) errosValidacao["senha"] = "A senha precisa ter pelo menos 8 caracteres.";
+
+        if (Object.keys(errosValidacao).length > 0) {
+          Object.values(errosValidacao).forEach((msg) => toast(msg));
+          return;
+        }
+
         botao.disabled = true;
         const admin = souEu ? true : (f.elements.namedItem("admin") as HTMLInputElement).checked;
         const ok = await tentar(() =>
