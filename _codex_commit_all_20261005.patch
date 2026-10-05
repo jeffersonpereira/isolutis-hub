@@ -1,0 +1,545 @@
+diff --git a/backend/app/routers/despesas.py b/backend/app/routers/despesas.py
+--- a/backend/app/routers/despesas.py
++++ b/backend/app/routers/despesas.py
+@@ -1,76 +1,10 @@
+-from uuid import UUID
++"""Rotas legadas de despesas e investimentos desativadas.
+ 
+-from fastapi import APIRouter, Query, Response
++Esses movimentos são registrados em `titulo_financeiro`, classificados pela natureza
++da conta do plano. O módulo permanece com um roteador vazio para manter a composição
++da aplicação enquanto clientes antigos deixam de usar os endpoints legados.
++"""
+ 
+-from app.deps import Sessao
+-from app.schemas.despesa import (
+-    DespesaAtualizar,
+-    DespesaEntrada,
+-    DespesaLeitura,
+-    InvestimentoAtualizar,
+-    InvestimentoEntrada,
+-    InvestimentoLeitura,
+-    OpcoesDespesa,
+-    ResumoDespesas,
+-)
+-from app.services import despesas as svc
++from fastapi import APIRouter
+ 
+-router = APIRouter(tags=["Despesas e investimentos"])
+-Ano = Query(None, ge=2000, le=2100)
+-
+-
+-@router.get("/despesas", response_model=list[DespesaLeitura])
+-async def listar(sessao: Sessao, ano: int | None = Ano, mes: int | None = Query(None, ge=1, le=12)):
+-    return await svc.listar(sessao, ano, mes)
+-
+-
+-@router.get("/despesas/opcoes", response_model=OpcoesDespesa)
+-async def opcoes(sessao: Sessao):
+-    return await svc.opcoes(sessao)
+-
+-
+-@router.get("/despesas/resumo", response_model=ResumoDespesas)
+-async def resumo(sessao: Sessao, ano: int = Query(..., ge=2000, le=2100)):
+-    return await svc.resumo(sessao, ano)
+-
+-
+-@router.post("/despesas", response_model=list[DespesaLeitura], status_code=201)
+-async def criar(dados: DespesaEntrada, sessao: Sessao):
+-    return await svc.criar(sessao, dados)
+-
+-
+-@router.put("/despesas/{id_}", response_model=DespesaLeitura)
+-async def atualizar(id_: UUID, dados: DespesaAtualizar, sessao: Sessao):
+-    return await svc.atualizar(sessao, id_, dados)
+-
+-
+-@router.post("/despesas/{id_}/pagar", response_model=DespesaLeitura)
+-async def pagar(id_: UUID, sessao: Sessao):
+-    return await svc.pagar(sessao, id_)
+-
+-
+-@router.delete("/despesas/{id_}", status_code=204)
+-async def excluir(id_: UUID, sessao: Sessao) -> Response:
+-    await svc.excluir(sessao, id_)
+-    return Response(status_code=204)
+-
+-
+-@router.get("/investimentos", response_model=list[InvestimentoLeitura])
+-async def listar_investimentos(sessao: Sessao, ano: int | None = Ano):
+-    return await svc.listar_investimentos(sessao, ano)
+-
+-
+-@router.post("/investimentos", response_model=InvestimentoLeitura, status_code=201)
+-async def criar_investimento(dados: InvestimentoEntrada, sessao: Sessao):
+-    return await svc.criar_investimento(sessao, dados)
+-
+-
+-@router.put("/investimentos/{id_}", response_model=InvestimentoLeitura)
+-async def atualizar_investimento(id_: UUID, dados: InvestimentoAtualizar, sessao: Sessao):
+-    return await svc.atualizar_investimento(sessao, id_, dados)
+-
+-
+-@router.delete("/investimentos/{id_}", status_code=204)
+-async def excluir_investimento(id_: UUID, sessao: Sessao) -> Response:
+-    await svc.excluir_investimento(sessao, id_)
+-    return Response(status_code=204)
++router = APIRouter()
+
+diff --git a/frontend/src/api/endpoints.ts b/frontend/src/api/endpoints.ts
+--- a/frontend/src/api/endpoints.ts
++++ b/frontend/src/api/endpoints.ts
+@@ -6,7 +6,10 @@
+ const ano = (a: number) => ({ ano: a });
+ 
+ export const api = {
+-  empresas: { listar: () => http.get<Array<{ id: string; nome: string; papel: "admin" | "membro" }>>("/empresas") },
++  empresas: {
++    listar: () => http.get<Array<{ id: string; nome: string; papel: "admin" | "membro" }>>("/empresas"),
++    atualizar: (id: string, d: { nome: string }) => http.put<{ id: string; nome: string }>(`/empresas/${id}`, d),
++  },
+   auth: {
+     login: (email: string, senha: string) => http.post<S["TokenSaida"]>("/auth/login", { email, senha }),
+     eu: () => http.get<T.Usuario>("/auth/eu"),
+@@ -58,21 +61,6 @@
+     excluir: (id: string) => http.delete(`/faturamento/${id}`),
+     exportar: (a: number) => http.baixar("/faturamento/exportar", ano(a)),
+   },
+-  despesas: {
+-    listar: (a: number) => http.get<T.Despesa[]>("/despesas", ano(a)),
+-    opcoes: () => http.get<T.OpcoesDespesa>("/despesas/opcoes"),
+-    resumo: (a: number) => http.get<T.ResumoDespesas>("/despesas/resumo", ano(a)),
+-    criar: (d: T.DespesaEntrada) => http.post<T.Despesa[]>("/despesas", d),
+-    atualizar: (id: string, d: S["DespesaAtualizar"]) => http.put<T.Despesa>(`/despesas/${id}`, d),
+-    pagar: (id: string) => http.post<T.Despesa>(`/despesas/${id}/pagar`),
+-    excluir: (id: string) => http.delete(`/despesas/${id}`),
+-  },
+-  investimentos: {
+-    listar: (a: number) => http.get<T.Investimento[]>("/investimentos", ano(a)),
+-    criar: (d: T.InvestimentoEntrada) => http.post<T.Investimento>("/investimentos", d),
+-    atualizar: (id: string, d: T.InvestimentoEntrada & { versao: number }) => http.put<T.Investimento>(`/investimentos/${id}`, d),
+-    excluir: (id: string) => http.delete(`/investimentos/${id}`),
+-  },
+   projetos: {
+     listar: () => http.get<T.Projeto[]>("/projetos"),
+     modelo: (negocio_id: string) => http.get<T.ModeloProjeto>("/projetos/modelo", { negocio_id }),
+
+diff --git a/frontend/src/features/clientes.ts b/frontend/src/features/clientes.ts
+--- a/frontend/src/features/clientes.ts
++++ b/frontend/src/features/clientes.ts
+@@ -45,6 +45,7 @@
+ registrarVista({
+   id: "clientes",
+   nome: "Clientes",
++  mostrarNoMenu: false,
+   contagem: () => dados.clientes.length,
+   desenhar: vista,
+ });
+
+diff --git a/frontend/src/features/equipe.ts b/frontend/src/features/equipe.ts
+--- a/frontend/src/features/equipe.ts
++++ b/frontend/src/features/equipe.ts
+@@ -29,7 +29,7 @@
+ }
+ 
+ function vista(): Safe {
+-  const cabecalho = html`<div class="head"><div><h1>Equipe</h1><p>Quem pode entrar no Hub. Aqui você cadastra pessoas, define e troca senhas e escolhe quem é administrador.</p></div>
++  const cabecalho = html`<div class="head"><div><h1>Usuários do sistema</h1><p>Cadastre usuários, gerencie senhas e defina quem é administrador.</p></div>
+     <div class="tools"><button class="btn" data-act="recarregarEquipe">Atualizar</button><button class="btn primary" data-act="novoUsuario">Novo usuário</button></div></div>`;
+   if (pagina.erro) return html`${cabecalho}<div class="banner" style="background:var(--bad-bg);color:var(--bad)">${pagina.erro}</div>`;
+   if (!pagina.lista) return html`${cabecalho}<p class="sub">Carregando a equipe…</p>`;
+@@ -43,7 +43,7 @@
+   </tbody></table></div>`;
+ }
+ 
+-registrarVista({ id: "equipe", nome: "Equipe", somenteAdmin: true, carregar, depende: ["equipe"], desenhar: vista });
++registrarVista({ id: "equipe", nome: "Usuários do sistema", grupo: "Administração", somenteAdmin: true, carregar, depende: ["equipe"], desenhar: vista });
+ 
+ const SENHA_CARACTERES = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+ export function senhaAleatoria(tamanho = 12): string {
+
+diff --git a/frontend/src/features/faturamento.ts b/frontend/src/features/faturamento.ts
+--- a/frontend/src/features/faturamento.ts
++++ b/frontend/src/features/faturamento.ts
+@@ -65,7 +65,7 @@
+   </div>`;
+ }
+ 
+-registrarVista({ id: "faturamento", nome: "Faturamento", carregar, depende: ["faturamento", "negocios"], desenhar: vista });
++registrarVista({ id: "faturamento", nome: "Faturamento", grupo: "Comercial", carregar, depende: ["faturamento", "negocios"], desenhar: vista });
+ 
+ function formLanc(l?: Lancamento): void {
+   abrirGaveta({
+
+diff --git a/frontend/src/features/financeiro/parceiros.ts b/frontend/src/features/financeiro/parceiros.ts
+--- a/frontend/src/features/financeiro/parceiros.ts
++++ b/frontend/src/features/financeiro/parceiros.ts
+@@ -38,7 +38,7 @@
+   }`;
+ }
+ 
+-registrarVista({ id: "fin-parceiros", nome: "Parceiro de Negócio", grupo: GRUPO, somenteAdmin: true, carregar, depende: ["financeiro", "clientes"], desenhar: vista });
++registrarVista({ id: "fin-parceiros", nome: "Parceiros de negócio", grupo: GRUPO, somenteAdmin: true, carregar, depende: ["financeiro", "clientes"], desenhar: vista });
+ 
+ function formParceiro(p?: Parceiro): void {
+   abrirGaveta({
+
+diff --git a/frontend/src/features/financeiro/plano-contas.ts b/frontend/src/features/financeiro/plano-contas.ts
+--- a/frontend/src/features/financeiro/plano-contas.ts
++++ b/frontend/src/features/financeiro/plano-contas.ts
+@@ -12,10 +12,13 @@
+ import { confirmarExclusao, GRUPO } from "./comum";
+ 
+ /** Estado da tela: lista plana vinda do servidor (já ordenada por código), nó selecionado e nós recolhidos. */
+-const tela: { contas: PlanoConta[] | null; selecionada: string | null; recolhidas: Set<string> } = {
++const NATUREZAS = ["RECEITAS", "CUSTOS", "DESPESAS", "INVESTIMENTOS", "MOVIMENTAÇÕES FINANCEIRAS", "EMPRÉSTIMOS E FINANCIAMENTOS"] as const;
++
++const tela: { contas: PlanoConta[] | null; selecionada: string | null; recolhidas: Set<string>; busca: string } = {
+   contas: null,
+   selecionada: null,
+   recolhidas: new Set(),
++  busca: "",
+ };
+ 
+ async function carregar(): Promise<void> {
+@@ -23,17 +26,47 @@
+   if (tela.selecionada && !tela.contas.some((c) => c.id === tela.selecionada)) tela.selecionada = null;
+ }
+ 
+-const filhasDe = (pai: string | null): PlanoConta[] => (tela.contas ?? []).filter((c) => c.plano_pai_id === pai);
++function idsVisiveis(): Set<string> | null {
++  const termo = tela.busca.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase();
++  if (!termo || !tela.contas) return null;
++  const porId = new Map(tela.contas.map((c) => [c.id, c]));
++  const visiveis = new Set<string>();
++  const incluirDescendentes = (id: string): void => {
++    for (const filha of tela.contas!.filter((c) => c.plano_pai_id === id)) {
++      if (visiveis.has(filha.id)) continue;
++      visiveis.add(filha.id);
++      incluirDescendentes(filha.id);
++    }
++  };
++  for (const c of tela.contas) {
++    const texto = `${c.codigo} ${c.nome} ${c.natureza}`.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase();
++    if (!texto.includes(termo)) continue;
++    visiveis.add(c.id);
++    let pai = c.plano_pai_id;
++    while (pai) {
++      visiveis.add(pai);
++      pai = porId.get(pai)?.plano_pai_id ?? null;
++    }
++    incluirDescendentes(c.id);
++  }
++  return visiveis;
++}
++
++const filhasDe = (pai: string | null): PlanoConta[] => {
++  const visiveis = idsVisiveis();
++  return (tela.contas ?? []).filter((c) => c.plano_pai_id === pai && (!visiveis || visiveis.has(c.id)));
++};
+ const contaSelecionada = (): PlanoConta | undefined => tela.contas?.find((c) => c.id === tela.selecionada);
+ 
+ function no(c: PlanoConta): Safe {
+   const filhas = filhasDe(c.id);
+-  const aberto = !tela.recolhidas.has(c.id);
++  const aberto = !!tela.busca.trim() || !tela.recolhidas.has(c.id);
+   return html`<li role="treeitem" aria-expanded="${filhas.length ? aberto : ""}">
+     <div class="tree-row" tabindex="0" data-act="selecionarConta" data-id="${c.id}" aria-selected="${tela.selecionada === c.id}">
+       <button class="tree-caret${filhas.length ? "" : " vazio"}" type="button" data-act="alternarNo" data-id="${c.id}" aria-expanded="${aberto}" aria-label="${aberto ? "Recolher" : "Expandir"} ${c.nome}"><i>›</i></button>
+       <span class="tree-cod">${c.codigo}</span><span class="tree-nome${c.tipo_conta === "S" ? " sintetica" : ""}">${c.nome}</span>
+-      <span class="tree-pills"><span class="pill ${c.natureza === "R" ? "ok" : "bad"}">${c.natureza === "R" ? "Receita" : "Despesa"}</span><span class="pill">${c.tipo_conta === "S" ? "Sintética" : "Analítica"}</span></span>
++      <span class="tree-pills"><span class="pill">${c.natureza}</span><span class="pill">${c.tipo_conta === "S" ? "Sintética" : "Analítica"}</span></span>
++      <span style="display:flex;gap:5px;flex:none"><button class="btn" type="button" data-act="editarConta" data-id="${c.id}" aria-label="Editar ${c.nome}">Editar</button><button class="btn danger" type="button" data-act="excluirConta" data-id="${c.id}" aria-label="Excluir ${c.nome}">Excluir</button></span>
+     </div>
+     ${filhas.length && aberto ? html`<ul class="tree" role="group">${filhas.map(no)}</ul>` : ""}
+   </li>`;
+@@ -45,6 +78,7 @@
+   const podeFilha = !sel_ || (sel_.tipo_conta === "S" && sel_.nivel < 3);
+   return html`<div class="head"><div><h1>Plano de contas</h1><p>Até três níveis (1 · 1.01 · 1.01.001). Só contas analíticas recebem lançamentos.</p></div>
+     <div class="tools">
++      <label class="sub" for="buscaPlano">Pesquisar</label><input id="buscaPlano" type="search" data-busca-plano value="${tela.busca}" placeholder="Código, nome ou natureza" aria-label="Pesquisar contas por código, nome ou natureza">
+       <button class="btn primary" data-act="novaConta"${raw(podeFilha ? "" : " disabled")}>${sel_ ? "Nova conta filha" : "Nova conta"}</button>
+       <button class="btn" data-act="editarConta"${raw(sel_ ? "" : " disabled")}>Editar</button>
+       <button class="btn danger" data-act="excluirConta"${raw(sel_ ? "" : " disabled")}>Excluir</button>
+@@ -52,7 +86,7 @@
+   ${
+     tela.contas.length
+       ? html`<div class="panel"><ul class="tree" role="tree" aria-label="Plano de contas">${filhasDe(null).map(no)}</ul></div>
+-        <p class="sub" style="margin-top:10px">${sel_ ? html`Selecionada: <b>${sel_.codigo} ${sel_.nome}</b>. Editar e Excluir atuam nesta conta.` : "Clique em uma conta para editar ou excluir; sem seleção, “Nova conta” cria uma conta de primeiro nível."}</p>`
++        <p class="sub" style="margin-top:10px">${tela.busca.trim() && !filhasDe(null).length ? "Nenhuma conta corresponde à pesquisa." : sel_ ? html`Selecionada: <b>${sel_.codigo} ${sel_.nome}</b>.` : "Use os botões de cada conta para editar ou excluir; “Nova conta” cria uma conta de primeiro nível."}</p>`
+       : html`<div class="empty"><b>Plano de contas vazio</b>Comece pelas contas de primeiro nível, por exemplo 1 Receita e 2 Despesa, e vá abrindo os níveis.<br><button class="btn primary" data-act="novaConta">Criar a primeira conta</button></div>`
+   }`;
+ }
+@@ -66,7 +100,7 @@
+   const possiveisPais = todas.filter((c) => c.tipo_conta === "S" && c.nivel < 3 && !ids_bloqueados.has(c.id));
+   const paiAtual = editando ? base.plano_pai_id : (paiInicial?.id ?? null);
+   const temFilhas = !!base?.possui_filhas;
+-  const natureza = editando ? base.natureza : (paiInicial?.natureza ?? "R");
++  const natureza = editando ? base.natureza : (paiInicial?.natureza ?? "RECEITAS");
+ 
+   abrirGaveta({
+     titulo: editando ? `Conta ${base.codigo}` : paiInicial ? `Nova conta em ${paiInicial.codigo}` : "Nova conta",
+@@ -75,7 +109,7 @@
+       <div class="field"><label for="f-codigo">Código</label><div style="display:flex;gap:6px">${inp("codigo", base?.codigo, `placeholder="Ex.: 1.01.001"${temFilhas ? " readonly" : ""}`)}${editando ? "" : html`<button class="btn" type="button" id="sugerir" title="Sugere o próximo código livre">Sugerir</button>`}</div></div>
+       ${campo("Nome", inp("nome", base?.nome, 'maxlength="150"'))}
+       ${campo("Tipo", sel("tipo_conta", [["A", "Analítica (recebe lançamentos)"], ["S", "Sintética (agrupa contas)"]], base?.tipo_conta ?? "A"))}
+-      ${campo("Natureza", sel("natureza", [["R", "Receita"], ["D", "Despesa"]], natureza))}
++      ${campo("Natureza", sel("natureza", NATUREZAS.map((n) => [n, n] as const), natureza))}
+     </div>
+     <p class="sub" id="dicaConta" style="margin:0"></p>`,
+     rodape: html`<button class="btn primary" data-salvar>Salvar</button>${espaco}`,
+@@ -114,7 +148,7 @@
+         if (!fv(f, "nome")) return void avisar("Informe o nome da conta.");
+         const corpo: PlanoContaEntrada = {
+           plano_pai_id: pai.value || null, codigo: fv(f, "codigo"), nome: fv(f, "nome"),
+-          tipo_conta: tipo.value as "A" | "S", natureza: nat.value as "R" | "D",
++          tipo_conta: tipo.value as "A" | "S", natureza: nat.value as PlanoContaEntrada["natureza"],
+         };
+         const salva = await gravar({
+           recarregar: ["financeiro"], mensagem: "Conta salva", fechar,
+@@ -133,6 +167,18 @@
+   tela.selecionada = tela.selecionada === alvo.dataset.id ? null : (alvo.dataset.id ?? null);
+   render();
+ });
++
++$("#view")?.addEventListener("input", (evento) => {
++  const input = evento.target as HTMLInputElement;
++  if (!input.matches("[data-busca-plano]")) return;
++  tela.busca = input.value;
++  const posicao = input.selectionStart ?? input.value.length;
++  render();
++  const novo = $("[data-busca-plano]") as HTMLInputElement | null;
++  novo?.focus();
++  novo?.setSelectionRange(posicao, posicao);
++});
++
+ registrarAcao("alternarNo", (alvo) => {
+   const id = alvo.dataset.id ?? "";
+   if (tela.recolhidas.has(id)) tela.recolhidas.delete(id);
+@@ -143,12 +189,12 @@
+   const s = contaSelecionada();
+   formConta("nova", undefined, s && s.tipo_conta === "S" && s.nivel < 3 ? s : undefined);
+ });
+-registrarAcao("editarConta", () => {
+-  const s = contaSelecionada();
++registrarAcao("editarConta", (alvo) => {
++  const s = (tela.contas ?? []).find((c) => c.id === alvo.dataset.id) ?? contaSelecionada();
+   if (s) formConta("editar", s);
+ });
+-registrarAcao("excluirConta", () => {
+-  const s = contaSelecionada();
++registrarAcao("excluirConta", (alvo) => {
++  const s = (tela.contas ?? []).find((c) => c.id === alvo.dataset.id) ?? contaSelecionada();
+   if (!s) return;
+   confirmarExclusao({
+     titulo: "Excluir conta",
+
+diff --git a/frontend/src/features/financeiro/titulos.ts b/frontend/src/features/financeiro/titulos.ts
+--- a/frontend/src/features/financeiro/titulos.ts
++++ b/frontend/src/features/financeiro/titulos.ts
+@@ -16,6 +16,8 @@
+ 
+ const STATUS: Record<string, readonly [string, string]> = { A: ["Aberto", "info"], Q: ["Quitado", "ok"], C: ["Cancelado", ""] };
+ const TIPO: Record<string, string> = { P: "A pagar", R: "A receber" };
++const NATUREZAS_RECEBER = ["RECEITAS", "MOVIMENTAÇÕES FINANCEIRAS", "EMPRÉSTIMOS E FINANCIAMENTOS"];
++const NATUREZAS_PAGAR = ["CUSTOS", "DESPESAS", "INVESTIMENTOS", "MOVIMENTAÇÕES FINANCEIRAS", "EMPRÉSTIMOS E FINANCIAMENTOS"];
+ 
+ const tela: { titulos: Titulo[] | null } = { titulos: null };
+ 
+@@ -60,17 +62,21 @@
+   const [plano, contas, parceiros]: [PlanoConta[], ContaBancaria[], Parceiro[]] = apoio;
+   const analiticas = plano.filter((c) => c.tipo_conta === "A");
+   const tipoInicial = t?.tipo_conta ?? "R";
+-  /** RN04: contas a pagar mostram só despesas; a receber, só receitas. */
+-  const contasDoTipo = (tipo: string): PlanoConta[] => analiticas.filter((c) => c.natureza === (tipo === "P" ? "D" : "R"));
+-  const opcoesPlano = (tipo: string, atual?: string): Safe =>
+-    html`<option value="">Selecione…</option>${contasDoTipo(tipo).map((c) => html`<option value="${c.id}"${raw(c.id === atual ? " selected" : "")}>${c.codigo} ${c.nome}</option>`)}`;
++  const contasDoTitulo = (natureza: string): PlanoConta[] => analiticas.filter((c) => c.natureza === natureza);
++  const naturezasDoTipo = (tipo: string): string[] => tipo === "P" ? NATUREZAS_PAGAR : NATUREZAS_RECEBER;
++  const naturezaAtual = t ? analiticas.find((c) => c.id === t.plano_conta_id)?.natureza ?? "" : "";
++  const opcoesNatureza = (tipo: string, atual = ""): Safe =>
++    html`<option value="">Selecione a natureza…</option>${naturezasDoTipo(tipo).map((n) => html`<option value="${n}"${raw(n === atual ? " selected" : "")}>${n}</option>`)}`;
++  const opcoesPlano = (natureza: string, atual?: string): Safe =>
++    html`<option value="">Selecione uma conta…</option>${contasDoTitulo(natureza).map((c) => html`<option value="${c.id}"${raw(c.id === atual ? " selected" : "")}>${c.codigo} ${c.nome}</option>`)}`;
+ 
+   abrirGaveta({
+     titulo: t ? `Título · ${t.parceiro_nome}` : "Novo título financeiro",
+     corpo: html`<div class="fields">
+       ${campo("Tipo", sel("tipo_conta", [["R", "A receber (receita)"], ["P", "A pagar (despesa)"]], tipoInicial))}
++      <div class="field"><label for="f-natureza">Natureza da operação</label><select name="natureza" id="f-natureza">${opcoesNatureza(tipoInicial, naturezaAtual)}</select></div>
+       ${campo("Situação", sel("status", [["A", "Aberto"], ["Q", "Quitado"], ["C", "Cancelado"]], t?.status ?? "A"))}
+-      <div class="field full"><label for="f-plano_conta_id">Conta do plano de contas</label><select name="plano_conta_id" id="f-plano_conta_id">${opcoesPlano(tipoInicial, t?.plano_conta_id)}</select><span class="sub" id="dicaPlano"></span></div>
++      <div class="field full"><label for="f-plano_conta_id">Conta do plano de contas</label><select name="plano_conta_id" id="f-plano_conta_id">${opcoesPlano(naturezaAtual, t?.plano_conta_id)}</select><span class="sub" id="dicaPlano"></span></div>
+       ${campo("Conta bancária", sel("conta_bancaria_id", [["", "Selecione…"], ...contas.map((c) => [c.id, `${c.nome} (${c.instituicao_codigo})`] as const)], t?.conta_bancaria_id ?? ""))}
+       ${campo("Parceiro de negócio", sel("parceiro_id", [["", "Selecione…"], ...parceiros.map((p) => [p.id, `${p.nome} · ${formatarDocumento(p.cpf_cnpj)}`] as const)], t?.parceiro_id ?? ""))}
+       ${campo("Data de emissão", inp("data_emissao", t?.data_emissao, 'type="date"'))}${campo("Data de vencimento", inp("data_vencimento", t?.data_vencimento ?? hoje(), 'type="date"'))}
+@@ -84,14 +90,28 @@
+     rodape: html`<button class="btn primary" data-salvar>Salvar</button>${espaco}`,
+     montar: (f, fechar, L) => {
+       const tipo = f.elements.namedItem("tipo_conta") as HTMLSelectElement;
++      const natureza = f.elements.namedItem("natureza") as HTMLSelectElement;
+       const planoSel = f.elements.namedItem("plano_conta_id") as HTMLSelectElement;
+       const status = f.elements.namedItem("status") as HTMLSelectElement;
+       const dica = $("#dicaPlano", L)!;
+       const mostrarDica = (): void => {
+-        dica.textContent = contasDoTipo(tipo.value).length ? `Somente contas analíticas de ${tipo.value === "P" ? "despesa" : "receita"}.` : `Não há conta analítica de ${tipo.value === "P" ? "despesa" : "receita"} no plano de contas. Cadastre uma antes.`;
++        if (!natureza.value) {
++          dica.textContent = "Selecione a natureza da operação para carregar as contas correspondentes.";
++          return;
++        }
++        dica.textContent = contasDoTitulo(natureza.value).length
++          ? `Somente contas analíticas de natureza ${natureza.value}.`
++          : `Não há contas analíticas de natureza ${natureza.value} no plano de contas.`;
+       };
+       tipo.addEventListener("change", () => {
+-        planoSel.innerHTML = String(opcoesPlano(tipo.value));
++        const atual = naturezasDoTipo(tipo.value).includes(natureza.value) ? natureza.value : "";
++        natureza.innerHTML = String(opcoesNatureza(tipo.value, atual));
++        natureza.value = atual;
++        planoSel.innerHTML = String(opcoesPlano(atual));
++        mostrarDica();
++      });
++      natureza.addEventListener("change", () => {
++        planoSel.innerHTML = String(opcoesPlano(natureza.value));
+         mostrarDica();
+       });
+       mostrarDica();
+@@ -105,7 +125,10 @@
+       atualizar();
+ 
+       $("[data-salvar]", L)?.addEventListener("click", async () => {
++        if (!fv(f, "natureza")) return void avisar("Selecione a natureza da operação.");
+         if (!fv(f, "plano_conta_id")) return void avisar("Escolha a conta do plano de contas.");
++        const contaEscolhida = analiticas.find((c) => c.id === fv(f, "plano_conta_id"));
++        if (!contaEscolhida || contaEscolhida.natureza !== fv(f, "natureza")) return void avisar("Escolha uma conta com a mesma natureza da operação.");
+         if (!fv(f, "conta_bancaria_id")) return void avisar("Escolha a conta bancária.");
+         if (!fv(f, "parceiro_id")) return void avisar("Escolha o parceiro de negócio.");
+         if (!numero(fv(f, "valor_titulo"))) return void avisar("Informe o valor do título.");
+
+diff --git a/frontend/src/features/negocios.ts b/frontend/src/features/negocios.ts
+--- a/frontend/src/features/negocios.ts
++++ b/frontend/src/features/negocios.ts
+@@ -53,6 +53,7 @@
+ registrarVista({
+   id: "negocios",
+   nome: "Negócios e funil",
++  grupo: "Comercial",
+   contagem: () => dados.negocios.filter((n) => ABERTAS.includes(n.etapa)).length,
+   desenhar: vista,
+ });
+
+diff --git a/frontend/src/features/orcamentos.ts b/frontend/src/features/orcamentos.ts
+--- a/frontend/src/features/orcamentos.ts
++++ b/frontend/src/features/orcamentos.ts
+@@ -45,7 +45,7 @@
+   }`;
+ }
+ 
+-registrarVista({ id: "orcamentos", nome: "Orçamentos", contagem: () => dados.orcamentos.length, desenhar: vista });
++registrarVista({ id: "orcamentos", nome: "Orçamentos", grupo: "Comercial", contagem: () => dados.orcamentos.length, desenhar: vista });
+ 
+ const itemVazio = (): ItemDigitado & { id?: string; produto_id: string } => ({ produto_id: "", descricao: "", qtd: 1, preco_unitario: 0, mensal: false });
+ type ItemTela = ReturnType<typeof itemVazio>;
+
+diff --git a/frontend/src/features/produtos.ts b/frontend/src/features/produtos.ts
+--- a/frontend/src/features/produtos.ts
++++ b/frontend/src/features/produtos.ts
+@@ -39,7 +39,7 @@
+   }`;
+ }
+ 
+-registrarVista({ id: "produtos", nome: "Produtos", contagem: () => dados.produtos.length, desenhar: vista });
++registrarVista({ id: "produtos", nome: "Produtos", grupo: "Cadastros", contagem: () => dados.produtos.length, desenhar: vista });
+ 
+ function formProduto(p?: Produto): void {
+   abrirGaveta({
+
+diff --git a/frontend/src/features/projetos.ts b/frontend/src/features/projetos.ts
+--- a/frontend/src/features/projetos.ts
++++ b/frontend/src/features/projetos.ts
+@@ -59,6 +59,7 @@
+ registrarVista({
+   id: "projetos",
+   nome: "Projetos",
++  grupo: "Operação",
+   contagem: () => dados.projetos.filter((p) => p.status !== "entregue").length,
+   desenhar: vista,
+ });
+
+diff --git a/frontend/src/features/tarefas.ts b/frontend/src/features/tarefas.ts
+--- a/frontend/src/features/tarefas.ts
++++ b/frontend/src/features/tarefas.ts
+@@ -87,6 +87,7 @@
+ registrarVista({
+   id: "tarefas",
+   nome: "Tarefas",
++  grupo: "Operação",
+   contagem: () => dados.tarefas.filter((t) => t.coluna !== "concluido" && t.responsavel_id === eu.id).length,
+   desenhar: vista,
+ });
+
+diff --git a/frontend/src/main.ts b/frontend/src/main.ts
+--- a/frontend/src/main.ts
++++ b/frontend/src/main.ts
+@@ -21,9 +21,9 @@
+ import "@/features/projetos";
+ import "@/features/tarefas";
+ import "@/features/faturamento";
+-import "@/features/despesas";
+ import "@/features/produtos";
+ import "@/features/equipe";
++import "@/features/empresa";
+ import "@/features/financeiro";
+ import "@/features/periodo";
+ 
+
+diff --git a/frontend/src/state/nucleo.ts b/frontend/src/state/nucleo.ts
+--- a/frontend/src/state/nucleo.ts
++++ b/frontend/src/state/nucleo.ts
+@@ -22,6 +22,8 @@
+   somenteAdmin?: boolean;
+   /** Agrupa a vista num submenu recolhível do menu lateral (ex.: "Financeiro"). */
+   grupo?: string;
++  /** Mantém a vista disponível para vínculos internos, mas fora da navegação principal. */
++  mostrarNoMenu?: boolean;
+ }
+ 
+ const vistas = new Map<string, Vista>();
+@@ -30,8 +32,8 @@
+ 
+ /** Ordem do menu lateral (independe da ordem em que os módulos são importados). */
+ const ORDEM_MENU = [
+-  "painel", "clientes", "negocios", "orcamentos", "projetos", "tarefas", "faturamento", "despesas", "produtos",
+-  "fin-plano", "fin-contas", "fin-parceiros", "fin-titulos", "fin-fluxo", "equipe",
++  "painel", "negocios", "orcamentos", "faturamento", "produtos", "projetos", "tarefas",
++  "fin-plano", "fin-contas", "fin-parceiros", "fin-titulos", "fin-fluxo", "empresa", "equipe",
+ ];  // fmt: skip
+ const posicao = (id: string): number => {
+   const i = ORDEM_MENU.indexOf(id);
+@@ -92,7 +94,7 @@
+ });
+ 
+ export function renderMenu(): void {
+-  const itens = [...vistas.values()].filter((v) => !v.somenteAdmin || eu.admin).sort((a, b) => posicao(a.id) - posicao(b.id));
++  const itens = [...vistas.values()].filter((v) => v.mostrarNoMenu !== false && (!v.somenteAdmin || eu.admin)).sort((a, b) => posicao(a.id) - posicao(b.id));
+   const botao = (v: Vista, sub: boolean): Safe => {
+     const c = v.contagem?.() ?? "";
+     return html`<button class="${sub ? "item-sub" : ""}" data-go="${v.id}" aria-current="${atual === v.id}">${v.nome}<span class="count">${c}</span></button>`;
+@@ -108,7 +110,7 @@
+     desenhados.add(v.grupo);
+     const filhos = itens.filter((x) => x.grupo === v.grupo);
+     const aberto = gruposAbertos.has(v.grupo) || filhos.some((x) => x.id === atual);
+-    blocos.push(html`<button class="nav-grupo" data-act="alternarGrupo" data-valor="${v.grupo}" aria-expanded="${aberto}">${v.grupo}<span class="seta" aria-hidden="true">›</span></button>${filhos.map((x) => html`<span class="nav-sub${aberto ? "" : " fechado"}">${botao(x, true)}</span>`)}`);
++    blocos.push(html`<section class="nav-section"><button class="nav-grupo" data-act="alternarGrupo" data-valor="${v.grupo}" aria-expanded="${aberto}">${v.grupo}<span class="seta" aria-hidden="true">›</span></button><div class="nav-items${aberto ? "" : " fechado"}">${filhos.map((x) => html`<span class="nav-sub">${botao(x, true)}</span>`)}</div></section>`);
+   }
+   obrigatorio("#nav").innerHTML = String(html`${blocos}`);
+ }
+@@ -152,7 +154,7 @@
+ export function abaSalva(): string {
+   try {
+     const salva = localStorage.getItem(CHAVE_ABA);
+-    if (salva && vistas.has(salva)) return salva;
++    if (salva && vistas.has(salva) && vistas.get(salva)?.mostrarNoMenu !== false) return salva;
+   } catch {
+     /* ignora */
+   }

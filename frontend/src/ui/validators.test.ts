@@ -1,84 +1,104 @@
-/** Testes para sistema de validação. */
-
+import { describe, it, expect } from "vitest";
 import { campo, regras, schema } from "./validators";
 
-// Teste simples de regras
-console.log("🧪 Testando validators...");
+describe("Validadores", () => {
+  describe("obrigatorio", () => {
+    it("deve rejeitar string vazia", () => {
+      const resultado = regras.obrigatorio("Campo")("");
+      expect(resultado).not.toBeNull();
+    });
 
-// Teste: obrigatorio
-let resultado = regras.obrigatorio("Campo")("");
-console.assert(resultado !== null, "❌ obrigatorio não detectou string vazia");
-resultado = regras.obrigatorio("Campo")("valor");
-console.assert(resultado === null, "❌ obrigatorio rejeitou valor válido");
-console.log("✅ obrigatorio");
+    it("deve aceitar valor válido", () => {
+      const resultado = regras.obrigatorio("Campo")("valor");
+      expect(resultado).toBeNull();
+    });
+  });
 
-// Teste: email
-resultado = regras.email()("invalido");
-console.assert(resultado !== null, "❌ email não detectou email inválido");
-resultado = regras.email()("valid@example.com");
-console.assert(resultado === null, "❌ email rejeitou email válido");
-console.log("✅ email");
+  describe("email", () => {
+    it("deve rejeitar email inválido", () => {
+      const resultado = regras.email()("invalido");
+      expect(resultado).not.toBeNull();
+    });
 
-// Teste: minLength
-resultado = regras.minLength(3, "Campo")("ab");
-console.assert(resultado !== null, "❌ minLength não detectou texto curto");
-resultado = regras.minLength(3, "Campo")("abc");
-console.assert(resultado === null, "❌ minLength rejeitou texto válido");
-console.log("✅ minLength");
+    it("deve aceitar email válido", () => {
+      const resultado = regras.email()("valid@example.com");
+      expect(resultado).toBeNull();
+    });
 
-// Teste: maxLength
-resultado = regras.maxLength(5, "Campo")("abcdef");
-console.assert(resultado !== null, "❌ maxLength não detectou texto longo");
-resultado = regras.maxLength(5, "Campo")("abcd");
-console.assert(resultado === null, "❌ maxLength rejeitou texto válido");
-console.log("✅ maxLength");
+    it("deve rejeitar email sem domínio completo", () => {
+      const resultado = regras.email()("test@test");
+      expect(resultado).not.toBeNull();
+    });
+  });
 
-// Teste: numero
-resultado = regras.numero()("abc");
-console.assert(resultado !== null, "❌ numero não detectou não-número");
-resultado = regras.numero()("123");
-console.assert(resultado === null, "❌ numero rejeitou número válido");
-console.log("✅ numero");
+  describe("minLength", () => {
+    it("deve rejeitar texto curto", () => {
+      const resultado = regras.minLength(3, "Campo")("ab");
+      expect(resultado).not.toBeNull();
+    });
 
-// Teste: schema com múltiplos campos
-interface Formulario {
-  nome: string;
-  email: string;
-}
+    it("deve aceitar texto do tamanho correto", () => {
+      const resultado = regras.minLength(3, "Campo")("abc");
+      expect(resultado).toBeNull();
+    });
+  });
 
-const testSchema = schema<Formulario>({
-  nome: campo("nome", [
-    regras.obrigatorio("Nome"),
-    regras.minLength(3, "Nome"),
-  ]),
-  email: campo("email", [
-    regras.obrigatorio("Email"),
-    regras.email(),
-  ]),
+  describe("maxLength", () => {
+    it("deve rejeitar texto longo", () => {
+      const resultado = regras.maxLength(5, "Campo")("abcdef");
+      expect(resultado).not.toBeNull();
+    });
+
+    it("deve aceitar texto dentro do limite", () => {
+      const resultado = regras.maxLength(5, "Campo")("abcd");
+      expect(resultado).toBeNull();
+    });
+  });
+
+  describe("numero", () => {
+    it("deve rejeitar não-número", () => {
+      const resultado = regras.numero()("abc");
+      expect(resultado).not.toBeNull();
+    });
+
+    it("deve aceitar número válido", () => {
+      const resultado = regras.numero()("123");
+      expect(resultado).toBeNull();
+    });
+
+    it("deve rejeitar NaN ou Infinity", () => {
+      expect(regras.numero()("NaN")).not.toBeNull();
+      expect(regras.numero()("Infinity")).not.toBeNull();
+    });
+  });
+
+  describe("schema", () => {
+    interface Formulario {
+      nome: string;
+      email: string;
+    }
+
+    const testSchema = schema<Formulario>({
+      nome: campo("nome", [regras.obrigatorio("Nome")]),
+      email: campo("email", [regras.email()]),
+    });
+
+    it("deve validar múltiplos campos", () => {
+      const erros = testSchema({
+        nome: "João",
+        email: "joao@example.com",
+      });
+      expect(Object.keys(erros).length).toBe(0);
+    });
+
+    it("deve reportar múltiplos erros", () => {
+      const erros = testSchema({
+        nome: "",
+        email: "invalido",
+      });
+      expect(Object.keys(erros).length).toBeGreaterThan(0);
+      expect(erros.nome).toBeDefined();
+      expect(erros.email).toBeDefined();
+    });
+  });
 });
-
-// Caso sucesso
-let r = testSchema.parse({ nome: "João Silva", email: "joao@example.com" });
-console.assert(r.sucesso === true, "❌ schema rejeitou dados válidos");
-if (r.sucesso) {
-  console.assert(r.dados.nome === "João Silva", "❌ schema perdeu dados");
-  console.log("✅ schema: dados válidos");
-}
-
-// Caso falha: nome faltando
-r = testSchema.parse({ nome: "", email: "joao@example.com" });
-console.assert(r.sucesso === false, "❌ schema aceitou nome vazio");
-if (!r.sucesso) {
-  console.assert("nome" in r.erros, "❌ schema não reportou erro em nome");
-  console.log("✅ schema: detecciona nome vazio");
-}
-
-// Caso falha: email inválido
-r = testSchema.parse({ nome: "João", email: "invalido" });
-console.assert(r.sucesso === false, "❌ schema aceitou email inválido");
-if (!r.sucesso) {
-  console.assert("email" in r.erros, "❌ schema não reportou erro em email");
-  console.log("✅ schema: detecciona email inválido");
-}
-
-console.log("✅ Todos os testes passaram!");
