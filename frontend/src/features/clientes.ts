@@ -14,6 +14,8 @@ import { abrirGaveta } from "@/ui/gaveta";
 import { linhaAutoria } from "@/ui/autoria";
 import { botaoExcluir, botaoSalvar, espaco } from "@/ui/formularios";
 import { excluir, gravar } from "@/ui/gravacao";
+import { melhorarFormulario } from "@/ui/acessibilidade";
+import { toast } from "@/ui/toast";
 import { camposDoParceiro, ligarCamposDoParceiro, lerCamposDoParceiro } from "./parceiros/campos";
 import { botaoNovo } from "./comum";
 import { formNegocio, valorNegocio } from "./negocios";
@@ -59,22 +61,55 @@ export function formCliente(c?: Cliente): void {
       ${c ? html`<div class="related" id="relacionados">${relacionados(c)}</div>` : ""}`,
     rodape: html`${botaoSalvar()}${c ? botaoWa(c, "Conversar no WhatsApp") : ""}${c && podeEscrever() ? html`<button class="btn" data-novo-negocio>Novo negócio</button>` : ""}${espaco}${botaoExcluir(!!c)}`,
     montar: (f, fechar, L) => {
+      // Melhorar acessibilidade
+      melhorarFormulario(f);
+
       ligarCamposDoParceiro(f, c ?? {});
       if (c) void preencherFaturamento(c.id);
-      $("[data-salvar]", L)?.addEventListener("click", async () => {
+
+      // Salvar com validação e loading visual
+      $("[data-salvar]", L)?.addEventListener("click", async (e) => {
+        const botao = e.target as HTMLButtonElement;
+
+        // Validar
         const lido = lerCamposDoParceiro(f, "cliente");
-        if (!lido) return;
-        const corpo = Object.fromEntries(Object.entries(lido).filter(([k]) => k !== "tipo_pessoa" && k !== "papeis")) as Parameters<typeof api.clientes.criar>[0];
-        await gravar({
-          recarregar: ["clientes"],
-          mensagem: "Cliente salvo",
-          fechar,
-          operacao: () => (novo ? api.clientes.criar(corpo) : api.clientes.atualizar(c.id, { ...corpo, versao: c.versao })),
-        });
+        if (!lido) {
+          toast("Corrija os dados do cliente antes de salvar.");
+          return;
+        }
+
+        // Loading visual
+        botao.disabled = true;
+        botao.classList.add("loading");
+        const textoOriginal = botao.textContent;
+        botao.innerHTML = '<span class="spinner"></span> Salvando…';
+
+        try {
+          const corpo = Object.fromEntries(
+            Object.entries(lido).filter(([k]) => k !== "tipo_pessoa" && k !== "papeis")
+          ) as Parameters<typeof api.clientes.criar>[0];
+
+          await gravar({
+            recarregar: ["clientes"],
+            mensagem: "Cliente salvo",
+            fechar,
+            operacao: () =>
+              novo ? api.clientes.criar(corpo) : api.clientes.atualizar(c.id, { ...corpo, versao: c.versao }),
+          });
+        } catch {
+          // Erro já foi tratado em gravar/tentar
+          botao.disabled = false;
+          botao.classList.remove("loading");
+          botao.innerHTML = textoOriginal || "Salvar";
+        }
       });
+
+      // Excluir
       $("[data-excluir]", L)?.addEventListener("click", () => {
         if (c) void excluir({ recarregar: ["clientes"], mensagem: "Cliente excluído", fechar, operacao: () => api.clientes.excluir(c.id) });
       });
+
+      // Novo negócio
       $("[data-novo-negocio]", L)?.addEventListener("click", () => {
         if (c) formNegocio({ cliente_id: c.id, etapa: "lead" });
       });

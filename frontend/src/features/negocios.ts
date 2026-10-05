@@ -17,6 +17,7 @@ import { abrirGaveta } from "@/ui/gaveta";
 import { linhaAutoria } from "@/ui/autoria";
 import { botaoExcluir, botaoSalvar, espaco, ligarNovoCliente, opcoesEquipe, resolverCliente, seletorCliente } from "@/ui/formularios";
 import { excluir, gravar } from "@/ui/gravacao";
+import { melhorarFormulario } from "@/ui/acessibilidade";
 import { toast } from "@/ui/toast";
 import { botaoNovo } from "./comum";
 import { abrirFormulario, registrarFormulario } from "./ponte";
@@ -79,32 +80,85 @@ export function formNegocio(n: Inicial = { etapa: "lead" }, existente?: Negocio)
       ${orcs.length ? html`<div class="related"><h3>Orçamentos deste negócio</h3>${orcs.map((o) => html`<div class="li" data-open="orcamento:${o.id}"><span class="t">Nº ${o.numero}</span><span class="sub">${ORC_STATUS[o.status_exibido]?.[0]} · ${brl(o.total_projeto)}</span></div>`)}</div>` : ""}`,
     rodape: html`${botaoSalvar()}${reg && cliente ? botaoWa(cliente, "WhatsApp do cliente") : ""}${reg && podeEscrever() ? html`<button class="btn" data-orc>Gerar orçamento</button>` : ""}${reg && reg.etapa === "ganho" ? html`<button class="btn" data-proj>${projeto ? "Ver projeto" : "Abrir projeto"}</button>` : ""}${espaco}${botaoExcluir(!!reg)}`,
     montar: (f, fechar, L) => {
+      // Melhorar acessibilidade
+      melhorarFormulario(f);
+
       ligarNovoCliente(f);
       const etapaSel = f.elements.namedItem("etapa") as HTMLSelectElement;
       etapaSel.addEventListener("change", () => {
         const motivo = $("#motivoBox");
         if (motivo) motivo.hidden = etapaSel.value !== "perdido";
       });
-      $("[data-salvar]", L)?.addEventListener("click", async () => {
+
+      // Salvar com validação e loading visual
+      $("[data-salvar]", L)?.addEventListener("click", async (e) => {
+        const botao = e.target as HTMLButtonElement;
+
+        // Validar
         const titulo = fv(f, "titulo");
-        if (!titulo) return void toast("Dê um título ao negócio.");
-        if (!fv(f, "cliente_id")) return void toast("Escolha o cliente.");
+        if (!titulo) {
+          toast("Dê um título ao negócio.");
+          return;
+        }
+        if (!fv(f, "cliente_id")) {
+          toast("Escolha o cliente.");
+          return;
+        }
         const etapa = fv(f, "etapa") as NegocioEntrada["etapa"];
-        if (etapa === "perdido" && !fv(f, "motivo_perda")) return void toast("Informe o motivo da perda.");
-        const clienteId = await resolverCliente(f);
-        if (!clienteId) return;
-        const corpo: NegocioEntrada = {
-          titulo, cliente_id: clienteId, etapa, valor: numero(fv(f, "valor")), mensal: numero(fv(f, "mensal")),
-          previsao: fv(f, "previsao") || null, responsavel_id: fv(f, "responsavel_id") || null, origem: (fv(f, "origem") || null) as NegocioEntrada["origem"],
-          motivo_perda: (fv(f, "motivo_perda") || null) as NegocioEntrada["motivo_perda"], obs: fv(f, "obs") || null,
-        };
-        const salvo = await gravar({
-          recarregar: ["negocios", "clientes"], mensagem: "Negócio salvo", fechar,
-          operacao: () => (reg ? api.negocios.atualizar(reg.id, { ...corpo, versao: reg.versao }) : api.negocios.criar(corpo)),
-        });
-        // Ganhou agora e ainda não tem lançamentos: oferece lançar o faturamento.
-        if (salvo && salvo.etapa === "ganho" && reg?.etapa !== "ganho" && !salvo.faturado) oferecerFaturamento(salvo);
+        if (etapa === "perdido" && !fv(f, "motivo_perda")) {
+          toast("Informe o motivo da perda.");
+          return;
+        }
+
+        // Loading visual
+        botao.disabled = true;
+        botao.classList.add("loading");
+        const textoOriginal = botao.textContent;
+        botao.innerHTML = '<span class="spinner"></span> Salvando…';
+
+        try {
+          const clienteId = await resolverCliente(f);
+          if (!clienteId) {
+            botao.disabled = false;
+            botao.classList.remove("loading");
+            botao.innerHTML = textoOriginal || "Salvar";
+            return;
+          }
+
+          const corpo: NegocioEntrada = {
+            titulo,
+            cliente_id: clienteId,
+            etapa,
+            valor: numero(fv(f, "valor")),
+            mensal: numero(fv(f, "mensal")),
+            previsao: fv(f, "previsao") || null,
+            responsavel_id: fv(f, "responsavel_id") || null,
+            origem: (fv(f, "origem") || null) as NegocioEntrada["origem"],
+            motivo_perda: (fv(f, "motivo_perda") || null) as NegocioEntrada["motivo_perda"],
+            obs: fv(f, "obs") || null,
+          };
+
+          const salvo = await gravar({
+            recarregar: ["negocios", "clientes"],
+            mensagem: "Negócio salvo",
+            fechar,
+            operacao: () =>
+              reg
+                ? api.negocios.atualizar(reg.id, { ...corpo, versao: reg.versao })
+                : api.negocios.criar(corpo),
+          });
+
+          // Ganhou agora e ainda não tem lançamentos: oferece lançar o faturamento.
+          if (salvo && salvo.etapa === "ganho" && reg?.etapa !== "ganho" && !salvo.faturado) {
+            oferecerFaturamento(salvo);
+          }
+        } catch {
+          botao.disabled = false;
+          botao.classList.remove("loading");
+          botao.innerHTML = textoOriginal || "Salvar";
+        }
       });
+
       $("[data-orc]", L)?.addEventListener("click", () => reg && abrirFormulario("orcamento", { cliente_id: reg.cliente_id, negocio_id: reg.id }));
       $("[data-proj]", L)?.addEventListener("click", () => reg && (projeto ? abrirFormulario("projeto", projeto) : abrirFormulario("projetoDoNegocio", reg.id)));
       $("[data-excluir]", L)?.addEventListener("click", () => {

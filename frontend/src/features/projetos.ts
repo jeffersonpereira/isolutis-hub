@@ -16,6 +16,7 @@ import { linhaAutoria } from "@/ui/autoria";
 import { botaoExcluir, botaoSalvar, espaco, ligarNovoCliente, opcoesEquipe, resolverCliente, seletorCliente } from "@/ui/formularios";
 import { excluir, gravar } from "@/ui/gravacao";
 import { avisar, toast } from "@/ui/toast";
+import { melhorarFormulario } from "@/ui/acessibilidade";
 import { botaoNovo } from "./comum";
 import { registrarFormulario } from "./ponte";
 
@@ -93,6 +94,7 @@ export function formProjeto(p?: Projeto, inicial: Partial<ProjetoEntrada> = {}):
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn" type="button" id="addEtapa">Adicionar etapa</button><button class="btn ghost" type="button" id="padrao">Usar as etapas padrão da iSolutis</button></div></div>`,
     rodape: html`${botaoSalvar()}${p || podeEscrever() ? html`<button class="btn" data-relatorio>Gerar relatório de entrega</button>` : ""}${espaco}${botaoExcluir(!!p)}`,
     montar: (f, fechar, L) => {
+      melhorarFormulario(f);
       ligarNovoCliente(f);
       const box = $("#etapasBox", L) as HTMLElement;
       const equipeOps = opcoesEquipe("Sem responsável");
@@ -183,17 +185,66 @@ export function formProjeto(p?: Projeto, inicial: Partial<ProjetoEntrada> = {}):
           operacao: () => (atual ? api.projetos.atualizar(atual.id, { ...corpo, versao: atual.versao }) : api.projetos.criar(corpo)),
         });
 
-      $("[data-salvar]", L)?.addEventListener("click", async () => {
-        const corpo = await coletar();
-        if (corpo && (await persistir(corpo))) fechar();
+      $("[data-salvar]", L)?.addEventListener("click", async (e) => {
+        const botao = e.target as HTMLButtonElement;
+        const textoOriginal = botao.textContent;
+
+        // Loading visual
+        botao.disabled = true;
+        botao.classList.add("loading");
+        botao.innerHTML = '<span class="spinner"></span> Salvando…';
+
+        try {
+          const corpo = await coletar();
+          if (corpo && (await persistir(corpo))) fechar();
+          else {
+            botao.disabled = false;
+            botao.classList.remove("loading");
+            botao.innerHTML = textoOriginal || "Salvar";
+          }
+        } catch {
+          botao.disabled = false;
+          botao.classList.remove("loading");
+          botao.innerHTML = textoOriginal || "Salvar";
+        }
       });
-      $("[data-relatorio]", L)?.addEventListener("click", async () => {
-        const corpo = await coletar();
-        if (!corpo) return;
-        const salvo = await persistir(corpo);
-        if (!salvo) return;
-        atual = salvo;
-        if ((await tentar(() => api.projetos.relatorio(salvo.id))) !== null) toast("Relatório baixado. Abra no navegador e use Imprimir → Salvar como PDF.");
+      $("[data-relatorio]", L)?.addEventListener("click", async (e) => {
+        const botao = e.target as HTMLButtonElement;
+        const textoOriginal = botao.textContent;
+
+        // Loading visual
+        botao.disabled = true;
+        botao.classList.add("loading");
+        botao.innerHTML = '<span class="spinner"></span> Gerando…';
+
+        try {
+          const corpo = await coletar();
+          if (!corpo) {
+            botao.disabled = false;
+            botao.classList.remove("loading");
+            botao.innerHTML = textoOriginal || "Gerar relatório de entrega";
+            return;
+          }
+          const salvo = await persistir(corpo);
+          if (!salvo) {
+            botao.disabled = false;
+            botao.classList.remove("loading");
+            botao.innerHTML = textoOriginal || "Gerar relatório de entrega";
+            return;
+          }
+          atual = salvo;
+          if ((await tentar(() => api.projetos.relatorio(salvo.id))) !== null) {
+            toast("Relatório baixado. Abra no navegador e use Imprimir → Salvar como PDF.");
+          } else {
+            botao.disabled = false;
+            botao.classList.remove("loading");
+            botao.innerHTML = textoOriginal || "Gerar relatório de entrega";
+          }
+        } catch {
+          botao.disabled = false;
+          botao.classList.remove("loading");
+          botao.innerHTML = textoOriginal || "Gerar relatório de entrega";
+        }
       });
       $("[data-excluir]", L)?.addEventListener("click", () => {
         if (p) void excluir({ recarregar: ["projetos", "tarefas"], mensagem: "Projeto excluído", fechar, operacao: () => api.projetos.excluir(p.id) });

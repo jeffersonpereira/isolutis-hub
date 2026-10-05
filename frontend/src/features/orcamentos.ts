@@ -19,6 +19,7 @@ import { linhaAutoria } from "@/ui/autoria";
 import { botaoExcluir, botaoSalvar, espaco, ligarNovoCliente, resolverCliente, seletorCliente } from "@/ui/formularios";
 import { excluir, gravar } from "@/ui/gravacao";
 import { avisar, toast } from "@/ui/toast";
+import { melhorarFormulario } from "@/ui/acessibilidade";
 import { botaoNovo } from "./comum";
 import { abrirFormulario, registrarFormulario } from "./ponte";
 
@@ -77,6 +78,7 @@ export function formOrcamento(inicial: Partial<OrcamentoEntrada> = {}, existente
       ${campo("Condições e observações", area("obs", o?.obs ?? inicial.obs, "Forma de pagamento, prazo de entrega, o que está fora do escopo…"), true)}</div>`,
     rodape: html`${botaoSalvar()}<a class="btn wa" id="waOrc" target="_blank" rel="noopener" href="#">${ICONE_WA}Enviar pelo WhatsApp</a>${podeAprovar ? html`<button class="btn" data-aprovar>Cliente aprovou</button>` : ""}${o ? html`<button class="btn" data-baixar>Baixar orçamento</button>` : html`<button class="btn" data-baixar>Salvar e baixar</button>`}${espaco}${botaoExcluir(!!o)}`,
     montar: (f, fechar, L) => {
+      melhorarFormulario(f);
       ligarNovoCliente(f);
       const clienteSel = f.elements.namedItem("cliente_id") as HTMLSelectElement;
       const negSel = f.elements.namedItem("negocio_id") as HTMLSelectElement;
@@ -209,31 +211,109 @@ export function formOrcamento(inicial: Partial<OrcamentoEntrada> = {}, existente
         return salvo;
       };
 
-      $("[data-salvar]", L)?.addEventListener("click", async () => {
-        const corpo = await coletar();
-        if (corpo && (await persistir(corpo, `Orçamento salvo`))) fechar();
+      $("[data-salvar]", L)?.addEventListener("click", async (e) => {
+        const botao = e.target as HTMLButtonElement;
+        const textoOriginal = botao.textContent;
+
+        // Loading visual
+        botao.disabled = true;
+        botao.classList.add("loading");
+        botao.innerHTML = '<span class="spinner"></span> Salvando…';
+
+        try {
+          const corpo = await coletar();
+          if (corpo && (await persistir(corpo, `Orçamento salvo`))) fechar();
+          else {
+            botao.disabled = false;
+            botao.classList.remove("loading");
+            botao.innerHTML = textoOriginal || "Salvar";
+          }
+        } catch {
+          botao.disabled = false;
+          botao.classList.remove("loading");
+          botao.innerHTML = textoOriginal || "Salvar";
+        }
       });
-      $("[data-aprovar]", L)?.addEventListener("click", async () => {
-        const corpo = await coletar();
-        if (!corpo) return;
-        const salvo = await persistir(corpo, "");
-        if (!salvo) return;
-        const r = await tentar(() => api.orcamentos.aprovar(salvo.id));
-        if (!r) return;
-        await recarregar("orcamentos", "negocios");
-        toast("Orçamento aprovado");
-        fechar();
-        abrirFormulario("faturamento", {
-          cliente_id: r.orcamento.cliente_id, titulo: "Orçamento " + r.orcamento.numero, unico: r.orcamento.total_projeto, mensal: r.orcamento.total_mensal,
-          negocio_id: r.negocio_id, orcamento_id: r.orcamento.id,
-        });
+      $("[data-aprovar]", L)?.addEventListener("click", async (e) => {
+        const botao = e.target as HTMLButtonElement;
+        const textoOriginal = botao.textContent;
+
+        // Loading visual
+        botao.disabled = true;
+        botao.classList.add("loading");
+        botao.innerHTML = '<span class="spinner"></span> Aprovando…';
+
+        try {
+          const corpo = await coletar();
+          if (!corpo) {
+            botao.disabled = false;
+            botao.classList.remove("loading");
+            botao.innerHTML = textoOriginal || "Cliente aprovou";
+            return;
+          }
+          const salvo = await persistir(corpo, "");
+          if (!salvo) {
+            botao.disabled = false;
+            botao.classList.remove("loading");
+            botao.innerHTML = textoOriginal || "Cliente aprovou";
+            return;
+          }
+          const r = await tentar(() => api.orcamentos.aprovar(salvo.id));
+          if (!r) {
+            botao.disabled = false;
+            botao.classList.remove("loading");
+            botao.innerHTML = textoOriginal || "Cliente aprovou";
+            return;
+          }
+          await recarregar("orcamentos", "negocios");
+          toast("Orçamento aprovado");
+          fechar();
+          abrirFormulario("faturamento", {
+            cliente_id: r.orcamento.cliente_id, titulo: "Orçamento " + r.orcamento.numero, unico: r.orcamento.total_projeto, mensal: r.orcamento.total_mensal,
+            negocio_id: r.negocio_id, orcamento_id: r.orcamento.id,
+          });
+        } catch {
+          botao.disabled = false;
+          botao.classList.remove("loading");
+          botao.innerHTML = textoOriginal || "Cliente aprovou";
+        }
       });
-      $("[data-baixar]", L)?.addEventListener("click", async () => {
-        const corpo = await coletar();
-        if (!corpo) return;
-        const salvo = await persistir(corpo, "");
-        if (!salvo) return;
-        if ((await tentar(() => api.orcamentos.baixar(salvo.id))) !== null) toast("Orçamento salvo e baixado. Abra no navegador e use Imprimir → Salvar como PDF.");
+      $("[data-baixar]", L)?.addEventListener("click", async (e) => {
+        const botao = e.target as HTMLButtonElement;
+        const textoOriginal = botao.textContent;
+
+        // Loading visual
+        botao.disabled = true;
+        botao.classList.add("loading");
+        botao.innerHTML = '<span class="spinner"></span> Baixando…';
+
+        try {
+          const corpo = await coletar();
+          if (!corpo) {
+            botao.disabled = false;
+            botao.classList.remove("loading");
+            botao.innerHTML = textoOriginal || "Salvar e baixar";
+            return;
+          }
+          const salvo = await persistir(corpo, "");
+          if (!salvo) {
+            botao.disabled = false;
+            botao.classList.remove("loading");
+            botao.innerHTML = textoOriginal || "Salvar e baixar";
+            return;
+          }
+          if ((await tentar(() => api.orcamentos.baixar(salvo.id))) !== null) {
+            toast("Orçamento salvo e baixado. Abra no navegador e use Imprimir → Salvar como PDF.");
+          } else {
+            botao.disabled = false;
+            botao.classList.remove("loading");
+            botao.innerHTML = textoOriginal || "Salvar e baixar";
+          }
+        } catch {
+          botao.disabled = false;
+          botao.classList.remove("loading");
+          botao.innerHTML = textoOriginal || "Salvar e baixar";
+        }
       });
       $("[data-excluir]", L)?.addEventListener("click", () => {
         if (o) void excluir({ recarregar: ["orcamentos", "clientes"], mensagem: "Orçamento excluído", fechar, operacao: () => api.orcamentos.excluir(o.id) });
