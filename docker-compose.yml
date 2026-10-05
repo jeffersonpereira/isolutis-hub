@@ -23,8 +23,10 @@ services:
     depends_on:
       db: { condition: service_healthy }
     environment:
-      HUB_DATABASE_URL: postgresql+psycopg://hub_runtime:${HUB_RUNTIME_PASSWORD:-hub_runtime_dev}@db:5432/hub
+      HUB_DATABASE_URL: ${HUB_DATABASE_URL:-postgresql+psycopg://hub_runtime:${HUB_RUNTIME_PASSWORD:-hub_runtime_dev}@db:5432/hub}
       HUB_SECRET_KEY: ${HUB_SECRET_KEY:?defina HUB_SECRET_KEY (mínimo 32 caracteres)}
+      HUB_AMBIENTE: ${HUB_AMBIENTE:-producao}
+      HUB_TOKEN_MINUTOS: ${HUB_TOKEN_MINUTOS:-720}
     ports: ["8000:8000"]
 
   migrate:
@@ -35,9 +37,11 @@ services:
     depends_on:
       db: { condition: service_healthy }
     environment:
-      HUB_DATABASE_URL: postgresql+psycopg://hub:${HUB_MIGRATION_PASSWORD:-hub}@db:5432/hub
-      HUB_MIGRATION_DATABASE_URL: postgresql+psycopg://hub:${HUB_MIGRATION_PASSWORD:-hub}@db:5432/hub
+      HUB_DATABASE_URL: ${HUB_MIGRATION_DATABASE_URL:-postgresql+psycopg://hub:${HUB_MIGRATION_PASSWORD:-hub}@db:5432/hub}
+      HUB_MIGRATION_DATABASE_URL: ${HUB_MIGRATION_DATABASE_URL:-postgresql+psycopg://hub:${HUB_MIGRATION_PASSWORD:-hub}@db:5432/hub}
       HUB_SECRET_KEY: ${HUB_SECRET_KEY:?defina HUB_SECRET_KEY (mínimo 32 caracteres)}
+      HUB_AMBIENTE: ${HUB_AMBIENTE:-producao}
+      HUB_TOKEN_MINUTOS: ${HUB_TOKEN_MINUTOS:-720}
     entrypoint: ["alembic"]
     command: ["upgrade", "head"]
 
