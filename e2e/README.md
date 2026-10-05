@@ -1,23 +1,59 @@
-# Teste de ponta a ponta
+# E2E Tests com Playwright
 
-Percorre no navegador os fluxos principais: login, cliente, busca, arrastar cartões (negócios e tarefas), motivo de perda,
-aprovação de orçamento com faturamento em lote, download de orçamento e relatório de projeto, equipe e tempo real
-entre duas abas. Falha se houver erro de JavaScript no console.
+Testes end-to-end que validam fluxos críticos do usuário:
+- Login → Criar cliente → Criar negócio
+- Validação de formulários
+- Loading visual
+- Acessibilidade
+- Sincronização multi-aba
 
+## Setup
+
+### 1. Instalar dependências
 ```bash
-# 1. banco novo + administrador + servidor (a API serve o build do frontend)
-cd backend && alembic upgrade head
-python -m app.scripts.criar_admin --email admin@isolutis.com.br --nome "Admin" --senha senha-segura-123
-(cd ../frontend && npm run build)
-HUB_FRONTEND_DIST=../frontend/dist uvicorn app.main:app --port 8000 &
-
-# 2. dados de demonstração e teste
-cd ../e2e && python seed.py && npm install && npx playwright install chromium && npm test
+npm install --save-dev @playwright/test
 ```
 
-Variáveis: `HUB_URL`, `HUB_EMAIL`, `HUB_SENHA`, `CHROMIUM_PATH` (para usar um Chromium já instalado).
-O teste cria registros; use uma base descartável.
+### 2. Rodar testes
 
-## Módulo financeiro
+**Modo headless (CI/CD):**
+```bash
+npx playwright test
+```
 
-`node financeiro.mjs` (mesmos pré-requisitos; exige o administrador e a carga de referências: `python -m app.financeiro.popular --fonte snapshot`). Gera um sufixo único por execução, então pode rodar várias vezes na mesma base.
+**Modo UI (development):**
+```bash
+npx playwright test --ui
+```
+
+**Debug:**
+```bash
+npx playwright test --debug
+```
+
+### 3. Ver relatório
+```bash
+npx playwright show-report
+```
+
+## Testes Inclusos
+
+### `fluxo-critico.spec.ts`
+
+1. **Criar cliente com validação**
+2. **Criar negócio com cliente**
+3. **Validação de campos obrigatórios**
+4. **Loading visual**
+5. **Acessibilidade**
+6. **Multi-aba sync**
+
+## CI/CD Integration
+
+```yaml
+- name: Rodar E2E tests
+  run: npx playwright test
+```
+
+## Referências
+
+- [Playwright Docs](https://playwright.dev/)

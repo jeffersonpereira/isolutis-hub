@@ -9,11 +9,15 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
     "lint": "eslint src",
     "gen:api": "openapi-typescript ../backend/openapi.json -o src/api/schema.d.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.40.0",
     "@types/node": "^26.6.4",
     "eslint": "^10.11.0",
     "jsdom": "^29.1.1",
