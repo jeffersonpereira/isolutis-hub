@@ -17,6 +17,7 @@ import { linhaAutoria } from "@/ui/autoria";
 import { botaoExcluir, botaoSalvar, espaco, ligarNovoCliente, resolverCliente, seletorCliente } from "@/ui/formularios";
 import { excluir, gravar } from "@/ui/gravacao";
 import { avisar, toast } from "@/ui/toast";
+import { melhorarFormulario } from "@/ui/acessibilidade";
 import { botaoNovo } from "./comum";
 import { graficoFaturamento, legendaFaturamento } from "./grafico";
 import { registrarFormulario, type VendaFechada } from "./ponte";
@@ -81,22 +82,50 @@ function formLanc(l?: Lancamento): void {
       ${campo("Nota fiscal / observação", inp("nf", l?.nf), true)}</div>`,
     rodape: html`${botaoSalvar()}${espaco}${botaoExcluir(!!l)}`,
     montar: (f, fechar, L) => {
+      melhorarFormulario(f);
       ligarNovoCliente(f);
-      $("[data-salvar]", L)?.addEventListener("click", async () => {
-        if (!fv(f, "cliente_id")) return void toast("Escolha o cliente.");
-        if (!numero(fv(f, "valor"))) return void toast("Informe o valor.");
-        const clienteId = await resolverCliente(f);
-        if (!clienteId) return;
-        const base = {
-          cliente_id: clienteId, tipo: fv(f, "tipo") as LancamentoEntrada["tipo"], descricao: fv(f, "descricao") || TIPOS[fv(f, "tipo")] || "Lançamento",
-          valor: numero(fv(f, "valor")), vencimento: fv(f, "vencimento") || hoje(), status: fv(f, "status") as LancamentoEntrada["status"], nf: fv(f, "nf") || null,
-        };
-        const repetir = Number(fv(f, "repetir")) || 1;
-        await gravar({
-          recarregar: ["faturamento", "clientes"], fechar,
-          mensagem: l ? "Lançamento salvo" : repetir > 1 ? `${repetir} lançamentos criados` : "Lançamento criado",
-          operacao: async () => (l ? await api.faturamento.atualizar(l.id, { ...base, versao: l.versao }) : await api.faturamento.criar({ ...base, repetir })),
-        });
+      $("[data-salvar]", L)?.addEventListener("click", async (e) => {
+        const botao = e.target as HTMLButtonElement;
+        const textoOriginal = botao.textContent;
+
+        // Validação
+        if (!fv(f, "cliente_id")) {
+          toast("Escolha o cliente.");
+          return;
+        }
+        if (!numero(fv(f, "valor"))) {
+          toast("Informe o valor.");
+          return;
+        }
+
+        // Loading visual
+        botao.disabled = true;
+        botao.classList.add("loading");
+        botao.innerHTML = '<span class="spinner"></span> Salvando…';
+
+        try {
+          const clienteId = await resolverCliente(f);
+          if (!clienteId) {
+            botao.disabled = false;
+            botao.classList.remove("loading");
+            botao.innerHTML = textoOriginal || "Salvar";
+            return;
+          }
+          const base = {
+            cliente_id: clienteId, tipo: fv(f, "tipo") as LancamentoEntrada["tipo"], descricao: fv(f, "descricao") || TIPOS[fv(f, "tipo")] || "Lançamento",
+            valor: numero(fv(f, "valor")), vencimento: fv(f, "vencimento") || hoje(), status: fv(f, "status") as LancamentoEntrada["status"], nf: fv(f, "nf") || null,
+          };
+          const repetir = Number(fv(f, "repetir")) || 1;
+          await gravar({
+            recarregar: ["faturamento", "clientes"], fechar,
+            mensagem: l ? "Lançamento salvo" : repetir > 1 ? `${repetir} lançamentos criados` : "Lançamento criado",
+            operacao: async () => (l ? await api.faturamento.atualizar(l.id, { ...base, versao: l.versao }) : await api.faturamento.criar({ ...base, repetir })),
+          });
+        } catch {
+          botao.disabled = false;
+          botao.classList.remove("loading");
+          botao.innerHTML = textoOriginal || "Salvar";
+        }
       });
       $("[data-excluir]", L)?.addEventListener("click", () => {
         if (l) void excluir({ recarregar: ["faturamento", "clientes"], mensagem: "Lançamento excluído", fechar, operacao: () => api.faturamento.excluir(l.id) });
@@ -120,6 +149,7 @@ function gerarFaturamento(g: VendaFechada): void {
     <p class="sub" id="resumoGen" style="margin:0"></p>`,
     rodape: html`<button class="btn primary" data-salvar>Lançar no faturamento</button><button class="btn" data-fechar>Agora não</button>`,
     montar: (f, fechar, L) => {
+      melhorarFormulario(f);
       const marcado = (n: string): boolean => (f.elements.namedItem(n) as HTMLInputElement).checked;
       const plano = (): Pick<Parameters<typeof api.faturamento.lote>[0], "projeto" | "mensal"> => ({
         projeto: marcado("usaUnico") && numero(fv(f, "unico")) ? { valor: numero(fv(f, "unico")), parcelas: Math.max(1, Math.round(numero(fv(f, "parcelas")))), primeiro_vencimento: fv(f, "dataU") || h } : null,
@@ -138,13 +168,29 @@ function gerarFaturamento(g: VendaFechada): void {
         const { projeto, mensal } = plano();
         if (!projeto && !mensal) return void avisar("Nada marcado para lançar.");
         const botao = e.target as HTMLButtonElement;
+        const textoOriginal = botao.textContent;
+
+        // Loading visual
         botao.disabled = true;
-        const criados = await gravar({
-          recarregar: ["faturamento", "negocios", "clientes"], mensagem: "", fechar,
-          operacao: () => api.faturamento.lote({ cliente_id: g.cliente_id, titulo: g.titulo, negocio_id: g.negocio_id ?? null, orcamento_id: g.orcamento_id ?? null, projeto, mensal }),
-        });
-        if (criados) toast(`${criados.length} ${criados.length === 1 ? "lançamento criado" : "lançamentos criados"}`);
-        else botao.disabled = false;
+        botao.classList.add("loading");
+        botao.innerHTML = '<span class="spinner"></span> Lançando…';
+
+        try {
+          const criados = await gravar({
+            recarregar: ["faturamento", "negocios", "clientes"], mensagem: "", fechar,
+            operacao: () => api.faturamento.lote({ cliente_id: g.cliente_id, titulo: g.titulo, negocio_id: g.negocio_id ?? null, orcamento_id: g.orcamento_id ?? null, projeto, mensal }),
+          });
+          if (criados) toast(`${criados.length} ${criados.length === 1 ? "lançamento criado" : "lançamentos criados"}`);
+          else {
+            botao.disabled = false;
+            botao.classList.remove("loading");
+            botao.innerHTML = textoOriginal || "Lançar no faturamento";
+          }
+        } catch {
+          botao.disabled = false;
+          botao.classList.remove("loading");
+          botao.innerHTML = textoOriginal || "Lançar no faturamento";
+        }
       });
     },
   });

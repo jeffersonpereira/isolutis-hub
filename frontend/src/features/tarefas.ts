@@ -16,6 +16,7 @@ import { linhaAutoria } from "@/ui/autoria";
 import { botaoExcluir, botaoSalvar, espaco, opcoesClientes, opcoesEquipe } from "@/ui/formularios";
 import { excluir, gravar } from "@/ui/gravacao";
 import { avisar, toast } from "@/ui/toast";
+import { melhorarFormulario } from "@/ui/acessibilidade";
 import { botaoNovo } from "./comum";
 
 registrarConsulta("tarefas", (id) => dados.tarefas.find((t) => t.id === id));
@@ -114,6 +115,7 @@ export function formTarefa(t?: Tarefa, colunaInicial = "a_fazer"): void {
       <div style="display:flex;gap:8px;margin-top:8px"><input id="ckNovo" class="search" style="flex:1;width:auto" placeholder="Adicionar item e apertar Enter"><button class="btn" type="button" id="ckAdd">Adicionar</button></div></div>`,
     rodape: html`${botaoSalvar()}${t && t.coluna !== "concluido" && podeEscrever() ? html`<button class="btn" data-concluir>Concluir</button>` : ""}${espaco}${botaoExcluir(!!t)}`,
     montar: (f, fechar, L) => {
+      melhorarFormulario(f);
       const box = $("#ckBox", L) as HTMLElement;
       const novo = $<HTMLInputElement>("#ckNovo", L)!;
       const desenhar = (): void => {
@@ -173,13 +175,51 @@ export function formTarefa(t?: Tarefa, colunaInicial = "a_fazer"): void {
           operacao: () => (t ? api.tarefas.atualizar(t.id, { ...corpo, versao: t.versao }) : api.tarefas.criar(corpo)),
         });
       };
-      $("[data-salvar]", L)?.addEventListener("click", async () => {
-        const corpo = coletar();
-        if (corpo) await salvar(corpo, t ? "Tarefa salva" : "Tarefa criada");
+      $("[data-salvar]", L)?.addEventListener("click", async (e) => {
+        const botao = e.target as HTMLButtonElement;
+        const textoOriginal = botao.textContent;
+
+        // Loading visual
+        botao.disabled = true;
+        botao.classList.add("loading");
+        botao.innerHTML = '<span class="spinner"></span> Salvando…';
+
+        try {
+          const corpo = coletar();
+          if (corpo) await salvar(corpo, t ? "Tarefa salva" : "Tarefa criada");
+          else {
+            botao.disabled = false;
+            botao.classList.remove("loading");
+            botao.innerHTML = textoOriginal || "Salvar";
+          }
+        } catch {
+          botao.disabled = false;
+          botao.classList.remove("loading");
+          botao.innerHTML = textoOriginal || "Salvar";
+        }
       });
-      $("[data-concluir]", L)?.addEventListener("click", async () => {
-        const corpo = coletar("concluido");
-        if (corpo) await salvar(corpo, "Tarefa concluída");
+      $("[data-concluir]", L)?.addEventListener("click", async (e) => {
+        const botao = e.target as HTMLButtonElement;
+        const textoOriginal = botao.textContent;
+
+        // Loading visual
+        botao.disabled = true;
+        botao.classList.add("loading");
+        botao.innerHTML = '<span class="spinner"></span> Concluindo…';
+
+        try {
+          const corpo = coletar("concluido");
+          if (corpo) await salvar(corpo, "Tarefa concluída");
+          else {
+            botao.disabled = false;
+            botao.classList.remove("loading");
+            botao.innerHTML = textoOriginal || "Concluir";
+          }
+        } catch {
+          botao.disabled = false;
+          botao.classList.remove("loading");
+          botao.innerHTML = textoOriginal || "Concluir";
+        }
       });
       $("[data-excluir]", L)?.addEventListener("click", () => {
         if (t) void excluir({ recarregar: ["tarefas"], mensagem: "Tarefa excluída", fechar, operacao: () => api.tarefas.excluir(t.id) });

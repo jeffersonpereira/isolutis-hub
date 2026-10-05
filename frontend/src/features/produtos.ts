@@ -17,6 +17,7 @@ import { botaoExcluir, botaoSalvar, espaco } from "@/ui/formularios";
 import { excluir, gravar } from "@/ui/gravacao";
 import { tentar } from "@/ui/erros";
 import { toast } from "@/ui/toast";
+import { melhorarFormulario } from "@/ui/acessibilidade";
 import { botaoNovo } from "./comum";
 
 registrarConsulta("produtos", (id) => dados.produtos.find((p) => p.id === id));
@@ -53,20 +54,39 @@ function formProduto(p?: Produto): void {
       ${campo("Descrição", area("descricao", p?.descricao), true)}</div>`,
     rodape: html`${botaoSalvar()}${espaco}${botaoExcluir(!!p)}`,
     montar: (f, fechar, L) => {
+      melhorarFormulario(f);
       (f.elements.namedItem("tipo") as HTMLSelectElement).addEventListener("change", () => {
         (f.elements.namedItem("unidade") as HTMLInputElement).value = UNIDADES[fv(f, "tipo")] ?? "";
       });
-      $("[data-salvar]", L)?.addEventListener("click", async () => {
+      $("[data-salvar]", L)?.addEventListener("click", async (e) => {
         const nome = fv(f, "nome");
-        if (!nome) return void toast("Dê um nome ao produto.");
-        const corpo = {
-          nome, tipo: fv(f, "tipo") as ProdutoEntrada["tipo"], unidade: fv(f, "unidade") || "projeto", preco: numero(fv(f, "preco")),
-          ativo: fv(f, "ativo") === "1", descricao: fv(f, "descricao") || null,
-        };
-        await gravar({
-          recarregar: ["produtos"], mensagem: "Produto salvo", fechar,
-          operacao: () => (p ? api.produtos.atualizar(p.id, { ...corpo, versao: p.versao }) : api.produtos.criar(corpo)),
-        });
+        if (!nome) {
+          toast("Dê um nome ao produto.");
+          return;
+        }
+
+        const botao = e.target as HTMLButtonElement;
+        const textoOriginal = botao.textContent;
+
+        // Loading visual
+        botao.disabled = true;
+        botao.classList.add("loading");
+        botao.innerHTML = '<span class="spinner"></span> Salvando…';
+
+        try {
+          const corpo = {
+            nome, tipo: fv(f, "tipo") as ProdutoEntrada["tipo"], unidade: fv(f, "unidade") || "projeto", preco: numero(fv(f, "preco")),
+            ativo: fv(f, "ativo") === "1", descricao: fv(f, "descricao") || null,
+          };
+          await gravar({
+            recarregar: ["produtos"], mensagem: "Produto salvo", fechar,
+            operacao: () => (p ? api.produtos.atualizar(p.id, { ...corpo, versao: p.versao }) : api.produtos.criar(corpo)),
+          });
+        } catch {
+          botao.disabled = false;
+          botao.classList.remove("loading");
+          botao.innerHTML = textoOriginal || "Salvar";
+        }
       });
       $("[data-excluir]", L)?.addEventListener("click", () => {
         if (p) void excluir({ recarregar: ["produtos"], mensagem: "Produto excluído", fechar, operacao: () => api.produtos.excluir(p.id) });
