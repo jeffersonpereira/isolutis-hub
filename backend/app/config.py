@@ -1,9 +1,11 @@
 """Configuração por variáveis de ambiente (12-factor). Nada sensível fica no repositório."""
 
+import json
 from functools import lru_cache
+from typing import Annotated
 
 from pydantic import Field, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 _CHAVE_DE_DESENVOLVIMENTO = "troque-esta-chave-em-producao"
 
@@ -16,7 +18,7 @@ class Settings(BaseSettings):
     migration_database_url: str | None = None
     secret_key: str = _CHAVE_DE_DESENVOLVIMENTO
     token_minutos: int = 60 * 12
-    cors_origins: list[str] = ["http://localhost:5173"]
+    cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:5173"]
     # Pasta do build do frontend; quando existe, a API também serve o site (deploy em um único serviço).
     frontend_dist: str | None = None
     # Ajustes de log/SQL
@@ -25,8 +27,11 @@ class Settings(BaseSettings):
     @field_validator("cors_origins", mode="before")
     @classmethod
     def _separar_origens(cls, v: object) -> object:
-        if isinstance(v, str) and not v.strip().startswith("["):
-            return [o.strip() for o in v.split(",") if o.strip()]
+        if isinstance(v, str):
+            texto = v.strip()
+            if texto.startswith("["):
+                return json.loads(texto)
+            return [origem.strip() for origem in texto.split(",") if origem.strip()]
         return v
 
     def validar_para_producao(self) -> None:
