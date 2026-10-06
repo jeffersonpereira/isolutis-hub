@@ -83,11 +83,12 @@ export async function recarregarVista(): Promise<void> {
 }
 
 const gruposAbertos = new Set<string>();
+const gruposFechados = new Set<string>();
 
 registrarAcao("alternarGrupo", (alvo) => {
   const g = alvo.dataset.valor ?? "";
-  if (gruposAbertos.has(g)) gruposAbertos.delete(g);
-  else gruposAbertos.add(g);
+  if (gruposFechados.has(g)) gruposFechados.delete(g);
+  else gruposFechados.add(g);
   renderMenu();
 });
 
@@ -107,7 +108,7 @@ export function renderMenu(): void {
     if (desenhados.has(v.grupo)) continue;
     desenhados.add(v.grupo);
     const filhos = itens.filter((x) => x.grupo === v.grupo);
-    const aberto = gruposAbertos.has(v.grupo) || filhos.some((x) => x.id === atual);
+    const aberto = !gruposFechados.has(v.grupo) && (gruposAbertos.has(v.grupo) || filhos.some((x) => x.id === atual));
     blocos.push(html`<button class="nav-grupo" data-act="alternarGrupo" data-valor="${v.grupo}" aria-expanded="${aberto}">${v.grupo}<span class="seta" aria-hidden="true">›</span></button>${filhos.map((x) => html`<span class="nav-sub${aberto ? "" : " fechado"}">${botao(x, true)}</span>`)}`);
   }
   obrigatorio("#nav").innerHTML = String(html`${blocos}`);
