@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import Literal
 from uuid import UUID
 
@@ -50,6 +50,12 @@ class LancamentoLeitura(Auditoria):
     grupo_id: UUID | None
     parcela: int | None
     total_parcelas: int | None
+
+
+class LancamentoInternoLeitura(LancamentoLeitura):
+    """Schema interno: inclui campos de controle não expostos na API pública."""
+
+    notificado_em: datetime | None = None
 
 
 class PlanoProjeto(Entrada):

@@ -8,9 +8,27 @@ const ano = (a: number) => ({ ano: a });
 export const api = {
   empresas: { listar: () => http.get<Array<{ id: string; nome: string; papel: "admin" | "membro" }>>("/empresas") },
   auth: {
-    login: (email: string, senha: string) => http.post<S["TokenSaida"]>("/auth/login", { email, senha }),
+    login: (email: string, senha: string) => http.post<T.LoginResposta>("/auth/login", { email, senha }),
     eu: () => http.get<T.Usuario>("/auth/eu"),
     trocarSenha: (senha_atual: string, nova_senha: string) => http.post<void>("/auth/trocar-senha", { senha_atual, nova_senha }),
+    totp: {
+      setup: () => http.post<T.SetupTotpResposta>("/auth/2fa/setup"),
+      confirmar: (d: T.ConfirmarTotpEntrada) => http.post<void>("/auth/2fa/confirmar", d),
+      verificar: (d: T.VerificarTotpEntrada) => http.post<T.TokenSaida>("/auth/2fa/verificar", d),
+      desativar: (codigo: string) => http.delete(`/auth/2fa?codigo=${encodeURIComponent(codigo)}`),
+    },
+  },
+  onboarding: {
+    status: () => http.get<T.OnboardingStatus>("/onboarding/status"),
+    salvarEmpresa: (nome: string, segmento: string) => http.patch<void>("/onboarding/empresa", { nome, segmento }),
+    salvarProdutos: (produtos: T.ProdutoOnboarding[]) => http.post<void>("/onboarding/produtos", { produtos }),
+    concluir: () => http.post<void>("/onboarding/concluir"),
+  },
+  relatorios: {
+    dre: (a: number) => http.get<T.DreItem[]>("/relatorios/dre", ano(a)),
+    fluxoCaixa: (a: number) => http.get<T.FluxoItem[]>("/relatorios/fluxo-caixa", ano(a)),
+    exportarPdf: (tipo: "dre" | "fluxo-caixa", a: number) => http.baixar(`/relatorios/${tipo}`, { ano: a, formato: "pdf" }),
+    exportarXlsx: (tipo: "dre" | "fluxo-caixa", a: number) => http.baixar(`/relatorios/${tipo}`, { ano: a, formato: "xlsx" }),
   },
   equipe: { listar: () => http.get<T.MembroEquipe[]>("/equipe") },
   usuarios: {

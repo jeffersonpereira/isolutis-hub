@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>{{ titulo }} {{ ano }} · {{ empresa_nome }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+{{ css | safe }}
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div>
+      <div class="empresa">{{ empresa_nome }}</div>
+      <h1>{{ titulo }}</h1>
+      <div class="subtitulo">Ano: {{ ano }}</div>
+    </div>
+  </header>
+
+  {% if tipo == "dre" %}
+  <table>
+    <thead>
+      <tr>
+        <th>Mês</th>
+        <th class="num">Receitas</th>
+        <th class="num">Custos</th>
+        <th class="num">Resultado</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in dados %}
+      <tr>
+        <td>{{ row.nome_mes }}</td>
+        <td class="num">{{ row.receitas | brl }}</td>
+        <td class="num">{{ row.custos | brl }}</td>
+        <td class="num {% if row.resultado >= 0 %}positivo{% else %}negativo{% endif %}">
+          {{ row.resultado | brl }}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td><strong>Total</strong></td>
+        {% set total_rec = dados | sum(attribute='receitas') %}
+        {% set total_cus = dados | sum(attribute='custos') %}
+        {% set total_res = total_rec - total_cus %}
+        <td class="num"><strong>{{ total_rec | brl }}</strong></td>
+        <td class="num"><strong>{{ total_cus | brl }}</strong></td>
+        <td class="num {% if total_res >= 0 %}positivo{% else %}negativo{% endif %}">
+          <strong>{{ total_res | brl }}</strong>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+
+  {% elif tipo == "fluxo_caixa" %}
+  <table>
+    <thead>
+      <tr>
+        <th>Mês</th>
+        <th class="num">Entradas</th>
+        <th class="num">Saídas</th>
+        <th class="num">Saldo do Mês</th>
+        <th class="num">Saldo Acumulado</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in dados %}
+      <tr>
+        <td>{{ row.nome_mes }}</td>
+        <td class="num">{{ row.entradas | brl }}</td>
+        <td class="num">{{ row.saidas | brl }}</td>
+        <td class="num {% if row.saldo_mes >= 0 %}positivo{% else %}negativo{% endif %}">
+          {{ row.saldo_mes | brl }}
+        </td>
+        <td class="num {% if row.saldo_acumulado >= 0 %}positivo{% else %}negativo{% endif %}">
+          {{ row.saldo_acumulado | brl }}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <footer>iSolutis · Soluções e Inovações Tecnológicas · +55 71 99239-0992</footer>
+</div>
+</body>
+</html>

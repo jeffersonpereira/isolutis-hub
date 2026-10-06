@@ -1,9 +1,10 @@
 import uuid
-from datetime import date
+from datetime import date, datetime
 from datetime import date as _date
 from decimal import Decimal
 
 from sqlalchemy import Computed, FetchedValue, ForeignKey
+from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.domain.constantes import StatusOrcamento
@@ -62,6 +63,7 @@ class Orcamento(ComAuditoria, ComEmpresa, Base):
     cliente_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("parceiro_negocio.id"))
     negocio_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("negocios.id"))
     aprovado_em: Mapped[date | None]
+    notificado_em: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
 
     cliente: Mapped[Parceiro] = relationship(lazy="raise", foreign_keys=[cliente_id])
     itens: Mapped[list["OrcamentoItem"]] = relationship(

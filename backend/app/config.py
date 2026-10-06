@@ -42,6 +42,10 @@ class Settings(BaseSettings):
         return v
 
     def validar_para_producao(self) -> None:
+        import logging
+
+        _logger = logging.getLogger(__name__)
+
         erros: list[str] = []
         if self.secret_key == _CHAVE_DE_DESENVOLVIMENTO or len(self.secret_key) < 32:
             erros.append("Defina HUB_SECRET_KEY com pelo menos 32 caracteres antes de subir em produção.")
@@ -49,6 +53,12 @@ class Settings(BaseSettings):
             erros.append("HUB_SMTP_HOST é obrigatório em produção")
         if self.ambiente == "producao" and erros:
             raise RuntimeError(" | ".join(erros))
+
+        # Aviso: a verificação de admins sem 2FA exige acesso ao banco e deve ser
+        # feita após o startup da aplicação (ver scheduler de notificações).
+        _logger.warning(
+            "Verificação de 2FA para admins deve ser feita após startup da aplicação"
+        )
 
 
 @lru_cache

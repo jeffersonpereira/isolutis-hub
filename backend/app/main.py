@@ -21,6 +21,7 @@ from app.routers import (
     equipe,
     faturamento,
     negocios,
+    onboarding as router_onboarding,
     orcamentos,
     painel,
     parceiros,
@@ -29,6 +30,27 @@ from app.routers import (
     tarefas,
     ws,
 )
+
+try:
+    from app.routers import relatorios as router_relatorios
+
+    _relatorios_disponivel = True
+except ImportError:
+    _relatorios_disponivel = False
+
+try:
+    from app.routers import auth_2fa as router_auth_2fa
+
+    _auth_2fa_disponivel = True
+except ImportError:
+    _auth_2fa_disponivel = False
+
+try:
+    from app.scheduler import iniciar_scheduler, parar_scheduler
+
+    _scheduler_disponivel = True
+except ImportError:
+    _scheduler_disponivel = False
 
 CSP = (
     "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
@@ -83,7 +105,24 @@ def criar_app() -> FastAPI:
     # Hub de parceiros: lista/edita todos os papéis (administradores); os papéis disponíveis qualquer logado consulta.
     api.include_router(parceiros.router, dependencies=[Depends(empresa_atual)])
     api.include_router(parceiros.router_papeis, dependencies=[Depends(empresa_atual)])
+    # Onboarding: configuração inicial da empresa (admin).
+    api.include_router(router_onboarding.router, tags=["onboarding"])
+    # Módulos opcionais da Onda 2 (registrados somente quando os arquivos existirem).
+    if _relatorios_disponivel:
+        api.include_router(router_relatorios.router, tags=["relatorios"])  # type: ignore[possibly-undefined]
+    if _auth_2fa_disponivel:
+        api.include_router(router_auth_2fa.router, tags=["auth"])  # type: ignore[possibly-undefined]
     app.include_router(api)
+
+    if _scheduler_disponivel:
+
+        @app.on_event("startup")
+        async def startup() -> None:
+            iniciar_scheduler()  # type: ignore[possibly-undefined]
+
+        @app.on_event("shutdown")
+        async def shutdown() -> None:
+            parar_scheduler()  # type: ignore[possibly-undefined]
 
     @app.get("/api/saude", tags=["Infra"])
     async def saude() -> dict[str, str]:

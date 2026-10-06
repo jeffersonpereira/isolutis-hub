@@ -1,9 +1,9 @@
 import uuid
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
 from sqlalchemy import ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, ComAuditoria, ComEmpresa
@@ -29,6 +29,7 @@ class LancamentoReceita(ComAuditoria, ComEmpresa, Base):
     grupo_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
     parcela: Mapped[int | None]
     total_parcelas: Mapped[int | None]
+    notificado_em: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
 
     cliente: Mapped[Parceiro] = relationship(lazy="raise", foreign_keys=[cliente_id])
 

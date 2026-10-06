@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Literal
 from uuid import UUID
@@ -68,6 +68,12 @@ class OrcamentoLeitura(Auditoria):
     total_projeto: Dinheiro
     total_mensal: Dinheiro
     itens: list[ItemLeitura]
+
+
+class OrcamentoInternoLeitura(OrcamentoLeitura):
+    """Schema interno: inclui campos de controle não expostos na API pública."""
+
+    notificado_em: datetime | None = None
 
 
 class AprovacaoSaida(Leitura):

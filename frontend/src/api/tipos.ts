@@ -71,3 +71,61 @@ export interface TokenSaida {
 
 /** Recursos que a interface mantém em memória e recarrega quando o servidor avisa de mudanças. */
 export type Recurso = "clientes" | "produtos" | "negocios" | "orcamentos" | "projetos" | "tarefas" | "equipe" | "faturamento" | "despesas";
+
+// ─── Onboarding ─────────────────────────────────────────────────────────────
+
+export interface OnboardingStatus {
+  concluido: boolean;
+}
+
+export interface ProdutoOnboarding {
+  nome: string;
+  preco: number | null;
+}
+
+// ─── Relatórios ─────────────────────────────────────────────────────────────
+
+export interface DreItem {
+  mes: number;
+  nome_mes: string;
+  receitas: number;
+  custos: number;
+  resultado: number;
+}
+
+export interface FluxoItem {
+  mes: number;
+  nome_mes: string;
+  entradas: number;
+  saidas: number;
+  saldo: number;
+  saldo_acumulado: number;
+}
+
+// ─── 2FA / TOTP ──────────────────────────────────────────────────────────────
+
+export interface LoginResposta {
+  access_token: string;
+  token_type: string;
+  usuario: Usuario;
+  /** Presente quando o usuário tem 2FA ativo; ausente quando não tem. */
+  requer_2fa?: true;
+  /** Token temporário de curta duração para concluir o 2FA. */
+  token_temporario?: string;
+}
+
+export interface SetupTotpResposta {
+  qr_code_base64: string;
+  secret: string;
+  backup_codes: string[];
+}
+
+export interface ConfirmarTotpEntrada {
+  codigo: string;
+  backup_codes: string[];
+}
+
+export interface VerificarTotpEntrada {
+  token_temporario: string;
+  codigo: string;
+}

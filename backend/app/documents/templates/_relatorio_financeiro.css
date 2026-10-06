@@ -1,0 +1,25 @@
+@page { size: A4; margin: 15mm; }
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { font-family: "IBM Plex Sans", Arial, sans-serif; font-size: 11pt; color: #16223b; margin: 0; background: #fff; }
+.page { max-width: 780px; margin: 0 auto; padding: 0 24px 40px; }
+
+header { border-bottom: 3px solid #1B2B4B; padding-bottom: 14px; margin-bottom: 28px; position: relative; }
+header:after { content: ""; position: absolute; left: 0; bottom: -3px; width: 90px; height: 3px; background: #22C3CE; }
+.empresa { font: 600 10px "Montserrat", Arial, sans-serif; letter-spacing: .18em; text-transform: uppercase; color: #56647a; margin-bottom: 4px; }
+h1 { font: 700 19px "Montserrat", Arial, sans-serif; margin: 0 0 4px; color: #1B2B4B; }
+.subtitulo { font-size: 10pt; color: #56647a; }
+
+table { width: 100%; border-collapse: collapse; margin-top: 8px; page-break-inside: auto; }
+thead { display: table-header-group; }
+thead th { background: #1B2B4B; color: #fff; padding: 8px 12px; text-align: left; font: 600 10px "Montserrat", Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+tbody td { padding: 7px 12px; border-bottom: 1px solid #d3dbe6; }
+tbody tr:last-child td { border-bottom: none; }
+tfoot td { padding: 8px 12px; background: #eef1f6; border-top: 2px solid #1B2B4B; }
+
+.num { text-align: right; }
+.positivo { color: #4a9d6f; }
+.negativo { color: #a85d52; }
+
+footer { margin-top: 40px; padding-top: 10px; border-top: 1px solid #d3dbe6; font-size: 10pt; color: #56647a; }
+@media print { .page { padding: 0; } }

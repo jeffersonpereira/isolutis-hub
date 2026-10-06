@@ -13,6 +13,7 @@ import { detectarRotaConvite, iniciarTelaConvite } from "@/ui/convite";
 import { iniciarEventos } from "@/ui/eventos";
 import { observarGaveta } from "@/ui/gaveta";
 import { esconderLogin, pedirLogin, trocarSenha } from "@/ui/login";
+import { detectarOnboarding, iniciarWizardOnboarding } from "@/ui/onboarding";
 
 // As funcionalidades se registram ao serem importadas; a ordem define a ordem do menu.
 import "@/features/painel";
@@ -26,6 +27,7 @@ import "@/features/produtos";
 import "@/features/equipe";
 import "@/features/financeiro";
 import "@/features/periodo";
+import "@/features/relatorios";
 
 /** Busca nas listas: refaz a tela a cada tecla e devolve o foco ao campo. */
 function ligarBuscas(): void {
@@ -85,7 +87,8 @@ async function iniciarApp(usuario: Usuario): Promise<void> {
   tempoReal.presenca({ area: abaSalva(), editando: null });
 }
 
-async function selecionarEmpresa(): Promise<boolean> {
+/** Retorna a empresa ativa e se o usuário é admin. */
+async function selecionarEmpresa(): Promise<{ admin: boolean; empresa: { id: string; nome: string; onboarding_concluido?: boolean } }> {
   const empresas = await api.empresas.listar();
   const primeiraEmpresa = empresas[0];
   if (!primeiraEmpresa) throw new Error("Usuário sem associação ativa a uma empresa.");
@@ -104,7 +107,7 @@ async function selecionarEmpresa(): Promise<boolean> {
     sessaoToken.definirEmpresa(seletor.value);
     location.reload();
   });
-  return ativa.papel === "admin";
+  return { admin: ativa.papel === "admin", empresa: ativa };
 }
 
 async function principal(): Promise<void> {
@@ -131,14 +134,23 @@ async function principal(): Promise<void> {
     }
   }
   if (!usuario) usuario = await pedirLogin();
+
+  let selecao: Awaited<ReturnType<typeof selecionarEmpresa>>;
   try {
-    usuario.admin = await selecionarEmpresa();
+    selecao = await selecionarEmpresa();
   } catch (erro) {
     console.error(erro);
     sessaoToken.definir(null);
     usuario = await pedirLogin("Não foi possível selecionar uma empresa para esta conta.");
-    usuario.admin = await selecionarEmpresa();
+    selecao = await selecionarEmpresa();
   }
+  usuario.admin = selecao.admin;
+
+  // Wizard de onboarding: exibido para admins de empresa nova antes de montar o app.
+  if (detectarOnboarding({ usuario, empresa: selecao.empresa })) {
+    await iniciarWizardOnboarding();
+  }
+
   await iniciarApp(usuario);
 }
 

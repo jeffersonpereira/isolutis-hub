@@ -25,6 +25,7 @@ class Empresa(Base):
     nome: Mapped[str]
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime | None]
+    onboarding_concluido: Mapped[bool] = mapped_column(default=False, server_default="false")
 
 
 class Municipio(Base):
