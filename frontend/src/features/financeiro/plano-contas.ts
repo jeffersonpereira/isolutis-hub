@@ -21,7 +21,6 @@ const tela: { contas: PlanoConta[] | null; selecionada: string | null; recolhida
 
 async function carregar(): Promise<void> {
   tela.contas = await apiFinanceiro.plano.listar();
-  if (tela.selecionada && !tela.contas.some((c) => c.id === tela.selecionada)) tela.selecionada = null;
 }
 
 const contemBusca = (c: PlanoConta): boolean => {
@@ -47,7 +46,6 @@ const contemBuscaRecursivo = (c: PlanoConta): boolean => {
   return filhas.some((f) => contemBuscaRecursivo(f));
 };
 
-const contaSelecionada = (): PlanoConta | undefined => tela.contas?.find((c) => c.id === tela.selecionada);
 
 function no(c: PlanoConta): Safe {
   const filhas = filhasDe(c.id);
@@ -77,9 +75,8 @@ function vista(): Safe {
     </div></div>
   ${
     tela.contas.length
-      ? html`<div class="panel"><ul class="tree" role="tree" aria-label="Plano de contas">${filhasDe(null).map(no)}</ul></div>
-        <p class="sub" style="margin-top:10px">${sel_ ? html`Selecionada: <b>${sel_.codigo} ${sel_.nome}</b>. Editar e Excluir atuam nesta conta.` : "Clique em uma conta para editar ou excluir; sem seleção, “Nova conta” cria uma conta de primeiro nível."}</p>`
-      : html`<div class="empty"><b>Plano de contas vazio</b>Comece pelas contas de primeiro nível, por exemplo 1 Receita e 2 Despesa, e vá abrindo os níveis.<br><button class="btn primary" data-act="novaConta">Criar a primeira conta</button></div>`
+      ? html`<div class=”panel”><ul class=”tree” role=”tree” aria-label=”Plano de contas”>${filhasDe(null).map(no)}</ul></div>`
+      : html`<div class=”empty”><b>Plano de contas vazio</b>Comece pelas contas de primeiro nível, por exemplo 1 Receita e 2 Despesa, e vá abrindo os níveis.<br><button class=”btn primary” data-act=”novaConta”>Criar a primeira conta</button></div>`
   }`;
 }
 
@@ -147,7 +144,6 @@ function formConta(modo: "nova" | "editar", base?: PlanoConta, paiInicial?: Plan
           operacao: () => (editando ? apiFinanceiro.plano.atualizar(base.id, corpo) : apiFinanceiro.plano.criar(corpo)),
         });
         if (salva) {
-          tela.selecionada = salva.id;
           render();
         }
       });
