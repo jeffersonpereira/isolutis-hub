@@ -11,12 +11,6 @@
   --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
   --r:8px;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0d1520; --surface:#151e2f; --sunk:#0f1829; --line:#232f44;
-  --ink:#e8edf4; --muted:#a0afc4; --accent:#3b9ca8; --accent-ink:#0d1520; --gold:#5bb8c2; --gold-soft:#123a44;
-  --bar-a:#3b9ca8; --bar-b:#3e556f;
-  --ok:#6fd19f; --ok-bg:#16352a; --warn:#d9b860; --warn-bg:#3a2f14; --bad:#d98a7f; --bad-bg:#3d1c1b; --info:#9cc2f0; --info-bg:#1a2d47; --wa:#5fd1a8; --wa-ink:#07210f;
-  color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0d1520; --surface:#151e2f; --sunk:#0f1829; --line:#232f44;
   --ink:#e8edf4; --muted:#a0afc4; --accent:#3b9ca8; --accent-ink:#0d1520; --gold:#5bb8c2; --gold-soft:#123a44;
