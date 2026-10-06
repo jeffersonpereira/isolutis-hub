@@ -23,4 +23,10 @@ A listagem de lançamentos de receita SHALL sinalizar visualmente o estado de ca
 #### Scenario: Lógica de status calculada no frontend
 - **WHEN** a listagem de lançamentos é renderizada
 - **THEN** o status visual é calculado comparando `vencimento` com a data atual no cliente
-- **AND** nenhuma alteração no backend ou no schema de dados é necessária
+- **AND** nenhuma alteração no backend ou no schema de dados é necessária para o cálculo visual
+
+#### Scenario: Campo notificado_em indica quando alerta por e-mail foi enviado
+- **WHEN** o sistema envia um e-mail de alerta para um lançamento
+- **THEN** o campo `notificado_em` é atualizado com o timestamp do envio
+- **AND** o campo é `null` enquanto nenhuma notificação foi enviada para aquele lançamento
+- **AND** o campo não é exposto na interface do usuário (uso interno do sistema de notificações)
