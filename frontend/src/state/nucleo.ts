@@ -82,13 +82,14 @@ export async function recarregarVista(): Promise<void> {
   if (atual === id) render();
 }
 
-const gruposAbertos = new Set<string>();
-const gruposFechados = new Set<string>();
+/** Estado do menu: quais grupos o usuário clicou para abrir (Map <grupo, true = aberto>). */
+const estadoGrupos = new Map<string, boolean>();
 
 registrarAcao("alternarGrupo", (alvo) => {
-  const g = alvo.dataset.valor ?? "";
-  if (gruposFechados.has(g)) gruposFechados.delete(g);
-  else gruposFechados.add(g);
+  const grupo = alvo.dataset.valor ?? "";
+  if (!grupo) return;
+  const estaAberto = estadoGrupos.get(grupo) ?? false;
+  estadoGrupos.set(grupo, !estaAberto);
   renderMenu();
 });
 
@@ -108,7 +109,11 @@ export function renderMenu(): void {
     if (desenhados.has(v.grupo)) continue;
     desenhados.add(v.grupo);
     const filhos = itens.filter((x) => x.grupo === v.grupo);
-    const aberto = !gruposFechados.has(v.grupo) && (gruposAbertos.has(v.grupo) || filhos.some((x) => x.id === atual));
+    const usuarioExplicitouEstado = estadoGrupos.has(v.grupo);
+    const usuarioQuerAberto = estadoGrupos.get(v.grupo) ?? false;
+    const voceEstaEmUmFilho = filhos.some((x) => x.id === atual);
+    // Abre se: (1) usuário clicou para abrir OU (2) você está em um filho e usuário não explicitamente fechou
+    const aberto = usuarioQuerAberto || (voceEstaEmUmFilho && !usuarioExplicitouEstado);
     blocos.push(html`<button class="nav-grupo" data-act="alternarGrupo" data-valor="${v.grupo}" aria-expanded="${aberto}">${v.grupo}<span class="seta" aria-hidden="true">›</span></button>${filhos.map((x) => html`<span class="nav-sub${aberto ? "" : " fechado"}">${botao(x, true)}</span>`)}`);
   }
   obrigatorio("#nav").innerHTML = String(html`${blocos}`);
