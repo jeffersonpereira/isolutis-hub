@@ -1,6 +1,7 @@
 import { $ } from "@/core/dom";
 import { html, raw, type Safe } from "@/core/html";
 import { registrarVista, render } from "@/state/nucleo";
+import { ui } from "@/state/estado";
 import { registrarAcao } from "@/ui/acoes";
 import { campo, fv, inp, sel } from "@/ui/campos";
 import { tentar } from "@/ui/erros";
@@ -23,17 +24,45 @@ async function carregar(): Promise<void> {
   if (tela.selecionada && !tela.contas.some((c) => c.id === tela.selecionada)) tela.selecionada = null;
 }
 
-const filhasDe = (pai: string | null): PlanoConta[] => (tela.contas ?? []).filter((c) => c.plano_pai_id === pai);
+const contemBusca = (c: PlanoConta): boolean => {
+  const q = ui.buscaPlano.toLowerCase();
+  return !q || `${c.codigo} ${c.nome}`.toLowerCase().includes(q);
+};
+
+const filhasDe = (pai: string | null): PlanoConta[] => {
+  const todas = (tela.contas ?? []).filter((c) => c.plano_pai_id === pai);
+  const buscaAtiva = ui.buscaPlano.trim().length > 0;
+  if (!buscaAtiva) return todas;
+
+  return todas.filter((c) => {
+    if (contemBusca(c)) return true;
+    const filhas = (tela.contas ?? []).filter((f) => f.plano_pai_id === c.id);
+    return filhas.some((f) => contemBusca(f) || contemBuscaRecursivo(f));
+  });
+};
+
+const contemBuscaRecursivo = (c: PlanoConta): boolean => {
+  if (contemBusca(c)) return true;
+  const filhas = (tela.contas ?? []).filter((f) => f.plano_pai_id === c.id);
+  return filhas.some((f) => contemBuscaRecursivo(f));
+};
+
 const contaSelecionada = (): PlanoConta | undefined => tela.contas?.find((c) => c.id === tela.selecionada);
 
 function no(c: PlanoConta): Safe {
   const filhas = filhasDe(c.id);
   const aberto = !tela.recolhidas.has(c.id);
+  const podeFilha = c.tipo_conta === "S" && c.nivel < 3;
   return html`<li role="treeitem" aria-expanded="${filhas.length ? aberto : ""}">
-    <div class="tree-row" tabindex="0" data-act="selecionarConta" data-id="${c.id}" aria-selected="${tela.selecionada === c.id}">
+    <div class="tree-row">
       <button class="tree-caret${filhas.length ? "" : " vazio"}" type="button" data-act="alternarNo" data-id="${c.id}" aria-expanded="${aberto}" aria-label="${aberto ? "Recolher" : "Expandir"} ${c.nome}"><i>›</i></button>
       <span class="tree-cod">${c.codigo}</span><span class="tree-nome${c.tipo_conta === "S" ? " sintetica" : ""}">${c.nome}</span>
       <span class="tree-pills"><span class="pill ${c.natureza === "R" ? "ok" : "bad"}">${c.natureza === "R" ? "Receita" : "Despesa"}</span><span class="pill">${c.tipo_conta === "S" ? "Sintética" : "Analítica"}</span></span>
+      <span class="tree-actions">
+        <button type="button" data-act="editarConta" data-id="${c.id}" title="Editar">✏️</button>
+        <button type="button" data-act="excluirConta" data-id="${c.id}" title="Excluir">🗑️</button>
+        <button type="button" data-act="novaContaFilha" data-id="${c.id}"${raw(podeFilha ? "" : " disabled")} title="Adicionar filha">+</button>
+      </span>
     </div>
     ${filhas.length && aberto ? html`<ul class="tree" role="group">${filhas.map(no)}</ul>` : ""}
   </li>`;
@@ -41,13 +70,10 @@ function no(c: PlanoConta): Safe {
 
 function vista(): Safe {
   if (!tela.contas) return html`<div class="head"><div><h1>Plano de contas</h1></div></div><p class="sub">Carregando…</p>`;
-  const sel_ = contaSelecionada();
-  const podeFilha = !sel_ || (sel_.tipo_conta === "S" && sel_.nivel < 3);
-  return html`<div class="head"><div><h1>Plano de contas</h1><p>Até três níveis (1 · 1.01 · 1.01.001). Só contas analíticas recebem lançamentos.</p></div>
+  return html`<div class="head"><div><h1>Plano de contas</h1><p>Até três níveis (1 · 1.01 · 1.01.001). Só contas analíticas recebem lançamentos.</p>
+    <div style="margin-top:8px"><input type="search" placeholder="Pesquisar contas..." data-busca="buscaPlano" aria-label="Pesquisar contas por código ou nome"></div></div>
     <div class="tools">
-      <button class="btn primary" data-act="novaConta"${raw(podeFilha ? "" : " disabled")}>${sel_ ? "Nova conta filha" : "Nova conta"}</button>
-      <button class="btn" data-act="editarConta"${raw(sel_ ? "" : " disabled")}>Editar</button>
-      <button class="btn danger" data-act="excluirConta"${raw(sel_ ? "" : " disabled")}>Excluir</button>
+      <button class="btn primary" data-act="novaConta">+ Nova Conta Raiz</button>
     </div></div>
   ${
     tela.contas.length
@@ -129,10 +155,6 @@ function formConta(modo: "nova" | "editar", base?: PlanoConta, paiInicial?: Plan
   });
 }
 
-registrarAcao("selecionarConta", (alvo) => {
-  tela.selecionada = tela.selecionada === alvo.dataset.id ? null : (alvo.dataset.id ?? null);
-  render();
-});
 registrarAcao("alternarNo", (alvo) => {
   const id = alvo.dataset.id ?? "";
   if (tela.recolhidas.has(id)) tela.recolhidas.delete(id);
@@ -140,15 +162,21 @@ registrarAcao("alternarNo", (alvo) => {
   render();
 });
 registrarAcao("novaConta", () => {
-  const s = contaSelecionada();
-  formConta("nova", undefined, s && s.tipo_conta === "S" && s.nivel < 3 ? s : undefined);
+  formConta("nova");
 });
-registrarAcao("editarConta", () => {
-  const s = contaSelecionada();
+registrarAcao("editarConta", (alvo) => {
+  const id = alvo.dataset.id ?? "";
+  const s = tela.contas?.find((c) => c.id === id);
   if (s) formConta("editar", s);
 });
-registrarAcao("excluirConta", () => {
-  const s = contaSelecionada();
+registrarAcao("novaContaFilha", (alvo) => {
+  const id = alvo.dataset.id ?? "";
+  const pai = tela.contas?.find((c) => c.id === id);
+  if (pai) formConta("nova", undefined, pai);
+});
+registrarAcao("excluirConta", (alvo) => {
+  const id = alvo.dataset.id ?? "";
+  const s = tela.contas?.find((c) => c.id === id);
   if (!s) return;
   confirmarExclusao({
     titulo: "Excluir conta",

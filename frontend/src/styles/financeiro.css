@@ -26,6 +26,14 @@ nav .nav-sub button{padding-left:26px;font-size:13px;width:100%;box-sizing:borde
 .tree-nome{flex:1;min-width:0}
 .tree-nome.sintetica{font-weight:600}
 .tree-pills{display:flex;gap:6px;flex:none}
+.tree-actions{display:none;gap:4px;flex:none}
+.tree-actions button{all:unset;cursor:pointer;width:24px;height:24px;display:grid;place-items:center;font-size:14px;border-radius:4px;color:var(--muted);transition:background .1s}
+.tree-actions button:hover{background:var(--line)}
+.tree-actions button:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+.tree-actions button[disabled]{opacity:.5;cursor:not-allowed}
+.tree-row:hover .tree-actions{display:flex}
+.tree-row:focus-visible .tree-actions{display:flex}
+@media (prefers-forced-colors:active){.tree-actions{display:flex}}
 .fin-filtros{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
 .fluxo td.ent{color:var(--ok)}.fluxo td.sai{color:var(--bad)}
 

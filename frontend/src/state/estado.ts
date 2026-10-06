@@ -27,6 +27,7 @@ export const ui = {
   tarefaBusca: "",
   tarefaConcluidasTodas: false,
   buscaFin: "",
+  buscaPlano: "",
   finTipo: "todos",
   finStatus: "todos",
 };

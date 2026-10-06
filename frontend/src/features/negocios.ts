@@ -53,7 +53,8 @@ function vista(): Safe {
 
 registrarVista({
   id: "negocios",
-  nome: "Negócios e funil",
+  nome: "Negócios e Funil",
+  grupo: "Comercial",
   contagem: () => dados.negocios.filter((n) => ABERTAS.includes(n.etapa)).length,
   desenhar: vista,
 });

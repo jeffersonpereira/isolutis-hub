@@ -1,5 +1,6 @@
 /* Paleta iSolutis: azul-marinho (#1a2d47) e turquesa (#3b9ca8) dessaturados para reduzir fadiga visual mantendo identidade de marca. */
 :root{
+  color-space:srgb;
   --navy:#1a2d47; --navy-deep:#0f1b2e; --teal:#3b9ca8; --gold:#0d8792; --gold-soft:#dbf3f5;
   --bg:#ffffff; --surface:#ffffff; --sunk:#f5f7fb; --line:#e8ecf2;
   --ink:#16223b; --muted:#56647a; --accent:#1a2d47; --accent-ink:#ffffff;

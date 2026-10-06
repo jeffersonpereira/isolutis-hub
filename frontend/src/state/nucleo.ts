@@ -30,8 +30,8 @@ const CHAVE_ABA = "hub.aba";
 
 /** Ordem do menu lateral (independe da ordem em que os módulos são importados). */
 const ORDEM_MENU = [
-  "painel", "clientes", "negocios", "orcamentos", "projetos", "tarefas", "faturamento", "despesas", "produtos",
-  "fin-plano", "fin-contas", "fin-parceiros", "fin-titulos", "fin-fluxo", "equipe",
+  "painel", "clientes", "negocios", "orcamentos", "projetos", "tarefas", "produtos",
+  "fin-plano", "fin-contas", "fin-parceiros", "fin-titulos", "fin-fluxo", "faturamento", "equipe",
 ];  // fmt: skip
 const posicao = (id: string): number => {
   const i = ORDEM_MENU.indexOf(id);

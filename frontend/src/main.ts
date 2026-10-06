@@ -21,7 +21,6 @@ import "@/features/orcamentos";
 import "@/features/projetos";
 import "@/features/tarefas";
 import "@/features/faturamento";
-import "@/features/despesas";
 import "@/features/produtos";
 import "@/features/equipe";
 import "@/features/financeiro";
