@@ -46,7 +46,7 @@ function vista(): Safe {
 
 registrarVista({
   id: "clientes",
-  nome: "Parceiro de Negócios",
+  nome: "Clientes",
   contagem: () => dados.clientes.length,
   desenhar: vista,
 });

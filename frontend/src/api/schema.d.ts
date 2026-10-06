@@ -980,6 +980,19 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AlertaItem */
+        AlertaItem: {
+            /** Quantidade */
+            quantidade: number;
+            /** Ids */
+            ids: string[];
+        };
+        /** AlertasInfo */
+        AlertasInfo: {
+            lancamentos_vencidos: components["schemas"]["AlertaItem"];
+            orcamentos_parados: components["schemas"]["AlertaItem"];
+            projetos_atrasados: components["schemas"]["AlertaItem"];
+        };
         /** AprovacaoSaida */
         AprovacaoSaida: {
             orcamento: components["schemas"]["OrcamentoLeitura"];
@@ -2228,6 +2241,7 @@ export interface components {
             proximos_fechamentos: components["schemas"]["ProximoFechamento"][];
             /** Orcamentos Aguardando */
             orcamentos_aguardando: components["schemas"]["OrcamentoAguardando"][];
+            alertas: components["schemas"]["AlertasInfo"];
         };
         /** PapelLeitura */
         PapelLeitura: {

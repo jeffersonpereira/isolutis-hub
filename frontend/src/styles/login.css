@@ -8,7 +8,7 @@
 .lg-topo span{font:600 11px var(--f-display);letter-spacing:.18em;text-transform:uppercase;color:#93a3bd;padding-left:4px}
 .lg-form{background:#ffffff;color:#16223b;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:8px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
 .lg-form h1{font-size:22px;margin:0 0 6px;color:#1B2B4B}
-.lg-form label{font-size:12px;font-weight:600;color:#56647a;margin-top:6px}
+.lg-form label{font-size:var(--text-xs);font-weight:600;color:#56647a;margin-top:6px}
 .lg-form input{border:1px solid #d3dbe6;background:#eef1f6;border-radius:6px;padding:10px 11px;font:inherit;color:#16223b}
 .lg-form input:focus-visible{outline:2px solid #0d8792;outline-offset:1px}
 .lg-form .btn{margin-top:12px;padding:10px 14px;background:#1B2B4B;color:#fff;border-color:#1B2B4B}

@@ -74,6 +74,13 @@ def orcamento_html(orc: Orcamento, cliente: Parceiro) -> str:
     )
 
 
+def orcamento_pdf(orc: Orcamento, cliente: Parceiro) -> bytes:
+    from weasyprint import HTML
+
+    html_content = orcamento_html(orc, cliente)
+    return HTML(string=html_content).write_pdf()  # type: ignore[no-any-return]
+
+
 def _linhas(texto: str | None) -> list[str]:
     """Texto de uma linha por item: remove marcadores (•, -, *) e linhas vazias."""
     return [s for s in (re.sub(r"^[•\-*]\s*", "", ln).strip() for ln in (texto or "").split("\n")) if s]

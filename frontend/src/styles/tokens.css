@@ -1,7 +1,7 @@
 /* Paleta iSolutis: azul-marinho (#1a2d47) e turquesa (#3b9ca8) dessaturados para reduzir fadiga visual mantendo identidade de marca. */
 :root{
   color-space:srgb;
-  --navy:#1a2d47; --navy-deep:#0f1b2e; --teal:#3b9ca8; --gold:#0d8792; --gold-soft:#dbf3f5;
+  --navy:#1a2d47; --navy-deep:#0f1b2e; --teal:#3b9ca8; --teal-mid:#0d8792; --teal-pale:#dbf3f5;
   --bg:#ffffff; --surface:#ffffff; --sunk:#f5f7fb; --line:#e8ecf2;
   --ink:#16223b; --muted:#56647a; --accent:#1a2d47; --accent-ink:#ffffff;
   --bar-a:#1a2d47; --bar-b:#b5d4d8;
@@ -10,10 +10,22 @@
   --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
   --r:8px;
+  /* Typography scale */
+  --text-2xs: 0.625rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-md: 1.125rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
 }
 :root[data-theme="dark"]{
   --bg:#0d1520; --surface:#151e2f; --sunk:#0f1829; --line:#232f44;
-  --ink:#e8edf4; --muted:#a0afc4; --accent:#3b9ca8; --accent-ink:#0d1520; --gold:#5bb8c2; --gold-soft:#123a44;
+  --ink:#e8edf4; --muted:#a0afc4; --accent:#3b9ca8; --accent-ink:#0d1520; --teal-mid:#5bb8c2; --teal-pale:#123a44;
   --bar-a:#3b9ca8; --bar-b:#3e556f;
   --ok:#6fd19f; --ok-bg:#16352a; --warn:#d9b860; --warn-bg:#3a2f14; --bad:#d98a7f; --bad-bg:#3d1c1b; --info:#9cc2f0; --info-bg:#1a2d47; --wa:#5fd1a8; --wa-ink:#07210f;
   color-scheme:dark}

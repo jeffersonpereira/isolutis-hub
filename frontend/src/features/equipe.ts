@@ -1,12 +1,12 @@
 import { api } from "@/api/endpoints";
-import type { Usuario } from "@/api/tipos";
+import type { Convite, Usuario } from "@/api/tipos";
 import { $ } from "@/core/dom";
-import { compararTexto, primeiroNome, quandoCompleto } from "@/core/formato";
+import { compararTexto, primeiroNome, quando, quandoCompleto } from "@/core/formato";
 import { html, raw, type Safe } from "@/core/html";
 import { eu } from "@/state/estado";
 import { recarregar, registrarVista } from "@/state/nucleo";
 import { registrarAcao } from "@/ui/acoes";
-import { campo, fv, inp } from "@/ui/campos";
+import { campo, fv, inp, sel } from "@/ui/campos";
 import { registrarConsulta } from "@/ui/conflito";
 import { tentar } from "@/ui/erros";
 import { registrarAbertura } from "@/ui/eventos";
@@ -15,32 +15,55 @@ import { espaco } from "@/ui/formularios";
 import { excluir } from "@/ui/gravacao";
 import { toast } from "@/ui/toast";
 
-const pagina: { lista: Usuario[] | null; erro: string } = { lista: null, erro: "" };
+const pagina: { lista: Usuario[] | null; convites: Convite[] | null; erro: string } = {
+  lista: null,
+  convites: null,
+  erro: "",
+};
 
 registrarConsulta("equipe", (id) => pagina.lista?.find((u) => u.id === id) && { id, versao: pagina.lista.find((u) => u.id === id)!.versao, atualizado_por: null });
 
 async function carregar(): Promise<void> {
   try {
-    pagina.lista = await api.usuarios.listar();
+    [pagina.lista, pagina.convites] = await Promise.all([api.usuarios.listar(), api.convites.listar().catch(() => [])]);
     pagina.erro = "";
   } catch (e) {
     pagina.erro = e instanceof Error ? e.message : "Não foi possível carregar a equipe.";
   }
 }
 
+function vistaConvitesPendentes(): Safe {
+  const convites = pagina.convites;
+  if (!convites || convites.length === 0) return html``;
+  return html`<section style="margin-top:32px">
+    <h2 style="font-size:1rem;margin-bottom:12px">Convites pendentes</h2>
+    <div class="tbl-wrap"><table><thead><tr><th>E-mail</th><th>Papel</th><th>Enviado em</th><th>Expira em</th><th></th></tr></thead><tbody>
+      ${convites.map(
+        (c) => html`<tr>
+          <td class="num">${c.email}</td>
+          <td>${c.papel === "admin" ? html`<span class="pill info">Administrador</span>` : html`<span class="pill">Membro</span>`}</td>
+          <td class="sub">${quando(c.criado_em)}</td>
+          <td class="sub">${quando(c.expira_em)}</td>
+          <td><button class="btn" data-act="cancelarConvite" data-valor="${c.id}">Cancelar</button></td>
+        </tr>`,
+      )}
+    </tbody></table></div>
+  </section>`;
+}
+
 function vista(): Safe {
-  const cabecalho = html`<div class="head"><div><h1>Equipe</h1><p>Quem pode entrar no Hub. Aqui você cadastra pessoas, define e troca senhas e escolhe quem é administrador.</p></div>
-    <div class="tools"><button class="btn" data-act="recarregarEquipe">Atualizar</button><button class="btn primary" data-act="novoUsuario">Novo usuário</button></div></div>`;
+  const cabecalho = html`<div class="head"><div><h1>Equipe</h1><p>Quem pode entrar no Hub. Aqui você convida pessoas, define e troca senhas e escolhe quem é administrador.</p></div>
+    <div class="tools"><button class="btn" data-act="recarregarEquipe">Atualizar</button><button class="btn" data-act="novoUsuario">Novo usuário</button><button class="btn primary" data-act="convidarMembro">Convidar membro</button></div></div>`;
   if (pagina.erro) return html`${cabecalho}<div class="banner" style="background:var(--bad-bg);color:var(--bad)">${pagina.erro}</div>`;
   if (!pagina.lista) return html`${cabecalho}<p class="sub">Carregando a equipe…</p>`;
   const lista = [...pagina.lista].sort((a, b) => Number(b.ativo) - Number(a.ativo) || Number(b.admin) - Number(a.admin) || compararTexto(a.nome, b.nome));
   return html`${cabecalho}<div class="tbl-wrap"><table><thead><tr><th>Nome</th><th>E-mail</th><th>Acesso</th><th>Login</th><th>Último acesso</th></tr></thead><tbody>
     ${lista.map(
-      (u) => html`<tr tabindex="0" data-open="usuario:${u.id}"><td><b>${u.nome}</b>${u.id === eu.id ? html` <span class="pill gold">você</span>` : ""}</td><td class="num">${u.email}</td>
+      (u) => html`<tr tabindex="0" data-open="usuario:${u.id}"><td><b>${u.nome}</b>${u.id === eu.id ? html` <span class="pill teal-mid">você</span>` : ""}</td><td class="num">${u.email}</td>
       <td>${!u.ativo ? html`<span class="pill">Removido</span>` : u.admin ? html`<span class="pill info">Administrador</span>` : html`<span class="pill">Membro</span>`}</td>
       <td>${u.senha_definida ? html`<span class="pill ok">Ativo</span>` : html`<span class="pill warn">Sem senha</span>`}</td><td class="sub">${quandoCompleto(u.ultimo_acesso)}</td></tr>`,
     )}
-  </tbody></table></div>`;
+  </tbody></table></div>${vistaConvitesPendentes()}`;
 }
 
 registrarVista({ id: "equipe", nome: "Equipe", somenteAdmin: true, carregar, depende: ["equipe"], desenhar: vista });
@@ -124,9 +147,50 @@ function formUsuario(u?: Usuario): void {
   });
 }
 
+function formConvite(): void {
+  abrirGaveta({
+    titulo: "Convidar membro",
+    corpo: html`<div class="fields">
+      ${campo("Nome", inp("nome", "", 'placeholder="Como aparece no Hub"'))}
+      ${campo("E-mail", inp("email", "", 'type="email" placeholder="email@empresa.com.br"'))}
+      ${campo("Papel", sel("papel", [["membro", "Membro"], ["admin", "Administrador"]], "membro"))}
+    </div>`,
+    rodape: html`<button class="btn primary" data-salvar>Enviar convite</button>`,
+    montar: (f, fechar, L) => {
+      $("[data-salvar]", L)?.addEventListener("click", async (e) => {
+        const botao = e.target as HTMLButtonElement;
+        const nome = fv(f, "nome");
+        const email = fv(f, "email").toLowerCase();
+        const papel = fv(f, "papel") as "admin" | "membro";
+        if (!nome) return void toast("Informe o nome do convidado.");
+        if (!email) return void toast("Informe o e-mail do convidado.");
+        botao.disabled = true;
+        const ok = await tentar(() => api.convites.criar({ nome, email, papel }));
+        if (!ok) {
+          botao.disabled = false;
+          return;
+        }
+        toast(`Convite enviado para ${email}`);
+        await recarregar("equipe");
+        fechar();
+      });
+    },
+  });
+}
+
 registrarAcao("novoUsuario", () => formUsuario());
+registrarAcao("convidarMembro", () => formConvite());
 registrarAcao("recarregarEquipe", async () => {
   await recarregar("equipe");
+});
+registrarAcao("cancelarConvite", async (alvo) => {
+  const id = Number(alvo.dataset.valor);
+  if (!id) return;
+  const ok = await tentar(() => api.convites.cancelar(id));
+  if (ok !== null) {
+    toast("Convite cancelado.");
+    await recarregar("equipe");
+  }
 });
 registrarAbertura("usuario", (id) => {
   const u = pagina.lista?.find((x) => x.id === id);

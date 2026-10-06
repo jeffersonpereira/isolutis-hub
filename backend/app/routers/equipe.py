@@ -7,7 +7,9 @@ from app.models import Empresa, UsuarioEmpresa
 from sqlalchemy import select
 from sqlalchemy import text
 from pydantic import BaseModel, Field
+from app.schemas.convite import ConviteEntrada, ConviteLeitura
 from app.schemas.usuario import MembroEquipe, UsuarioAtualizar, UsuarioCriar, UsuarioLeitura
+from app.services import convites as svc_convites
 from app.services import usuarios as svc
 
 router = APIRouter(tags=["Equipe"])
@@ -61,6 +63,24 @@ async def atualizar_usuario(id_: UUID, dados: UsuarioAtualizar, empresa: Empresa
 @router.delete("/usuarios/{id_}", status_code=204, tags=["Administração"])
 async def remover_usuario(id_: UUID, empresa: EmpresaAtual, quem: Administrador, sessao: Sessao) -> Response:
     await svc.desativar(sessao, quem, empresa.id, id_)
+    return Response(status_code=204)
+
+
+@router.post("/convite", status_code=201, response_model=ConviteLeitura, tags=["Administração"])
+async def criar_convite_route(dados: ConviteEntrada, empresa: EmpresaAtual, quem: Administrador, sessao: Sessao) -> ConviteLeitura:
+    convite = await svc_convites.criar_convite(sessao, empresa.id, dados, quem.id)
+    return ConviteLeitura.model_validate(convite)
+
+
+@router.get("/convites", response_model=list[ConviteLeitura], tags=["Administração"])
+async def listar_convites_route(empresa: EmpresaAtual, _: Administrador, sessao: Sessao) -> list[ConviteLeitura]:
+    pendentes = await svc_convites.listar_pendentes(sessao, empresa.id)
+    return [ConviteLeitura.model_validate(c) for c in pendentes]
+
+
+@router.delete("/convite/{convite_id}", status_code=204, tags=["Administração"])
+async def cancelar_convite_route(convite_id: int, empresa: EmpresaAtual, _: Administrador, sessao: Sessao) -> Response:
+    await svc_convites.cancelar_convite(sessao, convite_id, empresa.id)
     return Response(status_code=204)
 
 

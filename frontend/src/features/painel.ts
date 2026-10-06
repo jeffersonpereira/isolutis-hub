@@ -14,9 +14,46 @@ async function carregar(): Promise<void> {
   dadosPainel = await api.painel.obter();
 }
 
+function vistaSkeleton(): string {
+  return `
+    <div class="skeleton-wrap">
+      <div class="skeleton-row">
+        <div class="skeleton skeleton-kpi"></div>
+        <div class="skeleton skeleton-kpi"></div>
+        <div class="skeleton skeleton-kpi"></div>
+      </div>
+      <div class="skeleton skeleton-chart"></div>
+    </div>
+  `;
+}
+
+type AlertasInfo = {
+  lancamentos_vencidos: { quantidade: number; ids: string[] };
+  orcamentos_parados: { quantidade: number; ids: string[] };
+  projetos_atrasados: { quantidade: number; ids: string[] };
+};
+
+function vistaAlertas(alertas: AlertasInfo): string {
+  const { lancamentos_vencidos, orcamentos_parados, projetos_atrasados } = alertas;
+  if (!lancamentos_vencidos.quantidade && !orcamentos_parados.quantidade && !projetos_atrasados.quantidade) {
+    return "";
+  }
+  const itens: string[] = [];
+  if (lancamentos_vencidos.quantidade > 0) {
+    itens.push(`<div class="alerta bad" data-go="faturamento">${lancamentos_vencidos.quantidade} lançamento(s) vencido(s) há mais de 3 dias</div>`);
+  }
+  if (orcamentos_parados.quantidade > 0) {
+    itens.push(`<div class="alerta warn" data-go="orcamentos">${orcamentos_parados.quantidade} orçamento(s) sem resposta há mais de 15 dias</div>`);
+  }
+  if (projetos_atrasados.quantidade > 0) {
+    itens.push(`<div class="alerta bad" data-go="projetos">${projetos_atrasados.quantidade} projeto(s) com entrega atrasada</div>`);
+  }
+  return `<div class="alertas-zona">${itens.join("")}</div>`;
+}
+
 function vista(): Safe {
   const p = dadosPainel;
-  if (!p) return html`<div class="head"><div><h1>${eu.nome ? "Olá, " + primeiroNome(eu.nome) : "Painel comercial"}</h1></div></div><p class="sub">Carregando…</p>`;
+  if (!p) return html`<div class="head"><div><h1>${eu.nome ? "Olá, " + primeiroNome(eu.nome) : "Painel comercial"}</h1></div></div>${vistaSkeleton()}`;
   const h = hoje();
   const maxN = Math.max(1, ...p.por_etapa.map((e) => e.quantidade));
   const serie = p.serie.map((s, i) => ({
@@ -27,6 +64,7 @@ function vista(): Safe {
   const escrever = podeEscrever();
   return html`<div class="head"><div><h1>${eu.nome ? "Olá, " + primeiroNome(eu.nome) : "Painel comercial"}</h1><p>Painel comercial · ${mesNome} de ${p.ano}</p></div><div class="tools">${botaoNovo("novoNegocio", "Novo negócio")}</div></div>
   ${p.banco_vazio ? html`<div class="empty" style="margin-bottom:16px"><b>O Hub Comercial está pronto para receber os primeiros registros</b>Comece pelos produtos que a iSolutis vende, depois cadastre clientes e abra negócios no funil. O painel se preenche sozinho.<br>${escrever ? html`<button class="btn primary" data-go="produtos">Cadastrar produtos</button> <button class="btn" data-act="novoCliente">Cadastrar cliente</button>` : ""}</div>` : ""}
+  ${vistaAlertas(p.alertas)}
   <div class="kpis">
     <div class="kpi"><span class="l">Recebido no mês</span><span class="v">${brl(p.recebido_no_mes)}</span><span class="s">de ${brl(p.previsto_no_mes)} lançados para ${mesNome.toLowerCase()}</span></div>
     <div class="kpi"><span class="l">Receita recorrente</span><span class="v">${brl(p.recorrente_no_mes)}</span><span class="s">manutenções mensais deste mês</span></div>

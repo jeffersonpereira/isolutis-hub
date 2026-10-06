@@ -28,11 +28,33 @@
   background: linear-gradient(
     90deg,
     var(--bg) 25%,
-    var(--bg-hover) 50%,
+    var(--sunk) 50%,
     var(--bg) 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
+}
+
+.skeleton-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skeleton-row {
+  display: flex;
+  gap: 12px;
+}
+
+.skeleton-kpi {
+  flex: 1;
+  height: 88px;
+  border-radius: var(--r, 8px);
+}
+
+.skeleton-chart {
+  height: 220px;
+  border-radius: var(--r, 8px);
 }
 
 @keyframes shimmer {

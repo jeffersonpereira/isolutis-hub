@@ -9,6 +9,7 @@ import { abaSalva, carregarTudo, definirAtual, observarNavegacao, recarregar, re
 import { tempoReal } from "@/state/realtime";
 import { desenharOnline, indicarSincronizacao, mostrarConta } from "@/ui/casca";
 import { iniciarAvisoDeConflito } from "@/ui/conflito";
+import { detectarRotaConvite, iniciarTelaConvite } from "@/ui/convite";
 import { iniciarEventos } from "@/ui/eventos";
 import { observarGaveta } from "@/ui/gaveta";
 import { esconderLogin, pedirLogin, trocarSenha } from "@/ui/login";
@@ -141,4 +142,10 @@ async function principal(): Promise<void> {
   await iniciarApp(usuario);
 }
 
-void principal();
+// Rota pública de convite: se a URL for /convite/:token, exibe a tela de aceitação.
+const tokenConvite = detectarRotaConvite();
+if (tokenConvite) {
+  void iniciarTelaConvite(tokenConvite);
+} else {
+  void principal();
+}

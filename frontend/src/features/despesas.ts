@@ -63,7 +63,7 @@ function vista(): Safe {
   <div class="two">
     <div class="tbl-wrap"><table style="min-width:520px"><thead><tr><th>Mês</th><th class="r">Recebido</th><th class="r">Despesas</th><th class="r">Resultado</th><th class="r">Investimentos</th></tr></thead><tbody>
       ${r.meses.map(
-        (m) => html`<tr tabindex="0" data-act="mes" data-valor="${m.mes}" style="${ui.mes === m.mes ? "background:var(--gold-soft)" : ""}"><td>${MESES[m.mes - 1]}${m.mes === mesAtual ? html` <span class="pill gold">atual</span>` : ""}</td><td class="r num">${m.recebido ? brl(m.recebido) : "—"}</td><td class="r num">${m.despesas ? brl(m.despesas) : "—"}</td>
+        (m) => html`<tr tabindex="0" data-act="mes" data-valor="${m.mes}" style="${ui.mes === m.mes ? "background:var(--teal-pale)" : ""}"><td>${MESES[m.mes - 1]}${m.mes === mesAtual ? html` <span class="pill teal-mid">atual</span>` : ""}</td><td class="r num">${m.recebido ? brl(m.recebido) : "—"}</td><td class="r num">${m.despesas ? brl(m.despesas) : "—"}</td>
         <td class="r num" style="${m.resultado < 0 ? "color:var(--bad)" : ""}">${m.recebido || m.despesas ? brl(m.resultado) : "—"}</td><td class="r num">${m.investimentos ? brl(m.investimentos) : "—"}</td></tr>`,
       )}
     </tbody><tfoot><tr><td>Total ${ano}</td><td class="r num">${brl(r.recebido_no_ano)}</td><td class="r num">${brl(totalDespesas)}</td><td class="r num">${brl(r.recebido_no_ano - totalDespesas)}</td><td class="r num">${brl(r.investido_no_ano)}</td></tr></tfoot></table></div>

@@ -48,6 +48,18 @@ Em deploys com banco gerenciado, rode `alembic upgrade head` como job de release
 Variáveis em
 [`backend/.env.example`](backend/.env.example). Coloque atrás de HTTPS (o login usa token no cabeçalho `Authorization`).
 
+## GitHub Actions Secrets
+
+The CI/CD pipeline requires the following secrets configured in GitHub repository settings:
+
+| Secret | Description |
+|--------|-------------|
+| `HUB_SECRET_KEY` | JWT signing key for the application |
+| `DOCKER_REGISTRY` | Container registry hostname (e.g., `registry.example.com`) |
+| `DOCKER_USERNAME` | Registry authentication username |
+| `DOCKER_PASSWORD` | Registry authentication password |
+| `HUB_SMTP_HOST` | SMTP server hostname for outgoing e-mails |
+
 ## Acesso e equipe
 
 - Cada pessoa entra com e-mail e senha. Quem administra cria usuários, define e troca senhas na aba **Equipe**.

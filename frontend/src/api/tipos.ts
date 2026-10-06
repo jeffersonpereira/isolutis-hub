@@ -34,5 +34,40 @@ export type Tarefa = S["TarefaLeitura"];
 export type TarefaEntrada = S["TarefaEntrada"];
 export type Painel = S["Painel"];
 
+/** Convites por e-mail para ingressar na equipe. */
+export interface Convite {
+  id: number;
+  email: string;
+  papel: string;
+  criado_em: string;
+  expira_em: string;
+  usado_em: string | null;
+}
+
+export interface ConviteEntrada {
+  nome: string;
+  email: string;
+  papel: "admin" | "membro";
+}
+
+export interface AceitarConviteEntrada {
+  senha: string;
+  confirmar_senha: string;
+}
+
+export interface ConviteInfo {
+  email: string;
+  papel: string;
+  empresa_nome: string;
+  criado_por_nome: string;
+  estado: "valido" | "expirado" | "usado";
+}
+
+export interface TokenSaida {
+  access_token: string;
+  token_type: string;
+  usuario: Usuario;
+}
+
 /** Recursos que a interface mantém em memória e recarrega quando o servidor avisa de mudanças. */
 export type Recurso = "clientes" | "produtos" | "negocios" | "orcamentos" | "projetos" | "tarefas" | "equipe" | "faturamento" | "despesas";

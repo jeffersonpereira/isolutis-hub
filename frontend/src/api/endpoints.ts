@@ -19,6 +19,13 @@ export const api = {
     atualizar: (id: string, d: S["UsuarioAtualizar"]) => http.put<T.Usuario>(`/usuarios/${id}`, d),
     remover: (id: string) => http.delete(`/usuarios/${id}`),
   },
+  convites: {
+    listar: () => http.get<T.Convite[]>("/convites"),
+    criar: (d: T.ConviteEntrada) => http.post<T.Convite>("/convite", d),
+    cancelar: (id: number) => http.delete(`/convite/${id}`),
+    verificar: (token: string) => http.get<T.ConviteInfo>(`/auth/convite/${token}`),
+    aceitar: (token: string, d: T.AceitarConviteEntrada) => http.post<T.TokenSaida>(`/auth/convite/${token}/aceitar`, d),
+  },
   clientes: {
     listar: () => http.get<T.Cliente[]>("/clientes"),
     criar: (d: T.ClienteEntrada) => http.post<S["ClienteLeitura"]>("/clientes", d),

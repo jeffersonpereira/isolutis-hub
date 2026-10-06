@@ -31,7 +31,7 @@ function vista(): Safe {
   </div>
   <div class="tbl-wrap"><table class="fluxo" style="min-width:820px"><thead><tr><th>Mês</th><th class="r">Entradas realizadas</th><th class="r">Entradas previstas</th><th class="r">Saídas realizadas</th><th class="r">Saídas previstas</th><th class="r">Saldo do mês</th><th class="r">Saldo acumulado</th></tr></thead><tbody>
     ${f.meses.map(
-      (m) => html`<tr><td>${MESES[m.mes - 1]}${m.mes === mesAtual ? html` <span class="pill gold">atual</span>` : ""}</td><td class="r num ent">${valorOuTraco(m.entradas_realizadas)}</td><td class="r num ent">${valorOuTraco(m.entradas_previstas)}</td>
+      (m) => html`<tr><td>${MESES[m.mes - 1]}${m.mes === mesAtual ? html` <span class="pill teal-mid">atual</span>` : ""}</td><td class="r num ent">${valorOuTraco(m.entradas_realizadas)}</td><td class="r num ent">${valorOuTraco(m.entradas_previstas)}</td>
       <td class="r num sai">${valorOuTraco(m.saidas_realizadas)}</td><td class="r num sai">${valorOuTraco(m.saidas_previstas)}</td>
       <td class="r num" style="${m.saldo_do_mes < 0 ? "color:var(--bad)" : ""}">${valorOuTraco(m.saldo_do_mes)}</td><td class="r num" style="${m.saldo_acumulado < 0 ? "color:var(--bad)" : ""}"><b>${brl(m.saldo_acumulado)}</b></td></tr>`,
     )}

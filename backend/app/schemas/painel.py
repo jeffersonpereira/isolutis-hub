@@ -35,6 +35,17 @@ class OrcamentoAguardando(Leitura):
     total_projeto: Dinheiro
 
 
+class AlertaItem(Leitura):
+    quantidade: int
+    ids: list[UUID]
+
+
+class AlertasInfo(Leitura):
+    lancamentos_vencidos: AlertaItem
+    orcamentos_parados: AlertaItem
+    projetos_atrasados: AlertaItem
+
+
 class Painel(Leitura):
     ano: int
     mes: int
@@ -54,3 +65,4 @@ class Painel(Leitura):
     por_etapa: list[EtapaFunil]
     proximos_fechamentos: list[ProximoFechamento]
     orcamentos_aguardando: list[OrcamentoAguardando]
+    alertas: AlertasInfo

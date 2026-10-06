@@ -23,6 +23,13 @@ class Settings(BaseSettings):
     frontend_dist: str | None = None
     # Ajustes de log/SQL
     sql_echo: bool = False
+    # SMTP para envio de e-mails de convite (env vars: HUB_SMTP_HOST, HUB_SMTP_PORT, etc.)
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from: str = ""
+    base_url: str = "http://localhost:5173"
 
     @field_validator("cors_origins", mode="before")
     @classmethod
@@ -35,8 +42,13 @@ class Settings(BaseSettings):
         return v
 
     def validar_para_producao(self) -> None:
-        if self.ambiente == "producao" and (self.secret_key == _CHAVE_DE_DESENVOLVIMENTO or len(self.secret_key) < 32):
-            raise RuntimeError("Defina HUB_SECRET_KEY com pelo menos 32 caracteres antes de subir em produção.")
+        erros: list[str] = []
+        if self.secret_key == _CHAVE_DE_DESENVOLVIMENTO or len(self.secret_key) < 32:
+            erros.append("Defina HUB_SECRET_KEY com pelo menos 32 caracteres antes de subir em produção.")
+        if not self.smtp_host:
+            erros.append("HUB_SMTP_HOST é obrigatório em produção")
+        if self.ambiente == "producao" and erros:
+            raise RuntimeError(" | ".join(erros))
 
 
 @lru_cache

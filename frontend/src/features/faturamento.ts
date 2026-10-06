@@ -34,6 +34,16 @@ async function carregar(): Promise<void> {
   Object.assign(pagina, { ano, resumo, lancamentos });
 }
 
+function statusVencimento(vencimento: string, status: string): { rotulo: string; classe: string } {
+  if (status === 'recebido') return { rotulo: 'Recebido', classe: 'pill ok' };
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  const dtVenc = new Date(vencimento + 'T00:00:00');
+  if (dtVenc < hoje) return { rotulo: 'Vencido', classe: 'pill bad' };
+  if (dtVenc.getTime() === hoje.getTime()) return { rotulo: 'Vence hoje', classe: 'pill warn' };
+  return { rotulo: 'Previsto', classe: 'pill' };
+}
+
 function vista(): Safe {
   const r = pagina.resumo;
   if (!r || pagina.ano !== ui.ano) return html`<div class="head"><div><h1>Faturamento mês a mês</h1></div></div><p class="sub">Carregando…</p>`;
@@ -50,15 +60,15 @@ function vista(): Safe {
     <div class="tbl-wrap"><table style="min-width:480px"><thead><tr><th>Mês</th><th class="r">Recebido</th><th class="r">Previsto</th><th class="r">Recorrente</th><th class="r">Acumulado</th></tr></thead><tbody>
       ${r.meses.map((m) => {
         acumulado += m.recebido + m.previsto;
-        return html`<tr tabindex="0" data-act="mes" data-valor="${m.mes}" style="${ui.mes === m.mes ? "background:var(--gold-soft)" : ""}"><td>${MESES[m.mes - 1]}${m.mes === mesAtual ? html` <span class="pill gold">atual</span>` : ""}</td><td class="r num">${m.recebido ? brl(m.recebido) : "—"}</td><td class="r num">${m.previsto ? brl(m.previsto) : "—"}</td><td class="r num">${m.recorrente ? brl(m.recorrente) : "—"}</td><td class="r num sub">${brl(acumulado)}</td></tr>`;
+        return html`<tr tabindex="0" data-act="mes" data-valor="${m.mes}" style="${ui.mes === m.mes ? "background:var(--teal-pale)" : ""}"><td>${MESES[m.mes - 1]}${m.mes === mesAtual ? html` <span class="pill teal-mid">atual</span>` : ""}</td><td class="r num">${m.recebido ? brl(m.recebido) : "—"}</td><td class="r num">${m.previsto ? brl(m.previsto) : "—"}</td><td class="r num">${m.recorrente ? brl(m.recorrente) : "—"}</td><td class="r num sub">${brl(acumulado)}</td></tr>`;
       })}
     </tbody><tfoot><tr><td>Total ${ano}</td><td class="r num">${brl(r.total_recebido)}</td><td class="r num">${brl(r.total_previsto)}</td><td class="r num">${brl(r.total_recorrente)}</td><td class="r num">${brl(r.total_recebido + r.total_previsto)}</td></tr></tfoot></table></div>
     <div class="panel"><h2>${ui.mes ? html`Lançamentos de ${MESES[ui.mes - 1]?.toLowerCase()} <button class="btn ghost" data-act="limparMes">ver o ano todo</button>` : `Lançamentos de ${ano}`}</h2>
       ${
         lista.length
           ? html`<div class="list">${lista.map(
-              (l) => html`<div class="li" data-open="lanc:${l.id}" tabindex="0"><div><div class="t">${l.cliente_nome}</div><div class="sub">${dataBR(l.vencimento)} · ${l.descricao || TIPOS[l.tipo] || ""}</div></div>
-              <div style="text-align:right"><div class="num">${brl(l.valor)}</div>${l.status === "recebido" ? html`<span class="pill ok">Recebido</span>` : html`<span class="pill">Previsto</span>${escrever ? html` <button class="btn ghost" data-act="receber" data-id="${l.id}" style="padding:0 4px;font-size:12px">marcar recebido</button>` : ""}`}</div></div>`,
+              (l) => { const sv = statusVencimento(l.vencimento, l.status); return html`<div class="li" data-open="lanc:${l.id}" tabindex="0" style="${sv.classe === 'pill bad' ? "background:var(--bad-bg)" : ""}"><div><div class="t">${l.cliente_nome}</div><div class="sub">${dataBR(l.vencimento)} · ${l.descricao || TIPOS[l.tipo] || ""}</div></div>
+              <div style="text-align:right"><div class="num">${brl(l.valor)}</div><span class="${sv.classe}">${sv.rotulo}</span>${sv.classe === 'pill' && escrever ? html` <button class="btn ghost" data-act="receber" data-id="${l.id}" style="padding:0 4px;font-size:var(--text-xs)">marcar recebido</button>` : ""}</div></div>`; },
             )}</div>`
           : html`<p class="sub">Nenhum lançamento ${ui.mes ? "neste mês" : "neste ano"}. Os lançamentos entram quando um orçamento é aprovado, quando um negócio é ganho, ou pelo botão Novo lançamento.</p>`
       }

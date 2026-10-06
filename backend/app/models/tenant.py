@@ -3,8 +3,8 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, ForeignKey, String, func, text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Boolean, ForeignKey, Integer, String, func, text
+from sqlalchemy.dialects.postgresql import CITEXT, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
@@ -35,3 +35,19 @@ class ParceiroTag(Base):
     empresa_id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default=text("app_empresa_id()"))
     parceiro_id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
     tag_id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
+
+
+class Convite(Base):
+    """Convite por e-mail para ingressar na equipe de uma empresa."""
+
+    __tablename__ = "convites"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    token: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), unique=True, server_default=text("gen_random_uuid()"))
+    email: Mapped[str] = mapped_column(CITEXT, nullable=False)
+    empresa_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("empresa.id"), nullable=False)
+    papel: Mapped[str] = mapped_column(String(16), nullable=False)
+    criado_por: Mapped[uuid.UUID] = mapped_column(ForeignKey("usuarios.id"), nullable=False)
+    expira_em: Mapped[datetime] = mapped_column(nullable=False)
+    usado_em: Mapped[datetime | None] = mapped_column(nullable=True)
+    criado_em: Mapped[datetime] = mapped_column(server_default=func.now(), nullable=False)

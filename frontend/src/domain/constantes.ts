@@ -33,7 +33,7 @@ export const MOTIVOS_PERDA = ["Preço", "Prazo", "Escolheu concorrente", "Adiou 
 export const PROJ_STATUS: Record<string, readonly [string, string]> = {
   planejamento: ["Planejamento", "info"],
   construcao: ["Em construção", "warn"],
-  validacao: ["Em validação", "gold"],
+  validacao: ["Em validação", "teal-mid"],
   entregue: ["Entregue", "ok"],
   pausado: ["Pausado", ""],
 };
