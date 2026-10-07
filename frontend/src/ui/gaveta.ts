@@ -1,5 +1,7 @@
 import { $, $$ } from "@/core/dom";
 import { esc, type Safe } from "@/core/html";
+import { ligarExclusaoEmDoisCliques } from "./exclusao";
+import { abrirRegistro, fecharRegistro } from "./registro-aberto";
 
 /**
  * Gaveta lateral (onde abrem todos os formulários).
@@ -20,41 +22,24 @@ export interface OpcoesGaveta {
   aoFechar?: () => void;
 }
 
-export interface GavetaAberta {
-  recurso: string;
-  id: string;
-  versao: number;
-  /** Versão que esta própria sessão acabou de gravar (para não acusar conflito consigo mesma). */
-  minhaVersao: number | null;
-  excluidoPorMim: boolean;
-}
-
-export let gavetaAberta: GavetaAberta | null = null;
-
-let aoMudarGaveta: (titulo: string | null, editando: boolean) => void = () => {};
-export const observarGaveta = (fn: typeof aoMudarGaveta): void => {
-  aoMudarGaveta = fn;
-};
+/** O estado do registro aberto é comum à gaveta e ao formulário em página (ver `registro-aberto.ts`). */
+export { registroAberto as gavetaAberta, observarRegistro as observarGaveta } from "./registro-aberto";
+export type { RegistroAberto as GavetaAberta } from "./registro-aberto";
 
 export function abrirGaveta(o: OpcoesGaveta): () => void {
   const camada = $("#layer");
   if (!camada) throw new Error("#layer ausente");
   const anterior = document.activeElement as HTMLElement | null;
-  gavetaAberta = o.registro
-    ? { recurso: o.registro.recurso, id: o.registro.id, versao: o.registro.versao, minhaVersao: null, excluidoPorMim: false }
-    : null;
-
+  const anteriorRegistro = abrirRegistro(o.titulo, o.registro ?? null);
   camada.innerHTML = `<div class="scrim" data-fechar></div><div class="drawer" role="dialog" aria-modal="true" aria-label="${esc(o.titulo)}"><header><h2>${esc(o.titulo)}</h2><button class="btn ghost" data-fechar aria-label="Fechar">Fechar</button></header><form class="body" id="gform" novalidate><div class="banner conflito" id="conflito" hidden></div>${o.autoria ?? ""}${o.corpo}</form><footer>${o.rodape}</footer></div>`;
-  aoMudarGaveta(o.titulo, !!o.registro);
 
   const aoTeclar = (e: KeyboardEvent): void => {
     if (e.key === "Escape") fechar();
   };
   const fechar = (): void => {
     camada.innerHTML = "";
-    gavetaAberta = null;
     document.removeEventListener("keydown", aoTeclar);
-    aoMudarGaveta(null, false);
+    fecharRegistro(anteriorRegistro);
     o.aoFechar?.();
     anterior?.focus?.();
   };
@@ -65,20 +50,8 @@ export function abrirGaveta(o: OpcoesGaveta): () => void {
   if (!form) throw new Error("#gform ausente");
   form.addEventListener("submit", (e) => e.preventDefault());
 
-  // Exclusão em dois cliques: o primeiro arma o botão, o segundo confirma.
-  $$(".btn.danger", camada).forEach((b) =>
-    b.addEventListener(
-      "click",
-      (e) => {
-        if (!b.classList.contains("armed")) {
-          e.stopImmediatePropagation();
-          b.classList.add("armed");
-          b.textContent = "Confirmar exclusão";
-        }
-      },
-      true,
-    ),
-  );
+  // Exclusão em dois cliques: o primeiro clique arma o botão, o segundo confirma.
+  ligarExclusaoEmDoisCliques(camada);
 
   form.querySelector<HTMLElement>("input:not([readonly]):not([disabled]),select:not([disabled]),textarea")?.focus();
   o.montar?.(form, fechar, camada);

@@ -106,7 +106,7 @@ export async function fluxoAtivar2FA(container: HTMLElement): Promise<boolean> {
   try {
     setup = await api.auth.totp.setup();
   } catch (err) {
-    container.innerHTML = `<p class="sub" style="color:var(--bad)">${err instanceof ErroApi ? err.message : "Não foi possível iniciar o setup."}</p>`;
+    container.innerHTML = `<p class="sub" style="color:var(--bad-texto)">${err instanceof ErroApi ? err.message : "Não foi possível iniciar o setup."}</p>`;
     return false;
   }
 
@@ -126,7 +126,7 @@ export async function fluxoAtivar2FA(container: HTMLElement): Promise<boolean> {
             autocomplete="one-time-code" placeholder="000000"
             style="font-size:1.25rem;letter-spacing:.2em;text-align:center">
         </div>
-        <p id="totpConfirmMsg" style="margin:0;min-height:1.2em;font-size:var(--text-xs);color:var(--bad)"></p>
+        <p id="totpConfirmMsg" style="margin:0;min-height:1.2em;font-size:var(--text-xs);color:var(--bad-texto)"></p>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn primary" id="totpConfirmBotao">Confirmar ativação</button>
           <button class="btn ghost" id="totpConfirmCancelar">Cancelar</button>
@@ -161,7 +161,7 @@ export async function fluxoAtivar2FA(container: HTMLElement): Promise<boolean> {
         const resultado = await api.auth.totp.confirmar({ codigo, backup_codes: setup.backup_codes });
         // Atualiza o token pois versao_sessao foi incrementada ao ativar 2FA
         sessaoToken.definir(resultado.access_token);
-        container.innerHTML = `<p style="color:var(--ok);font-weight:600">2FA ativado com sucesso.</p>`;
+        container.innerHTML = `<p style="color:var(--ok-texto);font-weight:600">2FA ativado com sucesso.</p>`;
         resolve(true);
       } catch (err) {
         setMsg(err instanceof ErroApi ? err.message : "Código inválido. Tente de novo.");
@@ -190,7 +190,7 @@ export async function fluxoDesativar2FA(container: HTMLElement): Promise<boolean
             autocomplete="one-time-code" placeholder="000000"
             style="font-size:1.25rem;letter-spacing:.2em;text-align:center">
         </div>
-        <p id="totpDesatMsg" style="margin:0;min-height:1.2em;font-size:var(--text-xs);color:var(--bad)"></p>
+        <p id="totpDesatMsg" style="margin:0;min-height:1.2em;font-size:var(--text-xs);color:var(--bad-texto)"></p>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn danger" id="totpDesatBotao">Desativar 2FA</button>
           <button class="btn ghost" id="totpDesatCancelar">Cancelar</button>

@@ -54,7 +54,7 @@ function vistaConvitesPendentes(): Safe {
 function vista(): Safe {
   const cabecalho = html`<div class="head"><div><h1>Equipe</h1><p>Quem pode entrar no Hub. Aqui você convida pessoas, define e troca senhas e escolhe quem é administrador.</p></div>
     <div class="tools"><button class="btn" data-act="recarregarEquipe">Atualizar</button><button class="btn" data-act="novoUsuario">Novo usuário</button><button class="btn primary" data-act="convidarMembro">Convidar membro</button></div></div>`;
-  if (pagina.erro) return html`${cabecalho}<div class="banner" style="background:var(--bad-bg);color:var(--bad)">${pagina.erro}</div>`;
+  if (pagina.erro) return html`${cabecalho}<div class="banner" style="background:var(--bad-bg);color:var(--bad-texto)">${pagina.erro}</div>`;
   if (!pagina.lista) return html`${cabecalho}<p class="sub">Carregando a equipe…</p>`;
   const lista = [...pagina.lista].sort((a, b) => Number(b.ativo) - Number(a.ativo) || Number(b.admin) - Number(a.admin) || compararTexto(a.nome, b.nome));
   return html`${cabecalho}<div class="tbl-wrap"><table><thead><tr><th>Nome</th><th>E-mail</th><th>Acesso</th><th>Login</th><th>Último acesso</th></tr></thead><tbody>
@@ -89,7 +89,7 @@ function formUsuario(u?: Usuario): void {
       <label class="check full"><input type="checkbox" name="admin" id="f-admin"${raw(u?.admin ? " checked" : "")}${raw(souEu ? " disabled" : "")}> Administrador (pode gerenciar a equipe)</label>
       ${u && !u.ativo ? html`<label class="check full"><input type="checkbox" name="ativo" id="f-ativo"> Reativar acesso desta pessoa</label>` : ""}
     </div>
-    <div class="banner" id="senhaFeita" hidden style="background:var(--ok-bg);color:var(--ok)"></div>`,
+    <div class="banner" id="senhaFeita" hidden style="background:var(--ok-bg);color:var(--ok-texto)"></div>`,
     rodape: html`<button class="btn primary" data-salvar>${novo ? "Criar usuário" : "Salvar"}</button>${espaco}${u && !souEu && u.ativo ? html`<button class="btn danger" data-excluir>Remover da equipe</button>` : ""}`,
     montar: (f, fechar, L) => {
       $("#gerarSenha", L)?.addEventListener("click", () => {

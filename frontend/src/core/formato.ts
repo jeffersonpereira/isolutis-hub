@@ -67,4 +67,7 @@ export const primeiroNome = (nome?: string | null): string => (nome ?? "").trim(
 
 export const pluralizar = (n: number, singular: string, plural: string): string => (n === 1 ? singular : plural);
 
+/** Minúsculas e sem acentos: "Orçamentos" casa com "orcamen". */
+export const normalizarTexto = (texto: string): string => texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
 export const compararTexto = (a?: string | null, b?: string | null): number => (a ?? "").localeCompare(b ?? "", "pt");

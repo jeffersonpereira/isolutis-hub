@@ -1,0 +1,1546 @@
+{
+ "/auth/eu": {
+  "id": "00000000-0000-0000-0000-000000000001",
+  "email": "Exemplo",
+  "nome": "Mercado Bela Vista",
+  "admin": true,
+  "ativo": true,
+  "senha_definida": true,
+  "ultimo_acesso": "2026-10-01T12:00:00",
+  "versao_sessao": 3,
+  "totp_ativo": true
+ },
+ "/empresas": [
+  {},
+  {},
+  {}
+ ],
+ "/equipe": [
+  {
+   "id": "00000000-0000-0000-0000-000000000003",
+   "nome": "Clínica Horizonte",
+   "email": "Exemplo",
+   "ativo": true
+  },
+  {
+   "id": "00000000-0000-0000-0000-000000000005",
+   "nome": "Distribuidora Alfa",
+   "email": "Exemplo",
+   "ativo": true
+  },
+  {
+   "id": "00000000-0000-0000-0000-000000000007",
+   "nome": "Mercado Bela Vista",
+   "email": "Exemplo",
+   "ativo": true
+  }
+ ],
+ "/usuarios": [
+  {
+   "id": "00000000-0000-0000-0000-000000000009",
+   "email": "Exemplo",
+   "nome": "Clínica Horizonte",
+   "admin": true,
+   "ativo": true,
+   "senha_definida": true,
+   "ultimo_acesso": "2026-10-01T12:00:00",
+   "versao_sessao": 3,
+   "totp_ativo": true
+  },
+  {
+   "id": "00000000-0000-0000-0000-00000000000b",
+   "email": "Exemplo",
+   "nome": "Distribuidora Alfa",
+   "admin": true,
+   "ativo": true,
+   "senha_definida": true,
+   "ultimo_acesso": "2026-10-01T12:00:00",
+   "versao_sessao": 3,
+   "totp_ativo": true
+  },
+  {
+   "id": "00000000-0000-0000-0000-00000000000d",
+   "email": "Exemplo",
+   "nome": "Mercado Bela Vista",
+   "admin": true,
+   "ativo": true,
+   "senha_definida": true,
+   "ultimo_acesso": "2026-10-01T12:00:00",
+   "versao_sessao": 3,
+   "totp_ativo": true
+  }
+ ],
+ "/convites": [
+  {
+   "id": 3,
+   "email": "Exemplo",
+   "papel": "Exemplo",
+   "criado_em": "2026-10-01T12:00:00",
+   "expira_em": "2026-10-01T12:00:00",
+   "usado_em": "2026-10-01T12:00:00"
+  },
+  {
+   "id": 3,
+   "email": "Exemplo",
+   "papel": "Exemplo",
+   "criado_em": "2026-10-01T12:00:00",
+   "expira_em": "2026-10-01T12:00:00",
+   "usado_em": "2026-10-01T12:00:00"
+  },
+  {
+   "id": 3,
+   "email": "Exemplo",
+   "papel": "Exemplo",
+   "criado_em": "2026-10-01T12:00:00",
+   "expira_em": "2026-10-01T12:00:00",
+   "usado_em": "2026-10-01T12:00:00"
+  }
+ ],
+ "/clientes": [
+  {
+   "id": "00000000-0000-0000-0000-00000000000f",
+   "empresa_id": "00000000-0000-0000-0000-000000000010",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-000000000011",
+   "atualizado_por": "00000000-0000-0000-0000-000000000012",
+   "versao": 3,
+   "tipo_pessoa": "Exemplo",
+   "cpf_cnpj": "Exemplo",
+   "nome": "Clínica Horizonte",
+   "segmento": "Exemplo",
+   "contato": "Exemplo",
+   "cargo": "Exemplo",
+   "telefone": "(71) 98888-0000",
+   "email": "Exemplo",
+   "origem": "Exemplo",
+   "obs": "Exemplo",
+   "endereco": "Exemplo",
+   "cep": "Exemplo",
+   "municipio_id": "00000000-0000-0000-0000-000000000014",
+   "municipio_nome": "Salvador",
+   "uf": "BA",
+   "papeis": [
+    "Exemplo",
+    "Exemplo",
+    "Exemplo"
+   ],
+   "negocios_abertos": 3,
+   "faturado": 12500.5
+  },
+  {
+   "id": "00000000-0000-0000-0000-000000000015",
+   "empresa_id": "00000000-0000-0000-0000-000000000016",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-000000000017",
+   "atualizado_por": "00000000-0000-0000-0000-000000000018",
+   "versao": 3,
+   "tipo_pessoa": "Exemplo",
+   "cpf_cnpj": "Exemplo",
+   "nome": "Clínica Horizonte",
+   "segmento": "Exemplo",
+   "contato": "Exemplo",
+   "cargo": "Exemplo",
+   "telefone": "(71) 98888-0000",
+   "email": "Exemplo",
+   "origem": "Exemplo",
+   "obs": "Exemplo",
+   "endereco": "Exemplo",
+   "cep": "Exemplo",
+   "municipio_id": "00000000-0000-0000-0000-00000000001a",
+   "municipio_nome": "Salvador",
+   "uf": "BA",
+   "papeis": [
+    "Exemplo",
+    "Exemplo",
+    "Exemplo"
+   ],
+   "negocios_abertos": 3,
+   "faturado": 12500.5
+  },
+  {
+   "id": "00000000-0000-0000-0000-00000000001b",
+   "empresa_id": "00000000-0000-0000-0000-00000000001c",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-00000000001d",
+   "atualizado_por": "00000000-0000-0000-0000-00000000001e",
+   "versao": 3,
+   "tipo_pessoa": "Exemplo",
+   "cpf_cnpj": "Exemplo",
+   "nome": "Clínica Horizonte",
+   "segmento": "Exemplo",
+   "contato": "Exemplo",
+   "cargo": "Exemplo",
+   "telefone": "(71) 98888-0000",
+   "email": "Exemplo",
+   "origem": "Exemplo",
+   "obs": "Exemplo",
+   "endereco": "Exemplo",
+   "cep": "Exemplo",
+   "municipio_id": "00000000-0000-0000-0000-000000000020",
+   "municipio_nome": "Salvador",
+   "uf": "BA",
+   "papeis": [
+    "Exemplo",
+    "Exemplo",
+    "Exemplo"
+   ],
+   "negocios_abertos": 3,
+   "faturado": 12500.5
+  }
+ ],
+ "/produtos": [
+  {
+   "id": "00000000-0000-0000-0000-000000000021",
+   "empresa_id": "00000000-0000-0000-0000-000000000022",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-000000000023",
+   "atualizado_por": "00000000-0000-0000-0000-000000000024",
+   "versao": 3,
+   "nome": "Clínica Horizonte",
+   "tipo": "Exemplo",
+   "unidade": "Exemplo",
+   "preco": 12500.5,
+   "ativo": true,
+   "descricao": "Exemplo"
+  },
+  {
+   "id": "00000000-0000-0000-0000-000000000026",
+   "empresa_id": "00000000-0000-0000-0000-000000000027",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-000000000028",
+   "atualizado_por": "00000000-0000-0000-0000-000000000029",
+   "versao": 3,
+   "nome": "Distribuidora Alfa",
+   "tipo": "Exemplo",
+   "unidade": "Exemplo",
+   "preco": 12500.5,
+   "ativo": true,
+   "descricao": "Exemplo"
+  },
+  {
+   "id": "00000000-0000-0000-0000-00000000002b",
+   "empresa_id": "00000000-0000-0000-0000-00000000002c",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-00000000002d",
+   "atualizado_por": "00000000-0000-0000-0000-00000000002e",
+   "versao": 3,
+   "nome": "Mercado Bela Vista",
+   "tipo": "Exemplo",
+   "unidade": "Exemplo",
+   "preco": 12500.5,
+   "ativo": true,
+   "descricao": "Exemplo"
+  }
+ ],
+ "/negocios": [
+  {
+   "id": "00000000-0000-0000-0000-000000000030",
+   "empresa_id": "00000000-0000-0000-0000-000000000031",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-000000000032",
+   "atualizado_por": "00000000-0000-0000-0000-000000000033",
+   "versao": 3,
+   "titulo": "Clínica Horizonte",
+   "cliente_id": "00000000-0000-0000-0000-000000000035",
+   "cliente_nome": "Exemplo",
+   "etapa": "Exemplo",
+   "valor": 12500.5,
+   "mensal": 12500.5,
+   "previsao": "2026-10-15",
+   "responsavel_id": "00000000-0000-0000-0000-000000000036",
+   "origem": "Exemplo",
+   "motivo_perda": "Exemplo",
+   "obs": "Exemplo",
+   "fechado_em": "2026-10-15",
+   "faturado": true
+  },
+  {
+   "id": "00000000-0000-0000-0000-000000000037",
+   "empresa_id": "00000000-0000-0000-0000-000000000038",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-000000000039",
+   "atualizado_por": "00000000-0000-0000-0000-00000000003a",
+   "versao": 3,
+   "titulo": "Mercado Bela Vista",
+   "cliente_id": "00000000-0000-0000-0000-00000000003c",
+   "cliente_nome": "Exemplo",
+   "etapa": "Exemplo",
+   "valor": 12500.5,
+   "mensal": 12500.5,
+   "previsao": "2026-10-15",
+   "responsavel_id": "00000000-0000-0000-0000-00000000003d",
+   "origem": "Exemplo",
+   "motivo_perda": "Exemplo",
+   "obs": "Exemplo",
+   "fechado_em": "2026-10-15",
+   "faturado": true
+  },
+  {
+   "id": "00000000-0000-0000-0000-00000000003e",
+   "empresa_id": "00000000-0000-0000-0000-00000000003f",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-000000000040",
+   "atualizado_por": "00000000-0000-0000-0000-000000000041",
+   "versao": 3,
+   "titulo": "Distribuidora Alfa",
+   "cliente_id": "00000000-0000-0000-0000-000000000043",
+   "cliente_nome": "Exemplo",
+   "etapa": "Exemplo",
+   "valor": 12500.5,
+   "mensal": 12500.5,
+   "previsao": "2026-10-15",
+   "responsavel_id": "00000000-0000-0000-0000-000000000044",
+   "origem": "Exemplo",
+   "motivo_perda": "Exemplo",
+   "obs": "Exemplo",
+   "fechado_em": "2026-10-15",
+   "faturado": true
+  }
+ ],
+ "/orcamentos": [
+  {
+   "id": "00000000-0000-0000-0000-000000000045",
+   "empresa_id": "00000000-0000-0000-0000-000000000046",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-000000000047",
+   "atualizado_por": "00000000-0000-0000-0000-000000000048",
+   "versao": 3,
+   "numero": "Exemplo",
+   "cliente_id": "00000000-0000-0000-0000-000000000049",
+   "cliente_nome": "Exemplo",
+   "negocio_id": "00000000-0000-0000-0000-00000000004a",
+   "data": "2026-10-15",
+   "validade_dias": 3,
+   "valido_ate": "2026-10-15",
+   "status": "Exemplo",
+   "status_exibido": "rascunho",
+   "desconto": 12500.5,
+   "obs": "Exemplo",
+   "aprovado_em": "2026-10-15",
+   "total_projeto": 12500.5,
+   "total_mensal": 12500.5,
+   "itens": [
+    {
+     "id": null,
+     "produto_id": null,
+     "descricao": null,
+     "qtd": null,
+     "preco_unitario": null,
+     "mensal": null,
+     "subtotal": null
+    },
+    {
+     "id": null,
+     "produto_id": null,
+     "descricao": null,
+     "qtd": null,
+     "preco_unitario": null,
+     "mensal": null,
+     "subtotal": null
+    },
+    {
+     "id": null,
+     "produto_id": null,
+     "descricao": null,
+     "qtd": null,
+     "preco_unitario": null,
+     "mensal": null,
+     "subtotal": null
+    }
+   ]
+  },
+  {
+   "id": "00000000-0000-0000-0000-00000000004b",
+   "empresa_id": "00000000-0000-0000-0000-00000000004c",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-00000000004d",
+   "atualizado_por": "00000000-0000-0000-0000-00000000004e",
+   "versao": 3,
+   "numero": "Exemplo",
+   "cliente_id": "00000000-0000-0000-0000-00000000004f",
+   "cliente_nome": "Exemplo",
+   "negocio_id": "00000000-0000-0000-0000-000000000050",
+   "data": "2026-10-15",
+   "validade_dias": 3,
+   "valido_ate": "2026-10-15",
+   "status": "Exemplo",
+   "status_exibido": "rascunho",
+   "desconto": 12500.5,
+   "obs": "Exemplo",
+   "aprovado_em": "2026-10-15",
+   "total_projeto": 12500.5,
+   "total_mensal": 12500.5,
+   "itens": [
+    {
+     "id": null,
+     "produto_id": null,
+     "descricao": null,
+     "qtd": null,
+     "preco_unitario": null,
+     "mensal": null,
+     "subtotal": null
+    },
+    {
+     "id": null,
+     "produto_id": null,
+     "descricao": null,
+     "qtd": null,
+     "preco_unitario": null,
+     "mensal": null,
+     "subtotal": null
+    },
+    {
+     "id": null,
+     "produto_id": null,
+     "descricao": null,
+     "qtd": null,
+     "preco_unitario": null,
+     "mensal": null,
+     "subtotal": null
+    }
+   ]
+  },
+  {
+   "id": "00000000-0000-0000-0000-000000000051",
+   "empresa_id": "00000000-0000-0000-0000-000000000052",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-000000000053",
+   "atualizado_por": "00000000-0000-0000-0000-000000000054",
+   "versao": 3,
+   "numero": "Exemplo",
+   "cliente_id": "00000000-0000-0000-0000-000000000055",
+   "cliente_nome": "Exemplo",
+   "negocio_id": "00000000-0000-0000-0000-000000000056",
+   "data": "2026-10-15",
+   "validade_dias": 3,
+   "valido_ate": "2026-10-15",
+   "status": "Exemplo",
+   "status_exibido": "rascunho",
+   "desconto": 12500.5,
+   "obs": "Exemplo",
+   "aprovado_em": "2026-10-15",
+   "total_projeto": 12500.5,
+   "total_mensal": 12500.5,
+   "itens": [
+    {
+     "id": null,
+     "produto_id": null,
+     "descricao": null,
+     "qtd": null,
+     "preco_unitario": null,
+     "mensal": null,
+     "subtotal": null
+    },
+    {
+     "id": null,
+     "produto_id": null,
+     "descricao": null,
+     "qtd": null,
+     "preco_unitario": null,
+     "mensal": null,
+     "subtotal": null
+    },
+    {
+     "id": null,
+     "produto_id": null,
+     "descricao": null,
+     "qtd": null,
+     "preco_unitario": null,
+     "mensal": null,
+     "subtotal": null
+    }
+   ]
+  }
+ ],
+ "/faturamento": [
+  {
+   "id": "00000000-0000-0000-0000-000000000057",
+   "empresa_id": "00000000-0000-0000-0000-000000000058",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-000000000059",
+   "atualizado_por": "00000000-0000-0000-0000-00000000005a",
+   "versao": 3,
+   "cliente_id": "00000000-0000-0000-0000-00000000005b",
+   "cliente_nome": "Exemplo",
+   "tipo": "Exemplo",
+   "descricao": "Exemplo",
+   "valor": 12500.5,
+   "vencimento": "2026-10-15",
+   "status": "Exemplo",
+   "recebido_em": "2026-10-15",
+   "nf": "Exemplo",
+   "negocio_id": "00000000-0000-0000-0000-00000000005c",
+   "orcamento_id": "00000000-0000-0000-0000-00000000005d",
+   "grupo_id": "00000000-0000-0000-0000-00000000005e",
+   "parcela": 3,
+   "total_parcelas": 3
+  },
+  {
+   "id": "00000000-0000-0000-0000-00000000005f",
+   "empresa_id": "00000000-0000-0000-0000-000000000060",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-000000000061",
+   "atualizado_por": "00000000-0000-0000-0000-000000000062",
+   "versao": 3,
+   "cliente_id": "00000000-0000-0000-0000-000000000063",
+   "cliente_nome": "Exemplo",
+   "tipo": "Exemplo",
+   "descricao": "Exemplo",
+   "valor": 12500.5,
+   "vencimento": "2026-10-15",
+   "status": "Exemplo",
+   "recebido_em": "2026-10-15",
+   "nf": "Exemplo",
+   "negocio_id": "00000000-0000-0000-0000-000000000064",
+   "orcamento_id": "00000000-0000-0000-0000-000000000065",
+   "grupo_id": "00000000-0000-0000-0000-000000000066",
+   "parcela": 3,
+   "total_parcelas": 3
+  },
+  {
+   "id": "00000000-0000-0000-0000-000000000067",
+   "empresa_id": "00000000-0000-0000-0000-000000000068",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-000000000069",
+   "atualizado_por": "00000000-0000-0000-0000-00000000006a",
+   "versao": 3,
+   "cliente_id": "00000000-0000-0000-0000-00000000006b",
+   "cliente_nome": "Exemplo",
+   "tipo": "Exemplo",
+   "descricao": "Exemplo",
+   "valor": 12500.5,
+   "vencimento": "2026-10-15",
+   "status": "Exemplo",
+   "recebido_em": "2026-10-15",
+   "nf": "Exemplo",
+   "negocio_id": "00000000-0000-0000-0000-00000000006c",
+   "orcamento_id": "00000000-0000-0000-0000-00000000006d",
+   "grupo_id": "00000000-0000-0000-0000-00000000006e",
+   "parcela": 3,
+   "total_parcelas": 3
+  }
+ ],
+ "/faturamento/resumo": {
+  "ano": 2026,
+  "anos_disponiveis": [
+   3,
+   3,
+   3
+  ],
+  "meses": [
+   {
+    "mes": 10,
+    "recebido": 12500.5,
+    "previsto": 12500.5,
+    "recorrente": 12500.5,
+    "quantidade": 3
+   },
+   {
+    "mes": 10,
+    "recebido": 12500.5,
+    "previsto": 12500.5,
+    "recorrente": 12500.5,
+    "quantidade": 3
+   },
+   {
+    "mes": 10,
+    "recebido": 12500.5,
+    "previsto": 12500.5,
+    "recorrente": 12500.5,
+    "quantidade": 3
+   }
+  ],
+  "total_recebido": 12500.5,
+  "total_previsto": 12500.5,
+  "total_recorrente": 12500.5
+ },
+ "/despesas": [
+  {
+   "id": "00000000-0000-0000-0000-00000000006f",
+   "empresa_id": "00000000-0000-0000-0000-000000000070",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-000000000071",
+   "atualizado_por": "00000000-0000-0000-0000-000000000072",
+   "versao": 3,
+   "data": "2026-10-15",
+   "descricao": "Exemplo",
+   "valor": 12500.5,
+   "categoria_id": "00000000-0000-0000-0000-000000000073",
+   "categoria_nome": "Exemplo",
+   "status": "Exemplo",
+   "pago_em": "2026-10-15",
+   "fornecedor": "Exemplo",
+   "obs": "Exemplo",
+   "grupo_id": "00000000-0000-0000-0000-000000000074",
+   "parcela": 3,
+   "total_parcelas": 3
+  },
+  {
+   "id": "00000000-0000-0000-0000-000000000075",
+   "empresa_id": "00000000-0000-0000-0000-000000000076",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-000000000077",
+   "atualizado_por": "00000000-0000-0000-0000-000000000078",
+   "versao": 3,
+   "data": "2026-10-15",
+   "descricao": "Exemplo",
+   "valor": 12500.5,
+   "categoria_id": "00000000-0000-0000-0000-000000000079",
+   "categoria_nome": "Exemplo",
+   "status": "Exemplo",
+   "pago_em": "2026-10-15",
+   "fornecedor": "Exemplo",
+   "obs": "Exemplo",
+   "grupo_id": "00000000-0000-0000-0000-00000000007a",
+   "parcela": 3,
+   "total_parcelas": 3
+  },
+  {
+   "id": "00000000-0000-0000-0000-00000000007b",
+   "empresa_id": "00000000-0000-0000-0000-00000000007c",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-00000000007d",
+   "atualizado_por": "00000000-0000-0000-0000-00000000007e",
+   "versao": 3,
+   "data": "2026-10-15",
+   "descricao": "Exemplo",
+   "valor": 12500.5,
+   "categoria_id": "00000000-0000-0000-0000-00000000007f",
+   "categoria_nome": "Exemplo",
+   "status": "Exemplo",
+   "pago_em": "2026-10-15",
+   "fornecedor": "Exemplo",
+   "obs": "Exemplo",
+   "grupo_id": "00000000-0000-0000-0000-000000000080",
+   "parcela": 3,
+   "total_parcelas": 3
+  }
+ ],
+ "/despesas/opcoes": {
+  "categorias": [
+   {
+    "id": "00000000-0000-0000-0000-000000000081",
+    "nome": "Clínica Horizonte"
+   },
+   {
+    "id": "00000000-0000-0000-0000-000000000083",
+    "nome": "Distribuidora Alfa"
+   },
+   {
+    "id": "00000000-0000-0000-0000-000000000085",
+    "nome": "Mercado Bela Vista"
+   }
+  ],
+  "investidores": [
+   "Exemplo",
+   "Exemplo",
+   "Exemplo"
+  ],
+  "fornecedores": [
+   "Exemplo",
+   "Exemplo",
+   "Exemplo"
+  ]
+ },
+ "/despesas/resumo": {
+  "ano": 2026,
+  "anos_disponiveis": [
+   3,
+   3,
+   3
+  ],
+  "recebido_no_ano": 12500.5,
+  "despesas_pagas": 12500.5,
+  "despesas_a_pagar": 12500.5,
+  "resultado": 12500.5,
+  "investido_no_ano": 12500.5,
+  "investido_total": 12500.5,
+  "meses": [
+   {
+    "mes": 10,
+    "recebido": 12500.5,
+    "despesas": 12500.5,
+    "resultado": 12500.5,
+    "investimentos": 12500.5
+   },
+   {
+    "mes": 10,
+    "recebido": 12500.5,
+    "despesas": 12500.5,
+    "resultado": 12500.5,
+    "investimentos": 12500.5
+   },
+   {
+    "mes": 10,
+    "recebido": 12500.5,
+    "despesas": 12500.5,
+    "resultado": 12500.5,
+    "investimentos": 12500.5
+   }
+  ],
+  "investidores": [
+   {
+    "nome": "Distribuidora Alfa",
+    "no_ano": 12500.5,
+    "total": 12500.5,
+    "percentual": 3
+   },
+   {
+    "nome": "Clínica Horizonte",
+    "no_ano": 12500.5,
+    "total": 12500.5,
+    "percentual": 3
+   },
+   {
+    "nome": "Mercado Bela Vista",
+    "no_ano": 12500.5,
+    "total": 12500.5,
+    "percentual": 3
+   }
+  ]
+ },
+ "/investimentos": [
+  {
+   "id": "00000000-0000-0000-0000-00000000008a",
+   "empresa_id": "00000000-0000-0000-0000-00000000008b",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-00000000008c",
+   "atualizado_por": "00000000-0000-0000-0000-00000000008d",
+   "versao": 3,
+   "data": "2026-10-15",
+   "descricao": "Exemplo",
+   "valor": 12500.5,
+   "investidor_id": "00000000-0000-0000-0000-00000000008e",
+   "investidor_nome": "Exemplo",
+   "forma": "Exemplo",
+   "obs": "Exemplo"
+  },
+  {
+   "id": "00000000-0000-0000-0000-00000000008f",
+   "empresa_id": "00000000-0000-0000-0000-000000000090",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-000000000091",
+   "atualizado_por": "00000000-0000-0000-0000-000000000092",
+   "versao": 3,
+   "data": "2026-10-15",
+   "descricao": "Exemplo",
+   "valor": 12500.5,
+   "investidor_id": "00000000-0000-0000-0000-000000000093",
+   "investidor_nome": "Exemplo",
+   "forma": "Exemplo",
+   "obs": "Exemplo"
+  },
+  {
+   "id": "00000000-0000-0000-0000-000000000094",
+   "empresa_id": "00000000-0000-0000-0000-000000000095",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-000000000096",
+   "atualizado_por": "00000000-0000-0000-0000-000000000097",
+   "versao": 3,
+   "data": "2026-10-15",
+   "descricao": "Exemplo",
+   "valor": 12500.5,
+   "investidor_id": "00000000-0000-0000-0000-000000000098",
+   "investidor_nome": "Exemplo",
+   "forma": "Exemplo",
+   "obs": "Exemplo"
+  }
+ ],
+ "/projetos": [
+  {
+   "id": "00000000-0000-0000-0000-000000000099",
+   "empresa_id": "00000000-0000-0000-0000-00000000009a",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-00000000009b",
+   "atualizado_por": "00000000-0000-0000-0000-00000000009c",
+   "versao": 3,
+   "titulo": "Clínica Horizonte",
+   "cliente_id": "00000000-0000-0000-0000-00000000009e",
+   "cliente_nome": "Exemplo",
+   "negocio_id": "00000000-0000-0000-0000-00000000009f",
+   "orcamento_id": "00000000-0000-0000-0000-0000000000a0",
+   "status": "Exemplo",
+   "responsavel_id": "00000000-0000-0000-0000-0000000000a1",
+   "inicio": "2026-10-15",
+   "entrega": "2026-10-15",
+   "objetivo": "Exemplo",
+   "escopo": "Exemplo",
+   "fora_escopo": "Exemplo",
+   "pos_entrega": "Exemplo",
+   "progresso": 3,
+   "etapas": [
+    {
+     "id": null,
+     "ordem": null,
+     "titulo": null,
+     "status": null,
+     "responsavel_id": null,
+     "inicio": null,
+     "fim": null,
+     "descricao": null,
+     "entregaveis": null
+    },
+    {
+     "id": null,
+     "ordem": null,
+     "titulo": null,
+     "status": null,
+     "responsavel_id": null,
+     "inicio": null,
+     "fim": null,
+     "descricao": null,
+     "entregaveis": null
+    },
+    {
+     "id": null,
+     "ordem": null,
+     "titulo": null,
+     "status": null,
+     "responsavel_id": null,
+     "inicio": null,
+     "fim": null,
+     "descricao": null,
+     "entregaveis": null
+    }
+   ]
+  },
+  {
+   "id": "00000000-0000-0000-0000-0000000000a2",
+   "empresa_id": "00000000-0000-0000-0000-0000000000a3",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-0000000000a4",
+   "atualizado_por": "00000000-0000-0000-0000-0000000000a5",
+   "versao": 3,
+   "titulo": "Clínica Horizonte",
+   "cliente_id": "00000000-0000-0000-0000-0000000000a7",
+   "cliente_nome": "Exemplo",
+   "negocio_id": "00000000-0000-0000-0000-0000000000a8",
+   "orcamento_id": "00000000-0000-0000-0000-0000000000a9",
+   "status": "Exemplo",
+   "responsavel_id": "00000000-0000-0000-0000-0000000000aa",
+   "inicio": "2026-10-15",
+   "entrega": "2026-10-15",
+   "objetivo": "Exemplo",
+   "escopo": "Exemplo",
+   "fora_escopo": "Exemplo",
+   "pos_entrega": "Exemplo",
+   "progresso": 3,
+   "etapas": [
+    {
+     "id": null,
+     "ordem": null,
+     "titulo": null,
+     "status": null,
+     "responsavel_id": null,
+     "inicio": null,
+     "fim": null,
+     "descricao": null,
+     "entregaveis": null
+    },
+    {
+     "id": null,
+     "ordem": null,
+     "titulo": null,
+     "status": null,
+     "responsavel_id": null,
+     "inicio": null,
+     "fim": null,
+     "descricao": null,
+     "entregaveis": null
+    },
+    {
+     "id": null,
+     "ordem": null,
+     "titulo": null,
+     "status": null,
+     "responsavel_id": null,
+     "inicio": null,
+     "fim": null,
+     "descricao": null,
+     "entregaveis": null
+    }
+   ]
+  },
+  {
+   "id": "00000000-0000-0000-0000-0000000000ab",
+   "empresa_id": "00000000-0000-0000-0000-0000000000ac",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-0000000000ad",
+   "atualizado_por": "00000000-0000-0000-0000-0000000000ae",
+   "versao": 3,
+   "titulo": "Clínica Horizonte",
+   "cliente_id": "00000000-0000-0000-0000-0000000000b0",
+   "cliente_nome": "Exemplo",
+   "negocio_id": "00000000-0000-0000-0000-0000000000b1",
+   "orcamento_id": "00000000-0000-0000-0000-0000000000b2",
+   "status": "Exemplo",
+   "responsavel_id": "00000000-0000-0000-0000-0000000000b3",
+   "inicio": "2026-10-15",
+   "entrega": "2026-10-15",
+   "objetivo": "Exemplo",
+   "escopo": "Exemplo",
+   "fora_escopo": "Exemplo",
+   "pos_entrega": "Exemplo",
+   "progresso": 3,
+   "etapas": [
+    {
+     "id": null,
+     "ordem": null,
+     "titulo": null,
+     "status": null,
+     "responsavel_id": null,
+     "inicio": null,
+     "fim": null,
+     "descricao": null,
+     "entregaveis": null
+    },
+    {
+     "id": null,
+     "ordem": null,
+     "titulo": null,
+     "status": null,
+     "responsavel_id": null,
+     "inicio": null,
+     "fim": null,
+     "descricao": null,
+     "entregaveis": null
+    },
+    {
+     "id": null,
+     "ordem": null,
+     "titulo": null,
+     "status": null,
+     "responsavel_id": null,
+     "inicio": null,
+     "fim": null,
+     "descricao": null,
+     "entregaveis": null
+    }
+   ]
+  }
+ ],
+ "/projetos/modelo": {
+  "titulo": "Distribuidora Alfa",
+  "cliente_id": "00000000-0000-0000-0000-0000000000b5",
+  "negocio_id": "00000000-0000-0000-0000-0000000000b6",
+  "orcamento_id": "00000000-0000-0000-0000-0000000000b7",
+  "responsavel_id": "00000000-0000-0000-0000-0000000000b8",
+  "inicio": "2026-10-15",
+  "escopo": "Exemplo",
+  "pos_entrega": "Exemplo"
+ },
+ "/projetos/etapas-padrao": [
+  {
+   "titulo": "Mercado Bela Vista",
+   "descricao": "Exemplo",
+   "entregaveis": "Exemplo",
+   "status": "Exemplo",
+   "inicio": "2026-10-15",
+   "fim": "2026-10-15"
+  },
+  {
+   "titulo": "Distribuidora Alfa",
+   "descricao": "Exemplo",
+   "entregaveis": "Exemplo",
+   "status": "Exemplo",
+   "inicio": "2026-10-15",
+   "fim": "2026-10-15"
+  },
+  {
+   "titulo": "Clínica Horizonte",
+   "descricao": "Exemplo",
+   "entregaveis": "Exemplo",
+   "status": "Exemplo",
+   "inicio": "2026-10-15",
+   "fim": "2026-10-15"
+  }
+ ],
+ "/tarefas": [
+  {
+   "id": "00000000-0000-0000-0000-0000000000bc",
+   "empresa_id": "00000000-0000-0000-0000-0000000000bd",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-0000000000be",
+   "atualizado_por": "00000000-0000-0000-0000-0000000000bf",
+   "versao": 3,
+   "titulo": "Distribuidora Alfa",
+   "coluna": "Exemplo",
+   "responsavel_id": "00000000-0000-0000-0000-0000000000c1",
+   "prazo": "2026-10-15",
+   "prioridade": "Exemplo",
+   "cliente_id": "00000000-0000-0000-0000-0000000000c2",
+   "projeto_id": "00000000-0000-0000-0000-0000000000c3",
+   "descricao": "Exemplo",
+   "concluida_em": "2026-10-01T12:00:00",
+   "checklist": [
+    {
+     "id": null,
+     "ordem": null,
+     "texto": null,
+     "feito": null
+    },
+    {
+     "id": null,
+     "ordem": null,
+     "texto": null,
+     "feito": null
+    },
+    {
+     "id": null,
+     "ordem": null,
+     "texto": null,
+     "feito": null
+    }
+   ]
+  },
+  {
+   "id": "00000000-0000-0000-0000-0000000000c4",
+   "empresa_id": "00000000-0000-0000-0000-0000000000c5",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-0000000000c6",
+   "atualizado_por": "00000000-0000-0000-0000-0000000000c7",
+   "versao": 3,
+   "titulo": "Mercado Bela Vista",
+   "coluna": "Exemplo",
+   "responsavel_id": "00000000-0000-0000-0000-0000000000c9",
+   "prazo": "2026-10-15",
+   "prioridade": "Exemplo",
+   "cliente_id": "00000000-0000-0000-0000-0000000000ca",
+   "projeto_id": "00000000-0000-0000-0000-0000000000cb",
+   "descricao": "Exemplo",
+   "concluida_em": "2026-10-01T12:00:00",
+   "checklist": [
+    {
+     "id": null,
+     "ordem": null,
+     "texto": null,
+     "feito": null
+    },
+    {
+     "id": null,
+     "ordem": null,
+     "texto": null,
+     "feito": null
+    },
+    {
+     "id": null,
+     "ordem": null,
+     "texto": null,
+     "feito": null
+    }
+   ]
+  },
+  {
+   "id": "00000000-0000-0000-0000-0000000000cc",
+   "empresa_id": "00000000-0000-0000-0000-0000000000cd",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-0000000000ce",
+   "atualizado_por": "00000000-0000-0000-0000-0000000000cf",
+   "versao": 3,
+   "titulo": "Clínica Horizonte",
+   "coluna": "Exemplo",
+   "responsavel_id": "00000000-0000-0000-0000-0000000000d1",
+   "prazo": "2026-10-15",
+   "prioridade": "Exemplo",
+   "cliente_id": "00000000-0000-0000-0000-0000000000d2",
+   "projeto_id": "00000000-0000-0000-0000-0000000000d3",
+   "descricao": "Exemplo",
+   "concluida_em": "2026-10-01T12:00:00",
+   "checklist": [
+    {
+     "id": null,
+     "ordem": null,
+     "texto": null,
+     "feito": null
+    },
+    {
+     "id": null,
+     "ordem": null,
+     "texto": null,
+     "feito": null
+    },
+    {
+     "id": null,
+     "ordem": null,
+     "texto": null,
+     "feito": null
+    }
+   ]
+  }
+ ],
+ "/painel": {
+  "ano": 2026,
+  "mes": 10,
+  "recebido_no_mes": 12500.5,
+  "previsto_no_mes": 12500.5,
+  "recorrente_no_mes": 12500.5,
+  "funil_abertos": 3,
+  "funil_valor": 12500.5,
+  "funil_mensal": 12500.5,
+  "ganhos": 3,
+  "perdidos": 3,
+  "conversao_pct": 3,
+  "orcamentos_aguardando_qtd": 3,
+  "orcamentos_aguardando_valor": 12500.5,
+  "banco_vazio": true,
+  "serie": [
+   {
+    "ano": 2026,
+    "mes": 10,
+    "recebido": 12500.5,
+    "previsto": 12500.5
+   },
+   {
+    "ano": 2026,
+    "mes": 10,
+    "recebido": 12500.5,
+    "previsto": 12500.5
+   },
+   {
+    "ano": 2026,
+    "mes": 10,
+    "recebido": 12500.5,
+    "previsto": 12500.5
+   }
+  ],
+  "por_etapa": [
+   {
+    "etapa": "Exemplo",
+    "quantidade": 3,
+    "valor": 12500.5
+   },
+   {
+    "etapa": "Exemplo",
+    "quantidade": 3,
+    "valor": 12500.5
+   },
+   {
+    "etapa": "Exemplo",
+    "quantidade": 3,
+    "valor": 12500.5
+   }
+  ],
+  "proximos_fechamentos": [
+   {
+    "id": "00000000-0000-0000-0000-0000000000d4",
+    "titulo": "Distribuidora Alfa",
+    "cliente_nome": "Exemplo",
+    "etapa": "Exemplo",
+    "valor": 12500.5,
+    "mensal": 12500.5,
+    "previsao": "2026-10-15"
+   },
+   {
+    "id": "00000000-0000-0000-0000-0000000000d6",
+    "titulo": "Mercado Bela Vista",
+    "cliente_nome": "Exemplo",
+    "etapa": "Exemplo",
+    "valor": 12500.5,
+    "mensal": 12500.5,
+    "previsao": "2026-10-15"
+   },
+   {
+    "id": "00000000-0000-0000-0000-0000000000d8",
+    "titulo": "Clínica Horizonte",
+    "cliente_nome": "Exemplo",
+    "etapa": "Exemplo",
+    "valor": 12500.5,
+    "mensal": 12500.5,
+    "previsao": "2026-10-15"
+   }
+  ],
+  "orcamentos_aguardando": [
+   {
+    "id": "00000000-0000-0000-0000-0000000000da",
+    "numero": "Exemplo",
+    "cliente_nome": "Exemplo",
+    "data": "2026-10-15",
+    "total_projeto": 12500.5
+   },
+   {
+    "id": "00000000-0000-0000-0000-0000000000db",
+    "numero": "Exemplo",
+    "cliente_nome": "Exemplo",
+    "data": "2026-10-15",
+    "total_projeto": 12500.5
+   },
+   {
+    "id": "00000000-0000-0000-0000-0000000000dc",
+    "numero": "Exemplo",
+    "cliente_nome": "Exemplo",
+    "data": "2026-10-15",
+    "total_projeto": 12500.5
+   }
+  ],
+  "alertas": {
+   "lancamentos_vencidos": {
+    "quantidade": null,
+    "ids": null
+   },
+   "orcamentos_parados": {
+    "quantidade": null,
+    "ids": null
+   },
+   "projetos_atrasados": {
+    "quantidade": null,
+    "ids": null
+   }
+  }
+ },
+ "/financeiro/plano-contas": [
+  {
+   "id": "00000000-0000-0000-0000-0000000000dd",
+   "plano_pai_id": "00000000-0000-0000-0000-0000000000de",
+   "codigo": "Exemplo",
+   "nome": "Clínica Horizonte",
+   "tipo_conta": "Exemplo",
+   "natureza": "Exemplo",
+   "nivel": 3,
+   "possui_filhas": true,
+   "possui_titulos": true
+  },
+  {
+   "id": "00000000-0000-0000-0000-0000000000e0",
+   "plano_pai_id": "00000000-0000-0000-0000-0000000000e1",
+   "codigo": "Exemplo",
+   "nome": "Clínica Horizonte",
+   "tipo_conta": "Exemplo",
+   "natureza": "Exemplo",
+   "nivel": 3,
+   "possui_filhas": true,
+   "possui_titulos": true
+  },
+  {
+   "id": "00000000-0000-0000-0000-0000000000e3",
+   "plano_pai_id": "00000000-0000-0000-0000-0000000000e4",
+   "codigo": "Exemplo",
+   "nome": "Clínica Horizonte",
+   "tipo_conta": "Exemplo",
+   "natureza": "Exemplo",
+   "nivel": 3,
+   "possui_filhas": true,
+   "possui_titulos": true
+  }
+ ],
+ "/financeiro/plano-contas/proximo-codigo": {
+  "codigo": "Exemplo"
+ },
+ "/financeiro/contas-bancarias": [
+  {
+   "id": "00000000-0000-0000-0000-0000000000e6",
+   "instituicao_financeira_id": "00000000-0000-0000-0000-0000000000e7",
+   "instituicao_codigo": "Exemplo",
+   "instituicao_nome": "Exemplo",
+   "nome": "Clínica Horizonte",
+   "saldo_inicial": 12500.5
+  },
+  {
+   "id": "00000000-0000-0000-0000-0000000000e9",
+   "instituicao_financeira_id": "00000000-0000-0000-0000-0000000000ea",
+   "instituicao_codigo": "Exemplo",
+   "instituicao_nome": "Exemplo",
+   "nome": "Clínica Horizonte",
+   "saldo_inicial": 12500.5
+  },
+  {
+   "id": "00000000-0000-0000-0000-0000000000ec",
+   "instituicao_financeira_id": "00000000-0000-0000-0000-0000000000ed",
+   "instituicao_codigo": "Exemplo",
+   "instituicao_nome": "Exemplo",
+   "nome": "Clínica Horizonte",
+   "saldo_inicial": 12500.5
+  }
+ ],
+ "/financeiro/titulos": [
+  {
+   "id": "00000000-0000-0000-0000-0000000000ef",
+   "tipo_conta": "Exemplo",
+   "conta_bancaria_id": "00000000-0000-0000-0000-0000000000f0",
+   "conta_bancaria_nome": "Exemplo",
+   "plano_conta_id": "00000000-0000-0000-0000-0000000000f1",
+   "plano_conta_codigo": "Exemplo",
+   "plano_conta_nome": "Exemplo",
+   "parceiro_id": "00000000-0000-0000-0000-0000000000f2",
+   "parceiro_nome": "Exemplo",
+   "data_emissao": "2026-10-15",
+   "data_vencimento": "2026-10-15",
+   "valor_titulo": 12500.5,
+   "valor_desconto": 12500.5,
+   "valor_multa": 12500.5,
+   "valor_juros": 12500.5,
+   "valor_devido": 12500.5,
+   "status": "Exemplo",
+   "data_pagamento": "2026-10-15",
+   "valor_quitacao": 12500.5,
+   "anotacao": "Exemplo"
+  },
+  {
+   "id": "00000000-0000-0000-0000-0000000000f3",
+   "tipo_conta": "Exemplo",
+   "conta_bancaria_id": "00000000-0000-0000-0000-0000000000f4",
+   "conta_bancaria_nome": "Exemplo",
+   "plano_conta_id": "00000000-0000-0000-0000-0000000000f5",
+   "plano_conta_codigo": "Exemplo",
+   "plano_conta_nome": "Exemplo",
+   "parceiro_id": "00000000-0000-0000-0000-0000000000f6",
+   "parceiro_nome": "Exemplo",
+   "data_emissao": "2026-10-15",
+   "data_vencimento": "2026-10-15",
+   "valor_titulo": 12500.5,
+   "valor_desconto": 12500.5,
+   "valor_multa": 12500.5,
+   "valor_juros": 12500.5,
+   "valor_devido": 12500.5,
+   "status": "Exemplo",
+   "data_pagamento": "2026-10-15",
+   "valor_quitacao": 12500.5,
+   "anotacao": "Exemplo"
+  },
+  {
+   "id": "00000000-0000-0000-0000-0000000000f7",
+   "tipo_conta": "Exemplo",
+   "conta_bancaria_id": "00000000-0000-0000-0000-0000000000f8",
+   "conta_bancaria_nome": "Exemplo",
+   "plano_conta_id": "00000000-0000-0000-0000-0000000000f9",
+   "plano_conta_codigo": "Exemplo",
+   "plano_conta_nome": "Exemplo",
+   "parceiro_id": "00000000-0000-0000-0000-0000000000fa",
+   "parceiro_nome": "Exemplo",
+   "data_emissao": "2026-10-15",
+   "data_vencimento": "2026-10-15",
+   "valor_titulo": 12500.5,
+   "valor_desconto": 12500.5,
+   "valor_multa": 12500.5,
+   "valor_juros": 12500.5,
+   "valor_devido": 12500.5,
+   "status": "Exemplo",
+   "data_pagamento": "2026-10-15",
+   "valor_quitacao": 12500.5,
+   "anotacao": "Exemplo"
+  }
+ ],
+ "/financeiro/fluxo-de-caixa": {
+  "ano": 2026,
+  "anos_disponiveis": [
+   3,
+   3,
+   3
+  ],
+  "saldo_inicial": 12500.5,
+  "meses": [
+   {
+    "mes": 10,
+    "entradas_realizadas": 12500.5,
+    "entradas_previstas": 12500.5,
+    "saidas_realizadas": 12500.5,
+    "saidas_previstas": 12500.5,
+    "saldo_do_mes": 12500.5,
+    "saldo_acumulado": 12500.5
+   },
+   {
+    "mes": 10,
+    "entradas_realizadas": 12500.5,
+    "entradas_previstas": 12500.5,
+    "saidas_realizadas": 12500.5,
+    "saidas_previstas": 12500.5,
+    "saldo_do_mes": 12500.5,
+    "saldo_acumulado": 12500.5
+   },
+   {
+    "mes": 10,
+    "entradas_realizadas": 12500.5,
+    "entradas_previstas": 12500.5,
+    "saidas_realizadas": 12500.5,
+    "saidas_previstas": 12500.5,
+    "saldo_do_mes": 12500.5,
+    "saldo_acumulado": 12500.5
+   }
+  ],
+  "total_entradas": 12500.5,
+  "total_saidas": 12500.5
+ },
+ "/financeiro/municipios": [
+  {
+   "id": "00000000-0000-0000-0000-0000000000fb",
+   "nome": "Distribuidora Alfa",
+   "uf": "BA"
+  },
+  {
+   "id": "00000000-0000-0000-0000-0000000000fd",
+   "nome": "Mercado Bela Vista",
+   "uf": "BA"
+  },
+  {
+   "id": "00000000-0000-0000-0000-0000000000ff",
+   "nome": "Clínica Horizonte",
+   "uf": "BA"
+  }
+ ],
+ "/financeiro/instituicoes": [
+  {
+   "id": "00000000-0000-0000-0000-000000000101",
+   "codigo": "Exemplo",
+   "nome": "Distribuidora Alfa"
+  },
+  {
+   "id": "00000000-0000-0000-0000-000000000103",
+   "codigo": "Exemplo",
+   "nome": "Mercado Bela Vista"
+  },
+  {
+   "id": "00000000-0000-0000-0000-000000000105",
+   "codigo": "Exemplo",
+   "nome": "Clínica Horizonte"
+  }
+ ],
+ "/parceiros/tags": [
+  {
+   "id": "00000000-0000-0000-0000-000000000107",
+   "nome": "Distribuidora Alfa",
+   "ativo": true
+  },
+  {
+   "id": "00000000-0000-0000-0000-000000000109",
+   "nome": "Mercado Bela Vista",
+   "ativo": true
+  },
+  {
+   "id": "00000000-0000-0000-0000-00000000010b",
+   "nome": "Clínica Horizonte",
+   "ativo": true
+  }
+ ],
+ "/parceiros": [
+  {
+   "id": "00000000-0000-0000-0000-00000000010d",
+   "empresa_id": "00000000-0000-0000-0000-00000000010e",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-00000000010f",
+   "atualizado_por": "00000000-0000-0000-0000-000000000110",
+   "versao": 3,
+   "tipo_pessoa": "Exemplo",
+   "cpf_cnpj": "Exemplo",
+   "nome": "Distribuidora Alfa",
+   "segmento": "Exemplo",
+   "contato": "Exemplo",
+   "cargo": "Exemplo",
+   "telefone": "(71) 98888-0000",
+   "email": "Exemplo",
+   "origem": "Exemplo",
+   "obs": "Exemplo",
+   "endereco": "Exemplo",
+   "cep": "Exemplo",
+   "municipio_id": "00000000-0000-0000-0000-000000000112",
+   "municipio_nome": "Salvador",
+   "uf": "BA",
+   "papeis": [
+    "Exemplo",
+    "Exemplo",
+    "Exemplo"
+   ]
+  },
+  {
+   "id": "00000000-0000-0000-0000-000000000113",
+   "empresa_id": "00000000-0000-0000-0000-000000000114",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-000000000115",
+   "atualizado_por": "00000000-0000-0000-0000-000000000116",
+   "versao": 3,
+   "tipo_pessoa": "Exemplo",
+   "cpf_cnpj": "Exemplo",
+   "nome": "Distribuidora Alfa",
+   "segmento": "Exemplo",
+   "contato": "Exemplo",
+   "cargo": "Exemplo",
+   "telefone": "(71) 98888-0000",
+   "email": "Exemplo",
+   "origem": "Exemplo",
+   "obs": "Exemplo",
+   "endereco": "Exemplo",
+   "cep": "Exemplo",
+   "municipio_id": "00000000-0000-0000-0000-000000000118",
+   "municipio_nome": "Salvador",
+   "uf": "BA",
+   "papeis": [
+    "Exemplo",
+    "Exemplo",
+    "Exemplo"
+   ]
+  },
+  {
+   "id": "00000000-0000-0000-0000-000000000119",
+   "empresa_id": "00000000-0000-0000-0000-00000000011a",
+   "criado_em": "2026-10-01T12:00:00",
+   "atualizado_em": "2026-10-01T12:00:00",
+   "criado_por": "00000000-0000-0000-0000-00000000011b",
+   "atualizado_por": "00000000-0000-0000-0000-00000000011c",
+   "versao": 3,
+   "tipo_pessoa": "Exemplo",
+   "cpf_cnpj": "Exemplo",
+   "nome": "Distribuidora Alfa",
+   "segmento": "Exemplo",
+   "contato": "Exemplo",
+   "cargo": "Exemplo",
+   "telefone": "(71) 98888-0000",
+   "email": "Exemplo",
+   "origem": "Exemplo",
+   "obs": "Exemplo",
+   "endereco": "Exemplo",
+   "cep": "Exemplo",
+   "municipio_id": "00000000-0000-0000-0000-00000000011e",
+   "municipio_nome": "Salvador",
+   "uf": "BA",
+   "papeis": [
+    "Exemplo",
+    "Exemplo",
+    "Exemplo"
+   ]
+  }
+ ],
+ "/parceiros/papeis": [
+  {
+   "codigo": "Exemplo",
+   "nome": "Mercado Bela Vista"
+  },
+  {
+   "codigo": "Exemplo",
+   "nome": "Distribuidora Alfa"
+  },
+  {
+   "codigo": "Exemplo",
+   "nome": "Clínica Horizonte"
+  }
+ ],
+ "/onboarding/status": {},
+ "/api/saude": {},
+ "/api/prontidao": {}
+}

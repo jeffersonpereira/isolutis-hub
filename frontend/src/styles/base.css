@@ -7,3 +7,6 @@ img{max-width:100%}
 body{background:var(--bg);color:var(--ink);font:var(--text-sm)/1.5 var(--f-body)}
 button,input,select,textarea{font:inherit;color:inherit}
 .num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+/* Ícones (ver ui/icones.ts): herdam cor e tamanho do texto ao redor */
+.ico{width:1.125em;height:1.125em;flex:none;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.2em}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}

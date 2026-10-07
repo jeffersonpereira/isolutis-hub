@@ -1,47 +1,75 @@
 import { api } from "@/api/endpoints";
 import type { Cliente } from "@/api/tipos";
 import { $ } from "@/core/dom";
-import { brl, compararTexto, pluralizar } from "@/core/formato";
-import { esc, html, type Safe } from "@/core/html";
-import { ORC_STATUS, etapaNome } from "@/domain/constantes";
+import { brl, compararTexto, iniciais, normalizarTexto, pluralizar } from "@/core/formato";
+import { esc, html, raw, type Safe } from "@/core/html";
+import { ORC_STATUS, ORIGENS, etapaNome } from "@/domain/constantes";
 import { botaoWa, numeroWa } from "@/domain/whatsapp";
 import { dados, podeEscrever, ui } from "@/state/estado";
-import { registrarVista } from "@/state/nucleo";
+import { caminhoDoRegistro, caminhoNovo } from "@/state/caminhos";
+import { registrarVista, render } from "@/state/nucleo";
+import { registrarRotaDeRegistro } from "@/state/roteador";
 import { registrarAcao } from "@/ui/acoes";
+import { barraDeFerramentas, cabecalhoDePagina, chip, estadoVazio } from "@/ui/componentes";
 import { registrarConsulta } from "@/ui/conflito";
 import { registrarAbertura } from "@/ui/eventos";
-import { abrirGaveta } from "@/ui/gaveta";
+import { abrirFormularioPagina, mostrarRegistroNaoEncontrado } from "@/ui/formulario-pagina";
 import { linhaAutoria } from "@/ui/autoria";
-import { botaoExcluir, botaoSalvar, espaco } from "@/ui/formularios";
+import { botaoExcluir, botaoSalvar } from "@/ui/formularios";
 import { excluir, gravar } from "@/ui/gravacao";
 import { melhorarFormulario } from "@/ui/acessibilidade";
 import { toast } from "@/ui/toast";
-import { camposDoParceiro, ligarCamposDoParceiro, lerCamposDoParceiro } from "./parceiros/campos";
+import { ligarCamposDoParceiro, lerCamposDoParceiro, secoesDoParceiro } from "./parceiros/campos";
 import { botaoNovo } from "./comum";
 import { formNegocio, valorNegocio } from "./negocios";
 
 registrarConsulta("clientes", (id) => dados.clientes.find((c) => c.id === id));
 
 function vista(): Safe {
-  const q = ui.busca.toLowerCase();
-  const lista = dados.clientes
-    .filter((c) => !q || [c.nome, c.contato, c.municipio_nome, c.segmento, c.email].join(" ").toLowerCase().includes(q))
+  const q = normalizarTexto(ui.busca);
+  const todos = dados.clientes;
+  const n = todos.length;
+  const lista = todos
+    .filter((c) => !q || normalizarTexto([c.nome, c.contato, c.municipio_nome, c.segmento, c.email].join(" ")).includes(q))
+    .filter((c) => !ui.cliOrigem || c.origem === ui.cliOrigem)
+    .filter((c) => !ui.cliComNegocios || c.negocios_abertos > 0)
     .sort((a, b) => compararTexto(a.nome, b.nome));
-  const n = dados.clientes.length;
-  return html`<div class="head"><div><h1>Clientes</h1><p>${n} ${pluralizar(n, "empresa cadastrada", "empresas cadastradas")}</p></div>
-    <div class="tools"><input class="search" id="busca" data-busca="busca" type="search" placeholder="Buscar por nome, contato ou cidade" value="${ui.busca}">${botaoNovo("novoCliente", "Novo cliente")}</div></div>
-  ${
-    !n
-      ? html`<div class="empty"><b>Nenhum cliente ainda</b>Cadastre as empresas com quem a iSolutis conversa: quem pediu diagnóstico, quem já é cliente de manutenção, quem veio por indicação.${podeEscrever() ? html`<br><button class="btn primary" data-act="novoCliente">Cadastrar o primeiro cliente</button>` : ""}</div>`
-      : html`<div class="tbl-wrap"><table><thead><tr><th>Empresa</th><th>Contato</th><th>Cidade</th><th>Origem</th><th class="r">Negócios abertos</th><th class="r">Faturado</th></tr></thead><tbody>
-    ${lista.map(
-      (c) => html`<tr tabindex="0" data-open="cliente:${c.id}"><td><b>${c.nome}</b>${c.segmento ? html`<div class="sub">${c.segmento}</div>` : ""}</td>
-        <td>${c.contato || "—"}${c.telefone ? html`<div class="sub num">${c.telefone}</div>` : ""}${numeroWa(c.telefone) ? html`<div>${botaoWa(c, "Conversar", undefined, "mini")}</div>` : ""}</td>
-        <td>${c.municipio_nome ? `${c.municipio_nome}/${c.uf}` : "—"}</td><td>${c.origem || "—"}</td><td class="r num">${c.negocios_abertos}</td><td class="r num">${brl(c.faturado)}</td></tr>`,
-    )}
-    ${!lista.length ? html`<tr><td colspan="6" class="sub">Nenhum cliente encontrado para “${ui.busca}”.</td></tr>` : ""}
-  </tbody></table></div>`
-  }`;
+  const cabecalho = cabecalhoDePagina({
+    titulo: "Clientes",
+    descricao: `${n} ${pluralizar(n, "empresa cadastrada", "empresas cadastradas")}`,
+    acoes: botaoNovo("novoCliente", "Novo cliente"),
+  });
+  if (!n) {
+    return html`${cabecalho}${estadoVazio({
+      icone: "clientes",
+      titulo: "Nenhum cliente ainda",
+      texto: "Cadastre as empresas com quem a iSolutis conversa: quem pediu diagnóstico, quem já é cliente de manutenção, quem veio por indicação.",
+      acao: podeEscrever() ? html`<button class="btn primary" data-act="novoCliente">Cadastrar o primeiro cliente</button>` : undefined,
+    })}`;
+  }
+  const comNegocios = todos.filter((c) => c.negocios_abertos > 0).length;
+  const abertos = todos.reduce((soma, c) => soma + c.negocios_abertos, 0);
+  const faturado = todos.reduce((soma, c) => soma + c.faturado, 0);
+  const filtros = html`<select class="chip" data-act="filtrarOrigem" aria-label="Filtrar por origem"><option value="">Origem: todas</option>${ORIGENS.map((o) => html`<option value="${o}"${o === ui.cliOrigem ? raw(" selected") : ""}>${o}</option>`)}</select>${chip({ rotulo: "Com negócios abertos", acao: "alternarComNegocios", pressionado: ui.cliComNegocios })}`;
+  const contagem = `${lista.length} ${pluralizar(lista.length, "cliente", "clientes")}`;
+  return html`${cabecalho}
+    <div class="kpis">
+      <div class="kpi"><span class="l">Clientes</span><span class="v">${n}</span><span class="s">${comNegocios} ${pluralizar(comNegocios, "com negócio aberto", "com negócios abertos")}</span></div>
+      <div class="kpi"><span class="l">Negócios abertos</span><span class="v">${abertos}</span><span class="s">em ${comNegocios} ${pluralizar(comNegocios, "cliente", "clientes")}</span></div>
+      <div class="kpi"><span class="l">Faturado</span><span class="v num">${brl(faturado)}</span><span class="s">recebido de todos os clientes</span></div>
+    </div>
+    <div class="painel-lista">
+      ${barraDeFerramentas({ busca: { chave: "busca", valor: ui.busca, placeholder: "Buscar por nome, contato ou cidade", rotulo: "Buscar clientes" }, filtros, contagem })}
+      <div class="tbl-wrap"><table><thead><tr><th>Empresa</th><th>Contato</th><th>Cidade</th><th>Origem</th><th class="r">Negócios abertos</th><th class="r">Faturado</th></tr></thead><tbody>
+      ${lista.map(
+        (c) => html`<tr tabindex="0" data-open="cliente:${c.id}"><td><div class="who"><i class="av" aria-hidden="true">${iniciais(c.nome)}</i><div><b>${c.nome}</b>${c.segmento ? html`<div class="sub">${c.segmento}</div>` : ""}</div></div></td>
+          <td>${c.contato || "—"}${c.telefone ? html`<div class="sub num">${c.telefone}</div>` : ""}${numeroWa(c.telefone) ? html`<div>${botaoWa(c, "Conversar", undefined, "mini")}</div>` : ""}</td>
+          <td>${c.municipio_nome ? `${c.municipio_nome}/${c.uf}` : "—"}</td><td>${c.origem ? html`<span class="pill">${c.origem}</span>` : "—"}</td><td class="r num">${c.negocios_abertos}</td><td class="r num">${brl(c.faturado)}</td></tr>`,
+      )}
+      ${!lista.length ? html`<tr><td colspan="6"><div class="empty sem-borda">Nenhum cliente encontrado${ui.busca ? html` para “${ui.busca}”` : ""}. Tente outro termo ou limpe os filtros.</div></td></tr>` : ""}
+      </tbody></table></div>
+      <div class="rodtab"><span>Mostrando ${lista.length} de ${n}</span><span>Dica: pressione <kbd>Enter</kbd> numa linha para abrir</span></div>
+    </div>`;
 }
 
 registrarVista({
@@ -51,15 +79,23 @@ registrarVista({
   desenhar: vista,
 });
 
+/** Abre o cliente num formulário em página (rota `/clientes/<id>` ou `/clientes/novo`). */
 export function formCliente(c?: Cliente): void {
   const novo = !c;
-  abrirGaveta({
+  const secoes = secoesDoParceiro(c ?? {});
+  if (c) secoes.push({ id: "relacionados", titulo: "Relacionados", descricao: "Registros ligados a este cliente", corpo: html`<div class="related" id="relacionados">${relacionados(c)}</div>` });
+  void abrirFormularioPagina({
+    vista: "clientes",
+    rotuloLista: "Clientes",
+    caminho: c ? caminhoDoRegistro("clientes", c.id) : caminhoNovo("clientes"),
     titulo: c ? c.nome : "Novo cliente",
+    avatar: c ? iniciais(c.nome) : undefined,
+    meta: linhaAutoria(c),
+    secoes,
+    acoes: html`${c ? botaoWa(c, "Conversar no WhatsApp") : ""}${c && podeEscrever() ? html`<button type="button" class="btn" data-novo-negocio>Novo negócio</button>` : ""}`,
+    salvar: botaoSalvar(),
+    excluir: botaoExcluir(!!c),
     registro: c ? { recurso: "clientes", id: c.id, versao: c.versao } : null,
-    autoria: linhaAutoria(c),
-    corpo: html`${camposDoParceiro(c ?? {})}
-      ${c ? html`<div class="related" id="relacionados">${relacionados(c)}</div>` : ""}`,
-    rodape: html`${botaoSalvar()}${c ? botaoWa(c, "Conversar no WhatsApp") : ""}${c && podeEscrever() ? html`<button class="btn" data-novo-negocio>Novo negócio</button>` : ""}${espaco}${botaoExcluir(!!c)}`,
     montar: (f, fechar, L) => {
       // Melhorar acessibilidade
       melhorarFormulario(f);
@@ -143,4 +179,22 @@ registrarAbertura("cliente", (id) => {
   if (c) formCliente(c);
 });
 
+registrarAcao("alternarComNegocios", () => {
+  ui.cliComNegocios = !ui.cliComNegocios;
+  render();
+  $<HTMLElement>('[data-act="alternarComNegocios"]')?.focus();
+});
+registrarAcao("filtrarOrigem", (alvo) => {
+  ui.cliOrigem = (alvo as HTMLSelectElement).value;
+  render();
+  $<HTMLElement>('[data-act="filtrarOrigem"]')?.focus();
+});
 
+registrarRotaDeRegistro("clientes", {
+  novo: () => formCliente(),
+  abrir: (id) => {
+    const c = dados.clientes.find((x) => x.id === id);
+    if (c) formCliente(c);
+    else mostrarRegistroNaoEncontrado({ vista: "clientes", rotuloLista: "Clientes" });
+  },
+});

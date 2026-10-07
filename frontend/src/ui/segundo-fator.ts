@@ -54,6 +54,8 @@ export function abrirSegundoFator(aviso: Aviso): Promise<Usuario | null> {
     <button class="lg-link" type="button" id="lg2faVoltar">Voltar ao login</button>`;
   entrar.hidden = true;
   entrar.after(form);
+  // Guarda o endereço de onde a pessoa veio (ex.: um link direto para /clientes/abc) para voltar a ele depois do código.
+  const destino = /^\/(login|convite)(\/|$)/.test(location.pathname) ? "/" : location.pathname;
   history.pushState(null, "", ROTA_2FA);
 
   const campo = form.querySelector<HTMLInputElement>("#lg2faCodigo")!;
@@ -85,7 +87,7 @@ export function abrirSegundoFator(aviso: Aviso): Promise<Usuario | null> {
       tokenSegundoFator.limpar();
       form.remove();
       entrar.hidden = false;
-      if (location.pathname === ROTA_2FA) history.replaceState(null, "", resultado ? "/" : ROTA_LOGIN);
+      if (location.pathname === ROTA_2FA) history.replaceState(null, "", resultado ? destino : ROTA_LOGIN);
       aviso(texto, erro);
       if (!resultado) setTimeout(() => obrigatorio<HTMLInputElement>("#lgEmail").focus(), 50);
       resolve(resultado);

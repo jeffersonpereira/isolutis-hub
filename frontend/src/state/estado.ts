@@ -17,6 +17,8 @@ export const dados = {
 /** Filtros e escolhas de tela (não vão para o servidor). */
 export const ui = {
   busca: "",
+  cliOrigem: "",
+  cliComNegocios: false,
   mostrarFechados: false,
   ano: new Date().getFullYear(),
   mes: null as number | null,

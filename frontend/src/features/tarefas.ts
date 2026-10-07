@@ -47,7 +47,7 @@ function vista(): Safe {
   const atrasadas = dados.tarefas.filter((t) => t.coluna !== "concluido" && t.prazo && t.prazo < h).length;
   const minhas = dados.tarefas.filter((t) => t.coluna !== "concluido" && t.responsavel_id === eu.id).length;
   const filtros: Array<[string, string]> = [["todas", "Todas"], ["minhas", "Minhas"], ...dados.equipe.filter((m) => m.ativo && m.id !== eu.id).map((m): [string, string] => [m.id, m.nome.split(" ")[0] ?? m.nome]), ["sem", "Sem responsável"]];
-  return html`<div class="head"><div><h1>Tarefas da equipe</h1><p>${minhas} ${pluralizar(minhas, "tarefa", "tarefas")} com você${atrasadas ? html` · <b style="color:var(--bad)">${atrasadas} ${pluralizar(atrasadas, "atrasada", "atrasadas")}</b>` : ""}. Arraste um cartão para mudar de coluna.</p></div>
+  return html`<div class="head"><div><h1>Tarefas da equipe</h1><p>${minhas} ${pluralizar(minhas, "tarefa", "tarefas")} com você${atrasadas ? html` · <b style="color:var(--bad-texto)">${atrasadas} ${pluralizar(atrasadas, "atrasada", "atrasadas")}</b>` : ""}. Arraste um cartão para mudar de coluna.</p></div>
     <div class="tools"><input class="search" id="tbusca" data-busca="tarefaBusca" type="search" placeholder="Buscar tarefa, cliente ou projeto" value="${ui.tarefaBusca}">${botaoNovo("novaTarefa", "Nova tarefa")}</div></div>
   <div class="seg" role="group" aria-label="Filtrar por pessoa" style="margin-bottom:14px;flex-wrap:wrap">${filtros.map(([k, r]) => html`<button data-act="filtroPessoa" data-valor="${k}" aria-pressed="${p === k}">${r}</button>`)}</div>
   ${!dados.tarefas.length ? html`<div class="empty" style="margin-bottom:14px"><b>Nenhuma tarefa ainda</b>Crie as tarefas da semana, escolha quem é o responsável e o prazo. Cada pessoa filtra pelas suas em "Minhas".${escrever ? html`<br><button class="btn primary" data-act="novaTarefa">Criar a primeira tarefa</button>` : ""}</div>` : ""}
@@ -80,7 +80,7 @@ function cartao(t: Tarefa, h: string, escrever: boolean): Safe {
   return html`<article class="card tcard p-${t.prioridade}" draggable="${escrever}" data-id="${t.id}" data-open="tarefa:${t.id}" tabindex="0">
     <span class="t">${t.titulo}</span>
     ${vinc ? html`<span class="sub">${vinc}</span>` : ""}
-    <span class="m"><span>${t.prioridade !== "media" ? html`<span class="pill ${pcls}">${pr}</span> ` : ""}${t.checklist.length ? html`<span class="sub">☑ ${feitos}/${t.checklist.length}</span>` : ""}</span><span class="${atrasada ? "late" : ""}" style="${hojeV ? "color:var(--warn);font-weight:600" : ""}">${t.prazo ? (atrasada ? "atrasada · " : hojeV ? "hoje · " : "") + dataBR(t.prazo).slice(0, 5) : ""}</span></span>
+    <span class="m"><span>${t.prioridade !== "media" ? html`<span class="pill ${pcls}">${pr}</span> ` : ""}${t.checklist.length ? html`<span class="sub">☑ ${feitos}/${t.checklist.length}</span>` : ""}</span><span class="${atrasada ? "late" : ""}" style="${hojeV ? "color:var(--warn-texto);font-weight:600" : ""}">${t.prazo ? (atrasada ? "atrasada · " : hojeV ? "hoje · " : "") + dataBR(t.prazo).slice(0, 5) : ""}</span></span>
     ${resp ? html`<span class="tresp"><i class="av mini">${iniciais(resp)}</i>${resp.split(" ")[0]}</span>` : html`<span class="sub">sem responsável</span>`}
   </article>`;
 }

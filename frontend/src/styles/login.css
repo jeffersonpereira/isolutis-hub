@@ -1,6 +1,6 @@
 /* Tela de login */
 /* login (Supabase) */
-.login{position:fixed;inset:0;z-index:40;background:#111b30;display:grid;place-items:center;padding:24px 16px;overflow-y:auto}
+.login{position:fixed;inset:0;z-index:var(--z-login);background:#111b30;display:grid;place-items:center;padding:24px 16px;overflow-y:auto}
 .login:before{content:"";position:fixed;right:-140px;top:-140px;width:420px;height:420px;border-radius:50%;border:56px solid #22C3CE;opacity:.12;pointer-events:none}
 .lg-box{position:relative;width:min(400px,100%);display:flex;flex-direction:column;gap:18px}
 .lg-topo{display:flex;flex-direction:column;align-items:flex-start;gap:6px}

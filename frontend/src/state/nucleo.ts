@@ -5,9 +5,12 @@
 import { api } from "@/api/endpoints";
 import type { Recurso } from "@/api/tipos";
 import { $, obrigatorio } from "@/core/dom";
-import { html, type Safe } from "@/core/html";
+import { html, raw, type Safe } from "@/core/html";
 import { registrarAcao } from "@/ui/acoes";
+import { icone } from "@/ui/icones";
 import { conexao, dados, eu } from "./estado";
+import { caminhoDaTela } from "./caminhos";
+import { ACOES_DAS_TELAS, ESTRUTURA_MENU, ICONES_DAS_TELAS, type AcaoRapida } from "./menu";
 
 export interface Vista {
   id: string;
@@ -20,6 +23,8 @@ export interface Vista {
   depende?: readonly string[];
   desenhar: () => Safe;
   somenteAdmin?: boolean;
+  /** Tela acessível por rota, paleta e menu do usuário, mas fora do menu lateral. */
+  oculta?: boolean;
   /** Agrupa a vista num submenu recolhível do menu lateral (ex.: "Financeiro"). */
   grupo?: string;
 }
@@ -27,16 +32,6 @@ export interface Vista {
 const vistas = new Map<string, Vista>();
 let atual = "painel";
 const CHAVE_ABA = "hub.aba";
-
-/** Ordem do menu lateral (independe da ordem em que os módulos são importados). */
-const ORDEM_MENU = [
-  "painel", "clientes", "negocios", "orcamentos", "projetos", "tarefas", "produtos",
-  "fin-plano", "fin-contas", "fin-parceiros", "fin-titulos", "fin-fluxo", "faturamento", "relatorios", "equipe",
-];  // fmt: skip
-const posicao = (id: string): number => {
-  const i = ORDEM_MENU.indexOf(id);
-  return i === -1 ? ORDEM_MENU.length : i;
-};
 
 export const registrarVista = (v: Vista): void => {
   vistas.set(v.id, v);
@@ -88,36 +83,70 @@ const estadoGrupos = new Map<string, boolean>();
 registrarAcao("alternarGrupo", (alvo) => {
   const grupo = alvo.dataset.valor ?? "";
   if (!grupo) return;
-  const estaAberto = estadoGrupos.get(grupo) ?? false;
-  estadoGrupos.set(grupo, !estaAberto);
+  // Com a barra recolhida só há ícones: abrir o grupo expande a barra para mostrar as telas dele.
+  const casca = document.getElementById("app");
+  const recolhida = casca?.classList.contains("recolhida") ?? false;
+  if (recolhida) document.getElementById("recolher")?.click();
+  estadoGrupos.set(grupo, recolhida ? true : !(estadoGrupos.get(grupo) ?? false));
   renderMenu();
 });
 
-export function renderMenu(): void {
-  const itens = [...vistas.values()].filter((v) => !v.somenteAdmin || eu.admin).sort((a, b) => posicao(a.id) - posicao(b.id));
-  const botao = (v: Vista, sub: boolean): Safe => {
-    const c = v.contagem?.() ?? "";
-    return html`<button class="${sub ? "item-sub" : ""}" data-go="${v.id}" aria-current="${atual === v.id}">${v.nome}<span class="count">${c}</span></button>`;
+/** Telas que o usuário pode abrir, na ordem do catálogo do menu (as fora do catálogo vão para o fim). */
+export function vistasVisiveis(): Vista[] {
+  const visiveis = [...vistas.values()].filter((v) => !v.somenteAdmin || eu.admin);
+  const ordem = ESTRUTURA_MENU.flatMap((s) => s.itens.flatMap((i) => ("id" in i ? [i.id] : i.filhos)));
+  const posicao = (id: string): number => {
+    const i = ordem.indexOf(id);
+    return i === -1 ? ordem.length : i;
   };
-  const desenhados = new Set<string>();
-  const blocos: Safe[] = [];
-  for (const v of itens) {
-    if (!v.grupo) {
-      blocos.push(botao(v, false));
-      continue;
-    }
-    if (desenhados.has(v.grupo)) continue;
-    desenhados.add(v.grupo);
-    const filhos = itens.filter((x) => x.grupo === v.grupo);
-    const usuarioExplicitouEstado = estadoGrupos.has(v.grupo);
-    const usuarioQuerAberto = estadoGrupos.get(v.grupo) ?? false;
-    const voceEstaEmUmFilho = filhos.some((x) => x.id === atual);
-    // Abre se: (1) usuário clicou para abrir OU (2) você está em um filho e usuário não explicitamente fechou
-    const aberto = usuarioQuerAberto || (voceEstaEmUmFilho && !usuarioExplicitouEstado);
-    blocos.push(html`<button class="nav-grupo" data-act="alternarGrupo" data-valor="${v.grupo}" aria-expanded="${aberto}">${v.grupo}<span class="seta" aria-hidden="true">›</span></button>${filhos.map((x) => html`<span class="nav-sub${aberto ? "" : " fechado"}">${botao(x, true)}</span>`)}`);
-  }
-  obrigatorio("#nav").innerHTML = String(html`${blocos}`);
+  return visiveis.sort((a, b) => posicao(a.id) - posicao(b.id));
 }
+
+/** Ações de criação das telas visíveis, para o "+ Novo" e a paleta (só quando o usuário pode escrever). */
+export function acoesRapidas(): AcaoRapida[] {
+  if (conexao.somenteLeitura || conexao.semDados) return [];
+  return vistasVisiveis().flatMap((v) => ACOES_DAS_TELAS[v.id] ?? []);
+}
+
+export const iconeDaTela = (id: string): string => ICONES_DAS_TELAS[id] ?? "pasta";
+
+export function renderMenu(): void {
+  const visiveis = vistasVisiveis().filter((v) => !v.oculta);
+  const porId = new Map(visiveis.map((v) => [v.id, v]));
+  const usados = new Set<string>();
+  const link = (v: Vista, sub = false): Safe => {
+    usados.add(v.id);
+    const c = v.contagem?.() ?? "";
+    const ativo = atual === v.id;
+    return html`<a href="/${v.id}" data-go="${v.id}"${ativo ? raw(' aria-current="page"') : ""} title="${v.nome}">${sub ? "" : icone(iconeDaTela(v.id))}<span class="tx">${v.nome}</span>${c !== "" && c !== 0 ? html`<span class="n">${c}</span>` : ""}</a>`;
+  };
+  const secoes: Safe[] = [];
+  for (const secao of ESTRUTURA_MENU) {
+    const blocos: Safe[] = [];
+    for (const item of secao.itens) {
+      if ("id" in item) {
+        const v = porId.get(item.id);
+        if (v) blocos.push(link(v));
+        continue;
+      }
+      const filhos = item.filhos.map((id) => porId.get(id)).filter((v): v is Vista => !!v);
+      if (!filhos.length) continue;
+      const ativoNoFilho = filhos.some((v) => v.id === atual);
+      const aberto = estadoGrupos.get(item.grupo) ?? ativoNoFilho;
+      blocos.push(html`<button type="button" class="nav-grupo" data-act="alternarGrupo" data-valor="${item.grupo}" aria-expanded="${String(aberto)}" title="${item.grupo}">${icone(item.icone)}<span class="tx">${item.grupo}</span>${icone("seta-b", { classe: "chev" })}</button>
+        <div class="sub-menu${aberto ? "" : " fechado"}">${filhos.map((v) => link(v, true))}</div>`);
+    }
+    if (blocos.length) secoes.push(html`${secao.rotulo ? html`<div class="rot">${secao.rotulo}</div>` : ""}${blocos}`);
+  }
+  const sobras = visiveis.filter((v) => !usados.has(v.id) && !ESTRUTURA_MENU.some((s) => s.itens.some((i) => ("id" in i ? i.id === v.id : i.filhos.includes(v.id)))));
+  if (sobras.length) secoes.push(html`<div class="rot">Outros</div>${sobras.map((v) => link(v))}`);
+  obrigatorio("#nav").innerHTML = String(html`${secoes}`);
+}
+
+type AoRenderizar = (nomeDaTela: string) => void;
+const ouvintesDeRender: AoRenderizar[] = [];
+/** Avisa quem precisa reagir a cada redesenho (barra superior: título e ações). */
+export const aoRenderizar = (fn: AoRenderizar): void => void ouvintesDeRender.push(fn);
 
 export function render(): void {
   renderMenu();
@@ -129,7 +158,8 @@ export function render(): void {
     : conexao.somenteLeitura
       ? html`<div class="banner">Você está vendo o Hub Comercial em modo leitura.</div>`
       : "";
-  el.innerHTML = String(html`${aviso}${vista?.desenhar()}`);
+  if (!conteudoTravado) el.innerHTML = String(html`${aviso}${vista?.desenhar()}`);
+  ouvintesDeRender.forEach((fn) => fn(vista?.nome ?? ""));
 }
 
 let aoNavegar: (id: string) => void = () => {};
@@ -137,17 +167,73 @@ export const observarNavegacao = (fn: (id: string) => void): void => {
   aoNavegar = fn;
 };
 
-export async function ir(id: string): Promise<void> {
+/**
+ * Guarda de saída: quem tem algo a perder (formulário em página com alterações) registra uma função que
+ * devolve `false` para impedir a troca de tela. Vale para o menu, a paleta e o Voltar do navegador.
+ */
+type Guarda = () => boolean | Promise<boolean>;
+let guarda: Guarda | null = null;
+let aoSairDaPagina: (() => void) | null = null;
+/**
+ * `aoSair` roda quando a tela realmente muda (depois da guarda): é onde o formulário em página se desfaz
+ * (destrava o conteúdo, encerra a presença "editando…" e remove seus ouvintes).
+ */
+export const registrarGuarda = (g: Guarda | null, aoSair?: () => void): void => {
+  guarda = g;
+  aoSairDaPagina = aoSair ?? null;
+};
+export const podeSair = async (): Promise<boolean> => (guarda ? await guarda() : true);
+
+/** Desfaz a página aberta (formulário em página), se houver: roda o `aoSair` registrado e limpa a guarda. */
+export function sairDaPagina(): void {
+  const limpar = aoSairDaPagina;
+  guarda = null;
+  aoSairDaPagina = null;
+  limpar?.();
+}
+
+/** Enquanto travado, `render()` não redesenha a área principal (formulário em página aberto). */
+let conteudoTravado = false;
+export const travarConteudo = (travado: boolean): void => {
+  conteudoTravado = travado;
+};
+
+let ultimoCaminho = typeof location === "undefined" ? "/" : location.pathname;
+export const caminhoAtual = (): string => ultimoCaminho;
+
+/** Atualiza o endereço do navegador sem recarregar. Não repete a entrada se o caminho já é o atual. */
+export function atualizarUrl(caminho: string, modo: "push" | "replace" = "push"): void {
+  if (location.pathname !== caminho) {
+    if (modo === "replace") history.replaceState(null, "", caminho);
+    else history.pushState(null, "", caminho);
+  }
+  ultimoCaminho = caminho;
+}
+
+export interface OpcoesIr {
+  /** `push` (padrão) cria entrada no histórico; `replace` troca a atual; `nenhum` não mexe na URL (já está certa). */
+  historico?: "push" | "replace" | "nenhum";
+  /** A guarda de saída já foi consultada por quem chama (evita perguntar duas vezes). */
+  semGuarda?: boolean;
+}
+
+export async function ir(id: string, opcoes: OpcoesIr = {}): Promise<void> {
   if (!vistas.has(id)) id = "painel";
+  if (!opcoes.semGuarda && !(await podeSair())) return;
+  sairDaPagina();
   atual = id;
   try {
     localStorage.setItem(CHAVE_ABA, id);
   } catch {
     /* sem armazenamento: só não lembra a aba */
   }
+  const modo = opcoes.historico ?? "push";
+  if (modo === "nenhum") ultimoCaminho = location.pathname;
+  else atualizarUrl(caminhoDaTela(id), modo);
   aoNavegar(id);
   render();
-  window.scrollTo(0, 0);
+  const area = $("#view");
+  if (area) area.scrollTop = 0;
   const v = vistas.get(id);
   if (v?.carregar) {
     await v.carregar().catch((e: unknown) => console.error(e));

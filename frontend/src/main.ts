@@ -5,13 +5,17 @@ import { sessaoToken } from "@/api/http";
 import type { Usuario } from "@/api/tipos";
 import { $, obrigatorio } from "@/core/dom";
 import { conexao, eu, ui } from "@/state/estado";
-import { abaSalva, carregarTudo, definirAtual, observarNavegacao, recarregar, render } from "@/state/nucleo";
+import { abaSalva, atualizarUrl, carregarTudo, definirAtual, observarNavegacao, recarregar, render } from "@/state/nucleo";
+import { aplicarRegistroDaRota, iniciarRoteador, resolverRotaInicial } from "@/state/roteador";
 import { tempoReal } from "@/state/realtime";
-import { desenharOnline, indicarSincronizacao, mostrarConta } from "@/ui/casca";
+import { desenharOnline, indicarSincronizacao, iniciarBarraLateral } from "@/ui/casca";
+import { iniciarBarraSuperior, mostrarUsuario } from "@/ui/barra-superior";
 import { iniciarAvisoDeConflito } from "@/ui/conflito";
 import { detectarRotaConvite, iniciarTelaConvite } from "@/ui/convite";
 import { concluirConvitePendente, convitePendente } from "@/ui/convite-pendente";
 import { iniciarEventos } from "@/ui/eventos";
+import { abrirPaleta, ligarAtalhoDaPaleta } from "@/ui/paleta";
+import { montarSprite } from "@/ui/icones";
 import { observarGaveta } from "@/ui/gaveta";
 import { esconderLogin, pedirLogin, trocarSenha } from "@/ui/login";
 import { detectarOnboarding, iniciarWizardOnboarding } from "@/ui/onboarding";
@@ -51,13 +55,15 @@ function ligarBuscas(): void {
 
 function iniciarSessaoNaTela(usuario: Usuario): void {
   Object.assign(eu, { id: usuario.id, nome: usuario.nome, email: usuario.email, admin: usuario.admin });
-  mostrarConta();
+  mostrarUsuario();
 }
 
 async function iniciarApp(usuario: Usuario): Promise<void> {
   iniciarSessaoNaTela(usuario);
   esconderLogin();
-  definirAtual(abaSalva());
+  const inicial = resolverRotaInicial();
+  definirAtual(inicial.vista);
+  if (inicial.corrigir) atualizarUrl(inicial.corrigir, "replace");
   render();
   try {
     await carregarTudo();
@@ -68,6 +74,8 @@ async function iniciarApp(usuario: Usuario): Promise<void> {
     indicarSincronizacao("off", "Sem conexão com o banco de dados");
   }
   render();
+  aplicarRegistroDaRota(inicial.registro);
+  iniciarRoteador();
 
   let recargaPendente: number | undefined;
   const pendentes = new Set<string>();
@@ -107,7 +115,6 @@ async function selecionarEmpresa(): Promise<{ admin: boolean; empresa: { id: str
   const ativa = empresas.find((empresa) => empresa.id === sessaoToken.empresa()) ?? primeiraEmpresa;
   seletor.value = ativa.id;
   sessaoToken.definirEmpresa(seletor.value);
-  seletor.hidden = empresas.length < 2;
   seletor.addEventListener("change", () => {
     sessaoToken.definirEmpresa(seletor.value);
     location.reload();
@@ -123,13 +130,24 @@ async function principal(): Promise<void> {
   iniciarEventos();
   ligarBuscas();
   iniciarAvisoDeConflito();
-  obrigatorio("#sair").addEventListener("click", () => {
-    tempoReal.parar();
-    sessaoToken.definir(null);
-    convitePendente.limpar();
-    location.replace(location.pathname);
+  montarSprite();
+  // "Pular para o conteúdo" leva o foco à área principal sem mexer no endereço
+  document.querySelector(".pular")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    document.getElementById("view")?.focus();
   });
-  obrigatorio("#trocarSenha").addEventListener("click", () => void trocarSenha());
+  iniciarBarraLateral();
+  iniciarBarraSuperior({
+    aoSair: () => {
+      tempoReal.parar();
+      sessaoToken.definir(null);
+      convitePendente.limpar();
+      location.replace(location.pathname);
+    },
+    aoTrocarSenha: () => void trocarSenha(),
+    aoAbrirPaleta: abrirPaleta,
+  });
+  ligarAtalhoDaPaleta();
   sessaoToken.aoExpirar(() => {
     tempoReal.parar();
     void pedirLogin("Sua sessão expirou. Entre de novo para continuar.").then(() => location.reload());

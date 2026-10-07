@@ -22,6 +22,19 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  /* Superfícies: fundo da área principal (sob os cartões) e borda de controles */
+  --canvas:#f4f6fa; --line-strong:#d6dce6;
+  /* Espaçamento (base 4px), raios, alturas de controle e medidas da casca */
+  --esp-1:4px; --esp-2:8px; --esp-3:12px; --esp-4:16px; --esp-5:20px; --esp-6:24px; --esp-7:32px; --esp-8:48px;
+  --r-sm:6px; --r-md:8px; --r-lg:12px; --r-full:999px;
+  --controle-sm:30px; --controle-md:36px; --controle-lg:42px;
+  --topbar-h:56px; --sidebar-w:272px; --sidebar-w-recolhida:68px;
+  /* Camadas de empilhamento (nenhum z-index literal fora daqui) */
+  --z-topbar:20; --z-scrim:35; --z-sidebar:36; --z-gaveta:40; --z-modal:50; --z-paleta:60; --z-toast:70; --z-login:80;
+  /* Cores de status para TEXTO sobre fundo claro (AA, 4.5:1). As cores originais seguem em bordas, barras e pontos. */
+  --ok-texto:#397955; --warn-texto:#836d2b; --bad-texto:#a0584e; --info-texto:#466da7; --teal-texto:#0c7882;
+  /* Barra lateral (escura nos dois temas) */
+  --side-bg:var(--navy-deep); --side-ink:#c6d0de; --side-ink-forte:#ffffff; --side-muted:#8fa1ba; --side-ativo:#24375c; --side-linha:#1f3050; --side-hover:rgba(255,255,255,.07);
   /* Barra de rolagem do menu lateral (a barra é sempre escura, nos dois temas) */
   --nav-scroll-track: transparent;
   --nav-scroll-thumb: rgba(198, 208, 222, 0.28);
@@ -33,4 +46,6 @@
   --bar-a:#3b9ca8; --bar-b:#3e556f;
   --ok:#6fd19f; --ok-bg:#16352a; --warn:#d9b860; --warn-bg:#3a2f14; --bad:#d98a7f; --bad-bg:#3d1c1b; --info:#9cc2f0; --info-bg:#1a2d47; --wa:#5fd1a8; --wa-ink:#07210f;
   --nav-scroll-thumb:rgba(91,184,194,.38); --nav-scroll-thumb-hover:rgba(91,184,194,.62);
+  --canvas:#0a111b; --line-strong:#2f3d57;
+  --ok-texto:var(--ok); --warn-texto:var(--warn); --bad-texto:var(--bad); --info-texto:var(--info); --teal-texto:var(--teal-mid);
   color-scheme:dark}

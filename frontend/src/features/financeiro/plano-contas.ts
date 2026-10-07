@@ -69,7 +69,7 @@ function no(c: PlanoConta): Safe {
 function vista(): Safe {
   if (!tela.contas) return html`<div class="head"><div><h1>Plano de contas</h1></div></div><p class="sub">Carregando…</p>`;
   return html`<div class="head"><div><h1>Plano de contas</h1><p>Até três níveis (1 · 1.01 · 1.01.001). Só contas analíticas recebem lançamentos.</p>
-    <div style="margin-top:8px"><input type="search" placeholder="Pesquisar contas..." data-busca="buscaPlano" aria-label="Pesquisar contas por código ou nome"></div></div>
+    <div style="margin-top:8px"><input class="search" type="search" placeholder="Pesquisar contas..." data-busca="buscaPlano" aria-label="Pesquisar contas por código ou nome"></div></div>
     <div class="tools">
       <button class="btn primary" data-act="novaConta">+ Nova Conta Raiz</button>
     </div></div>

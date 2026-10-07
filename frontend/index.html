@@ -6,17 +6,36 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Hub Comercial iSolutis</title>
 <link rel="icon" type="image/png" href="/logo.png">
+<script>
+/* Tema antes da primeira pintura (a lógica completa está em src/ui/tema.ts). */
+try{var p=localStorage.getItem("hub.tema");document.documentElement.setAttribute("data-theme",p==="escuro"||(p!=="claro"&&matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light")}catch(e){}
+</script>
 </head>
 <body>
-<div class="app">
-  <aside>
-    <div class="brand"><span id="logoSide"><img alt="iSolutis" width="172" height="66" src="/logo-horizontal.png"></span><small>Hub Comercial</small></div>
+<a class="pular" href="#view">Pular para o conteúdo</a>
+<div class="app" id="app">
+  <aside id="side" aria-label="Menu lateral">
+    <div class="brand"><span id="logoSide"><img alt="iSolutis" width="172" height="66" src="/logo-horizontal.png"><img class="marca-min" alt="iSolutis" width="36" height="36" src="/logo.png"></span><small>Hub Comercial</small></div>
     <nav id="nav" aria-label="Áreas do Hub Comercial"></nav>
-    <div class="online" id="online" hidden aria-live="polite"></div>
-    <div class="sync" id="sync"><span class="dot"></span>Conectando…</div>
-    <div class="conta" id="conta" hidden><span id="contaEmail"></span><select id="empresaAtiva" aria-label="Empresa ativa" hidden></select><div class="conta-b"><button type="button" id="trocarSenha">Trocar senha</button><button type="button" id="sair">Sair</button></div></div>
+    <div class="rodape">
+      <div class="online" id="online" hidden aria-live="polite"></div>
+      <div class="sync" id="sync"><span class="dot"></span><span class="tx">Conectando…</span></div>
+      <button type="button" class="recolher" id="recolher" aria-label="Recolher a barra lateral" title="Recolher a barra lateral"></button>
+    </div>
   </aside>
-  <main id="view"></main>
+  <div class="area">
+    <header class="topbar" role="banner">
+      <button type="button" class="ib so-celular" id="abrirMenu" aria-label="Abrir menu" aria-controls="side" aria-expanded="false"></button>
+      <div class="titulo-tela" id="tituloTela"></div>
+      <div class="espaco"></div>
+      <button type="button" class="cmdk" id="abrirPaleta" aria-label="Abrir a paleta de comandos (Ctrl K)" aria-haspopup="dialog"></button>
+      <button type="button" class="btn primary novo" id="btnNovo" aria-haspopup="menu" aria-expanded="false"></button>
+      <button type="button" class="ib" id="btnTema" aria-haspopup="menu" aria-expanded="false"></button>
+      <button type="button" class="me" id="btnMe" aria-haspopup="menu" aria-expanded="false" aria-label="Menu do usuário" hidden></button>
+      <select id="empresaAtiva" aria-label="Empresa ativa" hidden tabindex="-1"></select>
+    </header>
+    <main id="view" tabindex="-1"></main>
+  </div>
 </div>
 <div id="layer"></div>
 

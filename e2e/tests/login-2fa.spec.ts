@@ -39,7 +39,7 @@ async function entrar(page: Page) {
 test("admin sem 2FA entra direto, sem tela de configuração obrigatória", async ({ page }) => {
   await simularApi(page, { com2fa: false });
   await entrar(page);
-  await expect(page.locator("nav button").first()).toBeVisible();
+  await expect(page.locator("aside nav a").first()).toBeVisible();
   await expect(page.getByText("Autenticação em dois fatores obrigatória")).toHaveCount(0);
   await expect(page.locator("#lg2fa")).toHaveCount(0);
 });
@@ -47,9 +47,10 @@ test("admin sem 2FA entra direto, sem tela de configuração obrigatória", asyn
 test("membro sem papel de administrador encontra o 2FA em Minha conta", async ({ page }) => {
   await simularApi(page, { com2fa: false, papel: "membro" });
   await entrar(page);
-  await expect(page.locator("nav button").first()).toBeVisible();
-  await expect(page.locator("nav button", { hasText: "Dados da empresa" })).toHaveCount(0);
-  await page.locator("nav button", { hasText: "Minha conta" }).click();
+  await expect(page.locator("aside nav a").first()).toBeVisible();
+  await expect(page.locator("aside nav a", { hasText: "Dados da empresa" })).toHaveCount(0);
+  await page.locator("#btnMe").click();
+  await page.getByRole("menuitem", { name: "Minha conta" }).click();
   await expect(page.getByRole("heading", { name: "Minha conta" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Ativar 2FA" })).toBeVisible();
 });
@@ -65,7 +66,7 @@ test("login com 2FA leva a /login/2fa sem token na URL nem em storage e conclui 
 
   await page.fill("#lg2faCodigo", "123456");
   await page.click("#lg2faBotao");
-  await expect(page.locator("nav button").first()).toBeVisible();
+  await expect(page.locator("aside nav a").first()).toBeVisible();
   await expect(page).not.toHaveURL(/\/login/);
 });
 

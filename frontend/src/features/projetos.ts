@@ -35,7 +35,7 @@ function vista(): Safe {
     <div class="tools"><div class="seg" role="group" aria-label="Filtrar projetos">${segs.map(([k, r]) => html`<button data-act="filtroProj" data-valor="${k}" aria-pressed="${f === k}">${r}</button>`)}</div>${botaoNovo("novoProjeto", "Novo projeto")}</div></div>
   ${
     ganhosSemProjeto.length && escrever
-      ? html`<div class="banner" style="background:var(--info-bg);color:var(--info)">${ganhosSemProjeto.length === 1 ? "Um negócio ganho ainda não tem projeto" : ganhosSemProjeto.length + " negócios ganhos ainda não têm projeto"}: ${ganhosSemProjeto.slice(0, 4).map((n, i) => html`${i ? " · " : ""}<button class="btn ghost" style="padding:0 4px;color:inherit;text-decoration:underline" data-act="projetoDoNegocio" data-id="${n.id}">${n.titulo}</button>`)}</div>`
+      ? html`<div class="banner" style="background:var(--info-bg);color:var(--info-texto)">${ganhosSemProjeto.length === 1 ? "Um negócio ganho ainda não tem projeto" : ganhosSemProjeto.length + " negócios ganhos ainda não têm projeto"}: ${ganhosSemProjeto.slice(0, 4).map((n, i) => html`${i ? " · " : ""}<button class="btn ghost" style="padding:0 4px;color:inherit;text-decoration:underline" data-act="projetoDoNegocio" data-id="${n.id}">${n.titulo}</button>`)}</div>`
       : ""
   }
   ${

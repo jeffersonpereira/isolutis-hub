@@ -2,6 +2,7 @@ import { api } from "@/api/endpoints";
 import { html, raw, type Safe } from "@/core/html";
 import { registrarVista, render } from "@/state/nucleo";
 import { registrarAcao } from "@/ui/acoes";
+import { cabecalhoDePagina, carregando, estadoDeErro } from "@/ui/componentes";
 import { fluxoAtivar2FA, fluxoDesativar2FA, trocarSenha } from "@/ui/login";
 import { toast } from "@/ui/toast";
 
@@ -21,37 +22,34 @@ async function carregar(): Promise<void> {
 }
 
 function secaoDoisFatores(): Safe {
-  if (tela.erro) {
-    return html`<div class="banner" style="background:var(--bad-bg);color:var(--bad)">${tela.erro}</div>
-      <button class="btn" data-act="recarregarConta">Tentar de novo</button>`;
-  }
+  if (tela.erro) return estadoDeErro({ mensagem: tela.erro, acaoRepetir: "recarregarConta" });
   const ativo = tela.totp2fa;
-  if (ativo === null) return html`<p class="sub">Carregando…</p>`;
-  return html`<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+  if (ativo === null) return carregando("Carregando a sua conta…");
+  return html`<div class="fila">
       <span>Situação:
-        ${ativo ? raw(`<span class="pill ok">Ativado ✓</span>`) : raw(`<span class="pill">Desativado</span>`)}
+        ${ativo ? raw(`<span class="pill ok">Ativado</span>`) : raw(`<span class="pill">Desativado</span>`)}
       </span>
       ${ativo
         ? html`<button class="btn danger" data-act="desativar2fa">Desativar 2FA</button>`
         : html`<button class="btn primary" data-act="ativar2fa">Ativar 2FA</button>`}
     </div>
-    <div id="container2fa" style="margin-top:16px"></div>`;
+    <div id="container2fa" class="mt"></div>`;
 }
 
 function vista(): Safe {
-  return html`<div class="head"><div><h1>Minha conta</h1><p>Preferências pessoais de acesso e segurança. Valem só para o seu usuário.</p></div></div>
-    <section class="panel" style="max-width:680px">
-      <h2 style="font-size:1rem;margin:0 0 4px">Autenticação em dois fatores</h2>
-      <p class="sub" style="margin:0 0 12px">Pede um código do aplicativo autenticador, além da senha, a cada login.</p>
+  return html`${cabecalhoDePagina({ titulo: "Minha conta", descricao: "Preferências pessoais de acesso e segurança. Valem só para o seu usuário." })}
+    <section class="panel estreita">
+      <h2>Autenticação em dois fatores</h2>
+      <p class="sub desc">Pede um código do aplicativo autenticador, além da senha, a cada login.</p>
       ${secaoDoisFatores()}
     </section>
-    <section class="panel" style="max-width:680px;margin-top:16px">
-      <h2 style="font-size:1rem;margin:0 0 12px">Senha</h2>
+    <section class="panel estreita">
+      <h2>Senha</h2>
       <button class="btn" data-act="trocarMinhaSenha">Trocar senha</button>
     </section>`;
 }
 
-registrarVista({ id: "conta", nome: "Minha conta", carregar, desenhar: vista });
+registrarVista({ id: "conta", nome: "Minha conta", oculta: true, carregar, desenhar: vista });
 
 registrarAcao("recarregarConta", async () => {
   tela.erro = "";

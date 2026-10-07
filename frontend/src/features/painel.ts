@@ -2,6 +2,7 @@ import { api } from "@/api/endpoints";
 import type { Painel } from "@/api/tipos";
 import { MES3, MESES, brl, brlCurto, dataBR, hoje, pluralizar, primeiroNome } from "@/core/formato";
 import { html, type Safe } from "@/core/html";
+import { carregando } from "@/ui/componentes";
 import { etapaNome } from "@/domain/constantes";
 import { eu, podeEscrever } from "@/state/estado";
 import { registrarVista } from "@/state/nucleo";
@@ -12,19 +13,6 @@ let dadosPainel: Painel | null = null;
 
 async function carregar(): Promise<void> {
   dadosPainel = await api.painel.obter();
-}
-
-function vistaSkeleton(): string {
-  return `
-    <div class="skeleton-wrap">
-      <div class="skeleton-row">
-        <div class="skeleton skeleton-kpi"></div>
-        <div class="skeleton skeleton-kpi"></div>
-        <div class="skeleton skeleton-kpi"></div>
-      </div>
-      <div class="skeleton skeleton-chart"></div>
-    </div>
-  `;
 }
 
 type AlertasInfo = {
@@ -53,7 +41,7 @@ function vistaAlertas(alertas: AlertasInfo): string {
 
 function vista(): Safe {
   const p = dadosPainel;
-  if (!p) return html`<div class="head"><div><h1>${eu.nome ? "Olá, " + primeiroNome(eu.nome) : "Painel comercial"}</h1></div></div>${vistaSkeleton()}`;
+  if (!p) return html`<div class="head"><div><h1>${eu.nome ? "Olá, " + primeiroNome(eu.nome) : "Painel comercial"}</h1></div></div>${carregando("Carregando o painel…")}`;
   const h = hoje();
   const maxN = Math.max(1, ...p.por_etapa.map((e) => e.quantidade));
   const serie = p.serie.map((s, i) => ({
@@ -90,7 +78,7 @@ function vista(): Safe {
           ? html`<div class="list">${p.proximos_fechamentos.map((n) => {
               const atrasado = n.previsao < h;
               const valor = [n.valor ? brl(n.valor) : "", n.mensal ? brl(n.mensal) + "/mês" : ""].filter(Boolean).join(" + ") || "sem valor";
-              return html`<div class="li" data-open="negocio:${n.id}" tabindex="0"><div><div class="t">${n.titulo}</div><div class="sub">${n.cliente_nome} · ${etapaNome(n.etapa)}</div></div><div style="text-align:right"><div class="num">${valor}</div><div class="sub ${atrasado ? "late" : ""}" style="${atrasado ? "color:var(--bad)" : ""}">${atrasado ? "atrasado · " : ""}${dataBR(n.previsao)}</div></div></div>`;
+              return html`<div class="li" data-open="negocio:${n.id}" tabindex="0"><div><div class="t">${n.titulo}</div><div class="sub">${n.cliente_nome} · ${etapaNome(n.etapa)}</div></div><div style="text-align:right"><div class="num">${valor}</div><div class="sub ${atrasado ? "late" : ""}" style="${atrasado ? "color:var(--bad-texto)" : ""}">${atrasado ? "atrasado · " : ""}${dataBR(n.previsao)}</div></div></div>`;
             })}</div>`
           : html`<p class="sub">Negócios com data prevista de fechamento aparecem aqui.</p>`
       }

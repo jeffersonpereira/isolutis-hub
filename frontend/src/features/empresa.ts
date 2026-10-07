@@ -4,6 +4,7 @@ import { $ } from "@/core/dom";
 import { html, type Safe } from "@/core/html";
 import { registrarVista, render } from "@/state/nucleo";
 import { registrarAcao } from "@/ui/acoes";
+import { cabecalhoDePagina, estadoDeErro } from "@/ui/componentes";
 import { toast } from "@/ui/toast";
 
 type Empresa = { id: string; nome: string; papel: "admin" | "membro" };
@@ -21,11 +22,11 @@ async function carregar(): Promise<void> {
 }
 
 function vista(): Safe {
-  return html`<div class="head"><div><h1>Dados da empresa</h1><p>Atualize o nome usado no Hub e nos registros da empresa.</p></div></div>
-    ${tela.erro ? html`<div class="banner" style="background:var(--bad-bg);color:var(--bad)">${tela.erro}</div>` : ""}
-    ${tela.empresa ? html`<section class="panel" style="max-width:680px"><div class="fields">
+  return html`${cabecalhoDePagina({ titulo: "Dados da empresa", descricao: "Atualize o nome usado no Hub e nos registros da empresa." })}
+    ${tela.erro ? estadoDeErro({ mensagem: tela.erro, acaoRepetir: "recarregarEmpresa" }) : ""}
+    ${tela.empresa ? html`<section class="panel estreita"><div class="fields">
       <div class="field full"><label for="nomeEmpresa">Nome da empresa</label><input id="nomeEmpresa" maxlength="150" value="${tela.empresa.nome}" autocomplete="organization" required></div>
-    </div><div class="tools" style="justify-content:flex-end;margin-top:16px"><button class="btn primary" data-act="salvarEmpresa">Salvar alterações</button></div></section>` : ""}`;
+    </div><div class="tools fim"><button class="btn primary" data-act="salvarEmpresa">Salvar alterações</button></div></section>` : ""}`;
 }
 
 registrarVista({ id: "empresa", nome: "Dados da empresa", grupo: "Administração", somenteAdmin: true, carregar, depende: ["empresa"], desenhar: vista });
@@ -44,4 +45,9 @@ registrarAcao("salvarEmpresa", async () => {
   } catch {
     toast("Não foi possível salvar.");
   }
+});
+
+registrarAcao("recarregarEmpresa", async () => {
+  await carregar();
+  render();
 });
