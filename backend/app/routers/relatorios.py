@@ -17,7 +17,7 @@ router = APIRouter(prefix="/relatorios", tags=["Relatórios"])
 _ANO_ATUAL = datetime.now().year
 
 
-@router.get("/dre")
+@router.get("/dre", response_model=None)
 async def dre(
     sessao: Sessao,
     _usuario: UsuarioLogado,
@@ -64,7 +64,7 @@ async def dre(
     return dados
 
 
-@router.get("/fluxo-caixa")
+@router.get("/fluxo-caixa", response_model=None)
 async def fluxo_caixa(
     sessao: Sessao,
     _usuario: UsuarioLogado,

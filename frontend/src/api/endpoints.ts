@@ -13,7 +13,7 @@ export const api = {
     trocarSenha: (senha_atual: string, nova_senha: string) => http.post<void>("/auth/trocar-senha", { senha_atual, nova_senha }),
     totp: {
       setup: () => http.post<T.SetupTotpResposta>("/auth/2fa/setup"),
-      confirmar: (d: T.ConfirmarTotpEntrada) => http.post<void>("/auth/2fa/confirmar", d),
+      confirmar: (d: T.ConfirmarTotpEntrada) => http.post<T.TokenSaida>("/auth/2fa/confirmar", d),
       verificar: (d: T.VerificarTotpEntrada) => http.post<T.TokenSaida>("/auth/2fa/verificar", d),
       desativar: (codigo: string) => http.delete(`/auth/2fa?codigo=${encodeURIComponent(codigo)}`),
     },

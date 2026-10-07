@@ -2,7 +2,7 @@
 
 Fluxo geral:
   1. POST /auth/2fa/setup      — gera segredo e QR code (usuário já autenticado)
-  2. POST /auth/2fa/confirmar  — verifica primeiro código e ativa 2FA; salva backup codes
+  2. POST /auth/2fa/confirmar  — verifica primeiro código, ativa 2FA e invalida sessões antigas
   3. POST /auth/2fa/verificar  — endpoint público: troca token temporário por JWT completo
   4. DELETE /auth/2fa          — desativa 2FA após confirmar código atual
 """
@@ -14,7 +14,7 @@ from datetime import UTC, datetime
 
 import jwt as _jwt
 import pyotp
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from pydantic import Field
 from sqlalchemy import Integer, delete, select
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
@@ -26,6 +26,7 @@ from app.errors import ErroApp, NaoAutenticado
 from app.models import Usuario
 from app.models.base import Base
 from app.schemas.comum import Entrada, Leitura
+from app.schemas.usuario import TokenSaida, UsuarioLeitura
 from app.security import ALGORITMO, criar_token, gerar_hash, ler_token, verificar_senha
 from app.services.totp import (
     criptografar_segredo,
@@ -69,27 +70,10 @@ class ConfirmarTotpEntrada(Entrada):
     backup_codes: list[str] = Field(min_length=8, max_length=8)
 
 
-class ConfirmarTotpSaida(Leitura):
-    ativo: bool
-
-
 class VerificarTotpEntrada(Entrada):
     token_temporario: str
     # Aceita código TOTP de 6 dígitos ou backup code de 12 hex chars
     codigo: str = Field(min_length=6, max_length=12)
-
-
-class TokenCompletaSaida(Leitura):
-    access_token: str
-    token_type: str = "bearer"
-
-
-class DesativarTotpEntrada(Entrada):
-    codigo: str = Field(min_length=6, max_length=6)
-
-
-class DesativarTotpSaida(Leitura):
-    ativo: bool
 
 
 # ---------------------------------------------------------------------------
@@ -103,7 +87,7 @@ async def setup_2fa(usuario: UsuarioLogado, sessao: Sessao) -> SetupTotpSaida:
     O 2FA só fica ativo após confirmar um código em /auth/2fa/confirmar.
     """
     segredo = gerar_segredo()
-    usuario.totp_secret = criptografar_segredo(segredo)  # type: ignore[attr-defined]
+    usuario.totp_secret = criptografar_segredo(segredo)
     await sessao.commit()
 
     backup_codes = gerar_backup_codes(8)
@@ -113,33 +97,42 @@ async def setup_2fa(usuario: UsuarioLogado, sessao: Sessao) -> SetupTotpSaida:
     return SetupTotpSaida(qr_code=qr, provisioning_uri=uri, backup_codes=backup_codes)
 
 
-@router.post("/confirmar", response_model=ConfirmarTotpSaida)
+@router.post("/confirmar", response_model=TokenSaida)
 async def confirmar_2fa(
     dados: ConfirmarTotpEntrada,
     usuario: UsuarioLogado,
     sessao: Sessao,
-) -> ConfirmarTotpSaida:
-    """Confirma o primeiro código TOTP e ativa 2FA. Salva backup codes como hashes Argon2id."""
-    if not getattr(usuario, "totp_secret", None):
+) -> TokenSaida:
+    """Confirma o primeiro código TOTP e ativa 2FA.
+
+    Invalida todas as sessões existentes (incrementa versao_sessao) e emite
+    um novo JWT completo para a sessão atual continuar sem re-login.
+    """
+    if not usuario.totp_secret:
         raise ErroApp("Configure o 2FA primeiro em /auth/2fa/setup.", codigo="2fa_nao_configurado")
 
-    segredo = descriptografar_segredo(usuario.totp_secret)  # type: ignore[attr-defined]
+    segredo = descriptografar_segredo(usuario.totp_secret)
     if not verificar_codigo(segredo, dados.codigo):
         raise ErroApp("Código inválido. Verifique o horário do seu dispositivo.", codigo="codigo_invalido")
 
-    usuario.totp_ativo = True  # type: ignore[attr-defined]
+    usuario.totp_ativo = True
+    usuario.versao_sessao += 1
 
-    # Substituir backup codes anteriores
     await sessao.execute(delete(TotpBackupCode).where(TotpBackupCode.usuario_id == usuario.id))
     for code in dados.backup_codes:
         sessao.add(TotpBackupCode(usuario_id=usuario.id, codigo_hash=gerar_hash(code)))
 
     await sessao.commit()
-    return ConfirmarTotpSaida(ativo=True)
+    await sessao.refresh(usuario)
+
+    return TokenSaida(
+        access_token=criar_token(usuario.id, usuario.versao_sessao),
+        usuario=UsuarioLeitura.model_validate(usuario),
+    )
 
 
-@router.post("/verificar", response_model=TokenCompletaSaida)
-async def verificar_2fa(dados: VerificarTotpEntrada, sessao: Sessao) -> TokenCompletaSaida:
+@router.post("/verificar", response_model=TokenSaida)
+async def verificar_2fa(dados: VerificarTotpEntrada, sessao: Sessao) -> TokenSaida:
     """Endpoint público: valida código TOTP ou backup code após login parcial e emite JWT completo."""
     # 1. Decodificar token temporário
     identidade = ler_token(dados.token_temporario)
@@ -166,14 +159,18 @@ async def verificar_2fa(dados: VerificarTotpEntrada, sessao: Sessao) -> TokenCom
     if usuario is None or not usuario.ativo:
         raise NaoAutenticado("Usuário não encontrado ou inativo.")
 
-    if not getattr(usuario, "totp_ativo", False) or not getattr(usuario, "totp_secret", None):
+    if not usuario.totp_ativo or not usuario.totp_secret:
         raise NaoAutenticado("2FA não está ativo para este usuário.")
 
-    segredo = descriptografar_segredo(usuario.totp_secret)  # type: ignore[attr-defined]
+    segredo = descriptografar_segredo(usuario.totp_secret)
 
     # 4a. Código TOTP normal
     if verificar_codigo(segredo, dados.codigo):
-        return TokenCompletaSaida(access_token=criar_token(usuario.id, usuario.versao_sessao))
+        await sessao.refresh(usuario)
+        return TokenSaida(
+            access_token=criar_token(usuario.id, usuario.versao_sessao),
+            usuario=UsuarioLeitura.model_validate(usuario),
+        )
 
     # 4b. Backup code
     resultado = await sessao.execute(
@@ -186,7 +183,11 @@ async def verificar_2fa(dados: VerificarTotpEntrada, sessao: Sessao) -> TokenCom
         if verificar_senha(dados.codigo, backup.codigo_hash):
             backup.usado_em = datetime.now(UTC)
             await sessao.commit()
-            return TokenCompletaSaida(access_token=criar_token(usuario.id, usuario.versao_sessao))
+            await sessao.refresh(usuario)
+            return TokenSaida(
+                access_token=criar_token(usuario.id, usuario.versao_sessao),
+                usuario=UsuarioLeitura.model_validate(usuario),
+            )
 
     raise ErroApp(
         "Código inválido. Verifique o horário do seu dispositivo ou use um backup code.",
@@ -194,23 +195,21 @@ async def verificar_2fa(dados: VerificarTotpEntrada, sessao: Sessao) -> TokenCom
     )
 
 
-@router.delete("", response_model=DesativarTotpSaida)
+@router.delete("", response_model=None, status_code=204)
 async def desativar_2fa(
-    dados: DesativarTotpEntrada,
     usuario: UsuarioLogado,
     sessao: Sessao,
-) -> DesativarTotpSaida:
+    codigo: str = Query(min_length=6, max_length=6),
+) -> None:
     """Desativa 2FA após confirmar o código TOTP atual."""
-    if not getattr(usuario, "totp_ativo", False) or not getattr(usuario, "totp_secret", None):
+    if not usuario.totp_ativo or not usuario.totp_secret:
         raise ErroApp("O 2FA não está ativo.", codigo="2fa_nao_ativo")
 
-    segredo = descriptografar_segredo(usuario.totp_secret)  # type: ignore[attr-defined]
-    if not verificar_codigo(segredo, dados.codigo):
+    segredo = descriptografar_segredo(usuario.totp_secret)
+    if not verificar_codigo(segredo, codigo):
         raise ErroApp("Código inválido. Verifique o horário do seu dispositivo.", codigo="codigo_invalido")
 
-    usuario.totp_ativo = False  # type: ignore[attr-defined]
-    usuario.totp_secret = None  # type: ignore[attr-defined]
+    usuario.totp_ativo = False
+    usuario.totp_secret = None
     await sessao.execute(delete(TotpBackupCode).where(TotpBackupCode.usuario_id == usuario.id))
     await sessao.commit()
-
-    return DesativarTotpSaida(ativo=False)

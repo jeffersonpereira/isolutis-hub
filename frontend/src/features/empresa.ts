@@ -80,14 +80,9 @@ registrarAcao("salvarEmpresa", async () => {
 });
 
 registrarAcao("verificarStatus2fa", async () => {
-  // Usamos uma chamada ao endpoint /auth/eu para inferir o status do 2FA se disponível,
-  // ou tentamos chamar setup para ver se retorna erro "já ativo".
-  // Por convenção, chamamos setup e inferimos: se já ativo, o backend retorna erro de conflito.
-  // Para uma UX correta assumimos que o status vem via /auth/eu quando o backend suportar.
-  // Por ora, iniciamos como inativo se a chamada de setup não retornar erro de "já ativo".
   try {
-    const me = await api.auth.eu() as ({ totp_ativo?: boolean } & Awaited<ReturnType<typeof api.auth.eu>>);
-    tela.totp2fa = me.totp_ativo ?? false;
+    const me = await api.auth.eu();
+    tela.totp2fa = me.totp_ativo;
   } catch {
     tela.totp2fa = false;
   }

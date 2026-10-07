@@ -12,7 +12,7 @@ import { iniciarAvisoDeConflito } from "@/ui/conflito";
 import { detectarRotaConvite, iniciarTelaConvite } from "@/ui/convite";
 import { iniciarEventos } from "@/ui/eventos";
 import { observarGaveta } from "@/ui/gaveta";
-import { esconderLogin, pedirLogin, trocarSenha } from "@/ui/login";
+import { esconderLogin, forcarSetup2FA, pedirLogin, trocarSenha } from "@/ui/login";
 import { detectarOnboarding, iniciarWizardOnboarding } from "@/ui/onboarding";
 
 // As funcionalidades se registram ao serem importadas; a ordem define a ordem do menu.
@@ -145,6 +145,14 @@ async function principal(): Promise<void> {
     selecao = await selecionarEmpresa();
   }
   usuario.admin = selecao.admin;
+
+  // 2FA obrigatório: admin sem 2FA ativo deve configurá-lo antes de acessar o sistema.
+  if (selecao.admin && !usuario.totp_ativo) {
+    await forcarSetup2FA();
+    // Recarrega usuário para refletir totp_ativo = true após configuração
+    usuario = await api.auth.eu();
+    usuario.admin = selecao.admin;
+  }
 
   // Wizard de onboarding: exibido para admins de empresa nova antes de montar o app.
   if (detectarOnboarding({ usuario, empresa: selecao.empresa })) {

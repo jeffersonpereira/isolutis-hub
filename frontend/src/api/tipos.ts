@@ -115,8 +115,8 @@ export interface LoginResposta {
 }
 
 export interface SetupTotpResposta {
-  qr_code_base64: string;
-  secret: string;
+  qr_code: string;
+  provisioning_uri: string;
   backup_codes: string[];
 }
 

@@ -19,6 +19,7 @@ class UsuarioLeitura(Leitura):
     senha_definida: bool
     ultimo_acesso: datetime | None
     versao: int = Field(alias="versao_sessao")
+    totp_ativo: bool = False
 
 
 class MembroEquipe(Leitura):

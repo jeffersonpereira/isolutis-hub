@@ -218,7 +218,7 @@ export async function fluxoAtivar2FA(container: HTMLElement): Promise<boolean> {
   return new Promise((resolve) => {
     container.innerHTML = `
       <div style="display:flex;flex-direction:column;gap:16px;max-width:420px">
-        <img src="data:image/png;base64,${setup.qr_code_base64}"
+        <img src="${setup.qr_code}"
              alt="QR Code para configurar o autenticador"
              style="width:200px;height:200px;border:1px solid var(--line);border-radius:8px;padding:8px;background:#fff;align-self:center">
         <p style="margin:0;font-size:var(--text-xs);color:var(--muted)">
@@ -263,7 +263,9 @@ export async function fluxoAtivar2FA(container: HTMLElement): Promise<boolean> {
       botaoConfirmar.disabled = true;
       setMsg("");
       try {
-        await api.auth.totp.confirmar({ codigo, backup_codes: setup.backup_codes });
+        const resultado = await api.auth.totp.confirmar({ codigo, backup_codes: setup.backup_codes });
+        // Atualiza o token pois versao_sessao foi incrementada ao ativar 2FA
+        sessaoToken.definir(resultado.access_token);
         container.innerHTML = `<p style="color:var(--ok);font-weight:600">2FA ativado com sucesso.</p>`;
         resolve(true);
       } catch (err) {
@@ -273,6 +275,45 @@ export async function fluxoAtivar2FA(container: HTMLElement): Promise<boolean> {
         botaoConfirmar.disabled = false;
       }
     });
+  });
+}
+
+/**
+ * Exibe overlay bloqueante obrigando o admin a configurar 2FA antes de continuar.
+ * Resolve quando o setup é concluído; não pode ser cancelado.
+ */
+export function forcarSetup2FA(): Promise<void> {
+  return new Promise((resolve) => {
+    const overlay = document.createElement("div");
+    overlay.style.cssText =
+      "position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);display:grid;place-items:center;padding:16px";
+    overlay.innerHTML = `
+      <div style="background:var(--surface);border-radius:12px;padding:32px;max-width:480px;width:100%;box-shadow:var(--shadow-lg)">
+        <h2 style="margin:0 0 8px;font-size:var(--text-lg)">Autenticação em dois fatores obrigatória</h2>
+        <p style="margin:0 0 20px;font-size:var(--text-sm);color:var(--muted)">
+          Administradores precisam ativar o 2FA antes de acessar o sistema. Configure agora usando Google Authenticator, Authy ou outro app TOTP.
+        </p>
+        <div id="forcado2faContainer"></div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const container = overlay.querySelector("#forcado2faContainer") as HTMLElement;
+
+    const tentar = (): void => {
+      container.innerHTML = "";
+      void fluxoAtivar2FA(container).then((ativado) => {
+        if (ativado) {
+          overlay.remove();
+          resolve();
+        } else {
+          container.innerHTML = `
+            <p style="color:var(--bad);font-size:var(--text-sm);margin:0 0 12px">Configure o 2FA para continuar.</p>
+            <button class="btn primary" id="tentarNovamente2fa">Tentar novamente</button>`;
+          document.getElementById("tentarNovamente2fa")?.addEventListener("click", tentar);
+        }
+      });
+    };
+
+    tentar();
   });
 }
 

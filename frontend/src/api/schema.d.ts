@@ -3089,6 +3089,8 @@ export interface components {
             ultimo_acesso: string | null;
             /** Versao */
             versao: number;
+            /** Totp Ativo */
+            totp_ativo: boolean;
         };
         /** ValidationError */
         ValidationError: {

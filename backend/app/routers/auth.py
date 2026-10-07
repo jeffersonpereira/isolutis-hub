@@ -48,7 +48,7 @@ async def login(dados: LoginEntrada, sessao: Sessao, request: Request) -> TokenS
     limitador_de_login.zerar(chave)
 
     # Se o usuário tiver 2FA ativo, emitir token parcial em vez do JWT completo
-    if getattr(usuario, "totp_ativo", False):
+    if usuario.totp_ativo:
         token_parcial = _criar_token_parcial(usuario.id)
         return JSONResponse(
             status_code=200,
