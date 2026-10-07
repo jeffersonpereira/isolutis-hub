@@ -2,17 +2,19 @@
 
 ## Purpose
 Autenticação em dois fatores (TOTP) opcional para todos os usuários, com etapa de código em rota própria (`/login/2fa`) e proteção contra tentativas.
-
 ## Requirements
-
 ### Requirement: Configuração de 2FA pelo usuário
-O sistema SHALL permitir que qualquer usuário ative autenticação de dois fatores via TOTP, compatível com Google Authenticator e Authy.
+O sistema SHALL permitir que qualquer usuário, independentemente do papel na empresa, ative autenticação de dois fatores via TOTP, compatível com Google Authenticator e Authy. A configuração SHALL ficar na tela "Minha conta".
 
 #### Scenario: Usuário inicia setup de 2FA
-- **WHEN** o usuário acessa Configurações → Segurança e clica em "Ativar autenticação em dois fatores"
+- **WHEN** o usuário acessa Minha conta e clica em "Ativar 2FA"
 - **THEN** o sistema gera um segredo TOTP e exibe um QR code para escanear com o aplicativo autenticador
 - **AND** exibe o código de provisão URI como alternativa ao QR code
 - **AND** exibe 8 códigos de backup para uso em caso de perda do dispositivo
+
+#### Scenario: Usuário sem papel de administrador configura o 2FA
+- **WHEN** um usuário que não é administrador da empresa ativa acessa Minha conta
+- **THEN** a opção de ativar o 2FA está disponível e funcional
 
 #### Scenario: Confirmação valida que o app foi configurado corretamente
 - **WHEN** o usuário escaneia o QR code e insere o código de 6 dígitos gerado pelo app
@@ -24,9 +26,6 @@ O sistema SHALL permitir que qualquer usuário ative autenticação de dois fato
 - **WHEN** o usuário insere um código TOTP incorreto durante a confirmação de setup
 - **THEN** o sistema exibe erro "Código inválido. Verifique o horário do seu dispositivo."
 - **AND** o 2FA não é ativado
-
-
----
 
 ### Requirement: Login com 2FA ativo
 O sistema SHALL exigir o segundo fator no login quando o usuário tem 2FA ativo. O frontend SHALL conduzir essa etapa na rota `/login/2fa`.
@@ -45,7 +44,6 @@ O sistema SHALL exigir o segundo fator no login quando o usuário tem 2FA ativo.
 - **WHEN** o usuário insere um código de backup válido (não usado anteriormente)
 - **THEN** o login é completado normalmente
 - **AND** o código de backup é marcado como usado e não pode ser reutilizado
-
 
 ---
 
@@ -70,7 +68,6 @@ O sistema SHALL tratar a autenticação em dois fatores como opcional para todos
 #### Scenario: Ambiente de produção não altera a regra
 - **WHEN** `AMBIENTE = "producao"` e qualquer usuário sem 2FA faz login
 - **THEN** o login é concluído sem exigir ativação de 2FA
-
 
 ---
 
@@ -101,7 +98,6 @@ O sistema SHALL apresentar a etapa de código do segundo fator em uma rota próp
 - **WHEN** o usuário informa um código TOTP ou backup válido em `/login/2fa`
 - **THEN** o sistema emite o JWT de acesso e o frontend segue para o painel
 - **AND** o token temporário é descartado da memória
-
 
 ---
 
