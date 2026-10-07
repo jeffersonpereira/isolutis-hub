@@ -2,8 +2,10 @@ import { api } from "@/api/endpoints";
 import type { Convite, Usuario } from "@/api/tipos";
 import { $ } from "@/core/dom";
 import { compararTexto, primeiroNome, quando, quandoCompleto } from "@/core/formato";
-import { html, raw, type Safe } from "@/core/html";
+import { html, type Safe } from "@/core/html";
 import { eu } from "@/state/estado";
+import { OPCOES_PAPEL, rotuloDoPapel } from "@/domain/papeis";
+import type { Papel } from "@/api/tipos";
 import { recarregar, registrarVista } from "@/state/nucleo";
 import { registrarAcao } from "@/ui/acoes";
 import { campo, fv, inp, sel } from "@/ui/campos";
@@ -41,7 +43,7 @@ function vistaConvitesPendentes(): Safe {
       ${convites.map(
         (c) => html`<tr>
           <td class="num">${c.email}</td>
-          <td>${c.papel === "admin" ? html`<span class="pill info">Administrador</span>` : html`<span class="pill">Membro</span>`}</td>
+          <td>${c.papel === "admin" ? html`<span class="pill info">${rotuloDoPapel(c.papel)}</span>` : html`<span class="pill">${rotuloDoPapel(c.papel)}</span>`}</td>
           <td class="sub">${quando(c.criado_em)}</td>
           <td class="sub">${quando(c.expira_em)}</td>
           <td><button class="btn" data-act="cancelarConvite" data-valor="${c.id}">Cancelar</button></td>
@@ -52,21 +54,21 @@ function vistaConvitesPendentes(): Safe {
 }
 
 function vista(): Safe {
-  const cabecalho = html`<div class="head"><div><h1>Equipe</h1><p>Quem pode entrar no Hub. Aqui você convida pessoas, define e troca senhas e escolhe quem é administrador.</p></div>
+  const cabecalho = html`<div class="head"><div><h1>Equipe</h1><p>Quem pode entrar no Hub. Aqui você convida pessoas, define e troca senhas e escolhe o papel de cada um.</p></div>
     <div class="tools"><button class="btn" data-act="recarregarEquipe">Atualizar</button><button class="btn" data-act="novoUsuario">Novo usuário</button><button class="btn primary" data-act="convidarMembro">Convidar membro</button></div></div>`;
   if (pagina.erro) return html`${cabecalho}<div class="banner" style="background:var(--bad-bg);color:var(--bad-texto)">${pagina.erro}</div>`;
   if (!pagina.lista) return html`${cabecalho}<p class="sub">Carregando a equipe…</p>`;
-  const lista = [...pagina.lista].sort((a, b) => Number(b.ativo) - Number(a.ativo) || Number(b.admin) - Number(a.admin) || compararTexto(a.nome, b.nome));
+  const lista = [...pagina.lista].sort((a, b) => Number(b.ativo) - Number(a.ativo) || Number(b.papel === "admin") - Number(a.papel === "admin") || compararTexto(a.nome, b.nome));
   return html`${cabecalho}<div class="tbl-wrap"><table><thead><tr><th>Nome</th><th>E-mail</th><th>Acesso</th><th>Login</th><th>Último acesso</th></tr></thead><tbody>
     ${lista.map(
       (u) => html`<tr tabindex="0" data-open="usuario:${u.id}"><td><b>${u.nome}</b>${u.id === eu.id ? html` <span class="pill teal-mid">você</span>` : ""}</td><td class="num">${u.email}</td>
-      <td>${!u.ativo ? html`<span class="pill">Removido</span>` : u.admin ? html`<span class="pill info">Administrador</span>` : html`<span class="pill">Membro</span>`}</td>
+      <td>${!u.ativo ? html`<span class="pill">Removido</span>` : u.papel === "admin" ? html`<span class="pill info">${rotuloDoPapel(u.papel)}</span>` : html`<span class="pill">${rotuloDoPapel(u.papel)}</span>`}</td>
       <td>${u.senha_definida ? html`<span class="pill ok">Ativo</span>` : html`<span class="pill warn">Sem senha</span>`}</td><td class="sub">${quandoCompleto(u.ultimo_acesso)}</td></tr>`,
     )}
   </tbody></table></div>${vistaConvitesPendentes()}`;
 }
 
-registrarVista({ id: "equipe", nome: "Equipe", somenteAdmin: true, carregar, depende: ["equipe"], desenhar: vista });
+registrarVista({ id: "equipe", nome: "Equipe", permissao: "administracao", carregar, depende: ["equipe"], desenhar: vista });
 
 const SENHA_CARACTERES = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
 export function senhaAleatoria(tamanho = 12): string {
@@ -86,7 +88,7 @@ function formUsuario(u?: Usuario): void {
       <div class="field full"><label for="f-senha">${novo ? "Senha" : "Nova senha"}</label>
         <div style="display:flex;gap:8px;flex-wrap:wrap"><input name="senha" id="f-senha" type="text" autocomplete="off" style="flex:1 1 180px" placeholder="${novo ? "Mínimo de 8 caracteres" : "Deixe em branco para não trocar"}"><button class="btn" type="button" id="gerarSenha">Gerar senha</button></div>
         <span class="sub">${novo ? 'A pessoa entra com este e-mail e esta senha. Ela pode trocar depois, em "Trocar senha".' : "A senha atual deixa de valer assim que você salvar. Avise a pessoa."}</span></div>
-      <label class="check full"><input type="checkbox" name="admin" id="f-admin"${raw(u?.admin ? " checked" : "")}${raw(souEu ? " disabled" : "")}> Administrador (pode gerenciar a equipe)</label>
+      <div class="field full"><label for="f-papel">Papel nesta empresa</label>${souEu ? html`<input id="f-papel" value="${rotuloDoPapel(u?.papel)}" disabled><span class="sub">Você não pode alterar o seu próprio papel.</span>` : sel("papel", [...OPCOES_PAPEL], u?.papel ?? "membro")}</div>
       ${u && !u.ativo ? html`<label class="check full"><input type="checkbox" name="ativo" id="f-ativo"> Reativar acesso desta pessoa</label>` : ""}
     </div>
     <div class="banner" id="senhaFeita" hidden style="background:var(--ok-bg);color:var(--ok-texto)"></div>`,
@@ -105,11 +107,11 @@ function formUsuario(u?: Usuario): void {
         if (novo && !senha) return void toast('Defina uma senha ou clique em "Gerar senha".');
         if (senha && senha.length < 8) return void toast("A senha precisa ter pelo menos 8 caracteres.");
         botao.disabled = true;
-        const admin = souEu ? true : (f.elements.namedItem("admin") as HTMLInputElement).checked;
+        const papel = (souEu ? "admin" : fv(f, "papel") || "membro") as Papel;
         const ok = await tentar(() =>
           u
-            ? api.usuarios.atualizar(u.id, { nome, admin, ativo: u.ativo || !!(f.elements.namedItem("ativo") as HTMLInputElement | null)?.checked, senha: senha || null, versao: u.versao })
-            : api.usuarios.criar({ nome, email, senha, admin }),
+            ? api.usuarios.atualizar(u.id, { nome, papel, ativo: u.ativo || !!(f.elements.namedItem("ativo") as HTMLInputElement | null)?.checked, senha: senha || null, versao: u.versao })
+            : api.usuarios.criar({ nome, email, senha, papel }),
         );
         if (!ok) {
           botao.disabled = false;
@@ -153,7 +155,7 @@ function formConvite(): void {
     corpo: html`<div class="fields">
       ${campo("Nome", inp("nome", "", 'placeholder="Como aparece no Hub"'))}
       ${campo("E-mail", inp("email", "", 'type="email" placeholder="email@empresa.com.br"'))}
-      ${campo("Papel", sel("papel", [["membro", "Membro"], ["admin", "Administrador"]], "membro"))}
+      ${campo("Papel", sel("papel", [...OPCOES_PAPEL], "membro"))}
     </div>`,
     rodape: html`<button class="btn primary" data-salvar>Enviar convite</button>`,
     montar: (f, fechar, L) => {
@@ -161,7 +163,7 @@ function formConvite(): void {
         const botao = e.target as HTMLButtonElement;
         const nome = fv(f, "nome");
         const email = fv(f, "email").toLowerCase();
-        const papel = fv(f, "papel") as "admin" | "membro";
+        const papel = fv(f, "papel") as Papel;
         if (!nome) return void toast("Informe o nome do convidado.");
         if (!email) return void toast("Informe o e-mail do convidado.");
         botao.disabled = true;

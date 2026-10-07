@@ -1,23 +1,24 @@
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
+import type { Permissao } from "@/api/tipos";
 import { html } from "@/core/html";
-import { eu } from "./estado";
+import { acesso } from "./estado";
 import { abaSalva, caminhoAtual, ir, registrarGuarda, registrarVista, vistaAtual } from "./nucleo";
 import { aplicarRegistroDaRota, iniciarRoteador, registrarRotaDeRegistro, resolverRotaInicial } from "./roteador";
 
-const tela = (id: string, nome: string, somenteAdmin = false) => registrarVista({ id, nome, somenteAdmin, desenhar: () => html`<p>${nome}</p>` });
+const tela = (id: string, nome: string, permissao?: Permissao) => registrarVista({ id, nome, permissao, desenhar: () => html`<p>${nome}</p>` });
 
 beforeAll(() => {
   document.body.innerHTML = '<div id="app"><nav id="nav"></nav><header></header><main id="view"></main></div>';
   tela("painel", "Painel");
   tela("clientes", "Clientes");
   tela("orcamentos", "Orçamentos");
-  tela("equipe", "Equipe", true);
+  tela("equipe", "Equipe", "administracao");
   iniciarRoteador();
 });
 
 beforeEach(() => {
   localStorage.clear();
-  eu.admin = false;
+  acesso.permissoes = ["base"];
   registrarGuarda(null);
   history.replaceState(null, "", "/");
 });
@@ -44,7 +45,7 @@ describe("resolverRotaInicial", () => {
 
   it("tela sem permissão cai no painel e corrige o endereço", () => {
     expect(resolverRotaInicial("/equipe")).toEqual({ vista: "painel", corrigir: "/painel", registro: null });
-    eu.admin = true;
+    acesso.permissoes = ["base", "administracao"];
     expect(resolverRotaInicial("/equipe")).toMatchObject({ vista: "equipe", corrigir: null });
   });
 

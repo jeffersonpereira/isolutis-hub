@@ -3,12 +3,12 @@
  * Cada funcionalidade registra a sua vista; este módulo não conhece nenhuma delas.
  */
 import { api } from "@/api/endpoints";
-import type { Recurso } from "@/api/tipos";
+import type { Permissao, Recurso } from "@/api/tipos";
 import { $, obrigatorio } from "@/core/dom";
 import { html, raw, type Safe } from "@/core/html";
 import { registrarAcao } from "@/ui/acoes";
 import { icone } from "@/ui/icones";
-import { conexao, dados, eu } from "./estado";
+import { conexao, dados, temPermissao } from "./estado";
 import { caminhoDaTela } from "./caminhos";
 import { ACOES_DAS_TELAS, ESTRUTURA_MENU, ICONES_DAS_TELAS, type AcaoRapida } from "./menu";
 
@@ -22,7 +22,8 @@ export interface Vista {
   /** Recursos cuja mudança exige recarregar `carregar` (o painel depende de quase tudo). */
   depende?: readonly string[];
   desenhar: () => Safe;
-  somenteAdmin?: boolean;
+  /** Permissão que o papel precisa ter para ver a tela (menu, paleta, "+ Novo" e URL). Sem ela, vale `base`: qualquer papel. */
+  permissao?: Permissao;
   /** Tela acessível por rota, paleta e menu do usuário, mas fora do menu lateral. */
   oculta?: boolean;
   /** Agrupa a vista num submenu recolhível do menu lateral (ex.: "Financeiro"). */
@@ -38,16 +39,28 @@ export const registrarVista = (v: Vista): void => {
 };
 export const vistaAtual = (): string => atual;
 
-const carregadores: Record<string, () => Promise<void>> = {
-  clientes: async () => void (dados.clientes = await api.clientes.listar()),
-  negocios: async () => void (dados.negocios = await api.negocios.listar()),
-  orcamentos: async () => void (dados.orcamentos = await api.orcamentos.listar()),
-  produtos: async () => void (dados.produtos = await api.produtos.listar()),
-  projetos: async () => void (dados.projetos = await api.projetos.listar()),
-  tarefas: async () => void (dados.tarefas = await api.tarefas.listar()),
-  equipe: async () => void (dados.equipe = await api.equipe.listar()),
+/** Cada recurso em memória declara a permissão que o servidor exige; o que o papel não permite nem é pedido. */
+const carregadores: Record<string, { permissao: Permissao; carregar: () => Promise<void> }> = {
+  clientes: { permissao: "comercial", carregar: async () => void (dados.clientes = await api.clientes.listar()) },
+  referenciasClientes: { permissao: "base", carregar: async () => void (dados.referenciasClientes = await api.clientes.referencias()) },
+  negocios: { permissao: "comercial", carregar: async () => void (dados.negocios = await api.negocios.listar()) },
+  orcamentos: { permissao: "comercial", carregar: async () => void (dados.orcamentos = await api.orcamentos.listar()) },
+  produtos: { permissao: "comercial", carregar: async () => void (dados.produtos = await api.produtos.listar()) },
+  projetos: { permissao: "base", carregar: async () => void (dados.projetos = await api.projetos.listar()) },
+  tarefas: { permissao: "base", carregar: async () => void (dados.tarefas = await api.tarefas.listar()) },
+  equipe: { permissao: "base", carregar: async () => void (dados.equipe = await api.equipe.listar()) },
 };
 export const RECURSOS_EM_MEMORIA = Object.keys(carregadores) as Recurso[];
+
+/** Recursos pedidos que o papel pode carregar. Mudar clientes também renova a lista mínima de nomes. */
+function recursosPermitidos(recursos: readonly string[]): string[] {
+  const todos = new Set(recursos);
+  if (todos.has("clientes")) todos.add("referenciasClientes");
+  return [...todos].filter((r) => {
+    const c = carregadores[r];
+    return c !== undefined && temPermissao(c.permissao);
+  });
+}
 
 type AoRecarregar = (recurso: string) => void;
 const ouvintes: AoRecarregar[] = [];
@@ -57,15 +70,23 @@ export const aoRecarregar = (fn: AoRecarregar): void => void ouvintes.push(fn);
 /** Recarrega recursos do servidor e redesenha. Chamado após cada gravação e quando o servidor avisa de mudanças. */
 export async function recarregar(...recursos: string[]): Promise<void> {
   const unicos = [...new Set(recursos)];
-  await Promise.all(unicos.map((r) => carregadores[r]?.().catch((e: unknown) => console.error(r, e))));
+  await Promise.all(recursosPermitidos(unicos).map((r) => carregadores[r]?.carregar().catch((e: unknown) => console.error(r, e))));
   const v = vistas.get(atual);
   if (v?.carregar && (v.depende ?? []).some((d) => unicos.includes(d))) await v.carregar().catch((e: unknown) => console.error(e));
   render();
   unicos.forEach((r) => ouvintes.forEach((fn) => fn(r)));
 }
 
+/**
+ * Carrega o que o papel permite. Uma falha isolada não impede a abertura (as outras coleções carregam);
+ * só quando TODAS falham o erro sobe, e a aplicação avisa que os dados não carregaram.
+ */
 export async function carregarTudo(): Promise<void> {
-  await Promise.all(Object.values(carregadores).map((c) => c()));
+  const pedidos = recursosPermitidos(Object.keys(carregadores));
+  const resultados = await Promise.allSettled(pedidos.map((r) => carregadores[r]?.carregar()));
+  const falhas = resultados.filter((r): r is PromiseRejectedResult => r.status === "rejected");
+  falhas.forEach((f) => console.error(f.reason));
+  if (falhas.length > 0 && falhas.length === resultados.length) throw falhas[0]?.reason;
   await vistas.get(atual)?.carregar?.().catch((e: unknown) => console.error(e));
 }
 
@@ -93,7 +114,7 @@ registrarAcao("alternarGrupo", (alvo) => {
 
 /** Telas que o usuário pode abrir, na ordem do catálogo do menu (as fora do catálogo vão para o fim). */
 export function vistasVisiveis(): Vista[] {
-  const visiveis = [...vistas.values()].filter((v) => !v.somenteAdmin || eu.admin);
+  const visiveis = [...vistas.values()].filter((v) => !v.permissao || temPermissao(v.permissao));
   const ordem = ESTRUTURA_MENU.flatMap((s) => s.itens.flatMap((i) => ("id" in i ? [i.id] : i.filhos)));
   const posicao = (id: string): number => {
     const i = ordem.indexOf(id);

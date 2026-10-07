@@ -53,6 +53,7 @@ function vista(): Safe {
 
 registrarVista({
   id: "negocios",
+  permissao: "comercial",
   nome: "Funil de Vendas",
   grupo: "Comercial",
   contagem: () => dados.negocios.filter((n) => ABERTAS.includes(n.etapa)).length,

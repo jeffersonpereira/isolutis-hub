@@ -24,3 +24,13 @@
 .lg-form[aria-busy="true"]{cursor:progress}
 .lg-form .btn:disabled{opacity:.6;cursor:not-allowed}
 @media (max-width:480px){.lg-form input.lg-codigo{letter-spacing:.2em}}
+
+/* Escolha da empresa ativa (após o login e ao trocar de empresa) */
+.emp-lista{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.emp-card{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:center;padding:12px 14px;border:1px solid #d3dbe6;border-radius:8px;background:#eef1f6;color:#16223b}
+.emp-card:hover{border-color:#0d8792;background:#e4f4f5}
+.emp-card:focus-visible{outline:2px solid #0d8792;outline-offset:2px}
+.emp-card.ultima{border-color:#0d8792;box-shadow:inset 3px 0 0 #0d8792}
+.emp-nome{font-weight:600;color:#1B2B4B;overflow-wrap:anywhere}
+.emp-papel{font-size:var(--text-xs);color:#56647a;font-weight:600}
+.emp-ultima{grid-column:1 / -1;font-size:var(--text-xs);color:#0d8792;font-weight:600}

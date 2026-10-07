@@ -1,9 +1,10 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, Depends, Response
 
-from app.deps import Sessao
+from app.deps import Sessao, requer_base
 from app.schemas.cliente import (
+    ClienteReferencia,
     ClienteAtualizar,
     ClienteEntrada,
     ClienteLeitura,
@@ -13,6 +14,13 @@ from app.schemas.cliente import (
 from app.services import clientes as svc
 
 router = APIRouter(prefix="/clientes", tags=["Clientes"])
+# Lista mínima (id e nome) para qualquer papel identificar o cliente em projetos, tarefas e faturamento.
+router_referencias = APIRouter(prefix="/clientes", tags=["Clientes"], dependencies=[Depends(requer_base)])
+
+
+@router_referencias.get("/referencias", response_model=list[ClienteReferencia])
+async def referencias(sessao: Sessao) -> list[ClienteReferencia]:
+    return [ClienteReferencia(id=c.id, nome=c.nome) for c in await svc.referencias(sessao)]
 
 
 @router.get("", response_model=list[ClienteResumo])

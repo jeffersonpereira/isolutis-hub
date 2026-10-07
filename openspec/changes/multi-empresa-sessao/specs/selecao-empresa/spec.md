@@ -52,11 +52,11 @@ O sistema SHALL manter a empresa ativa de forma independente em cada aba do nave
 ---
 
 ### Requirement: Troca de empresa durante o uso
-O sistema SHALL mostrar a empresa ativa e o papel do usuário nela no bloco de conta da barra lateral, e SHALL permitir trocar de empresa a qualquer momento sem novo login.
+O sistema SHALL mostrar a empresa ativa e o papel do usuário nela no menu do usuário da barra superior, e SHALL permitir trocar de empresa a qualquer momento sem novo login.
 
 #### Scenario: Empresa ativa visível
-- **WHEN** o usuário está usando a aplicação
-- **THEN** o bloco de conta da barra lateral exibe o nome da empresa ativa e o papel do usuário nela
+- **WHEN** o usuário abre o menu do usuário na barra superior
+- **THEN** o menu exibe o nome da empresa ativa e o papel do usuário nela
 
 #### Scenario: Trocar de empresa
 - **WHEN** o usuário aciona "Trocar de empresa"
@@ -66,6 +66,15 @@ O sistema SHALL mostrar a empresa ativa e o papel do usuário nela no bloco de c
 #### Scenario: Nenhum dado de outra empresa permanece em memória
 - **WHEN** o usuário troca da empresa A para a empresa B
 - **THEN** nenhum registro carregado da empresa A é exibido na empresa B
+
+#### Scenario: URL de destino respeitada após a escolha
+- **WHEN** o usuário abre a URL de uma tela permitida na empresa que vai escolher, ainda sem empresa na aba
+- **THEN** a tela de escolha é exibida primeiro
+- **AND** após a escolha, a tela da URL é aberta
+
+#### Scenario: Link para tela sem permissão na empresa escolhida
+- **WHEN** o usuário abre a URL de uma tela e escolhe uma empresa em que o papel dele não permite essa tela
+- **THEN** o painel é exibido e o endereço é corrigido para o do painel
 
 #### Scenario: Acesso removido durante a sessão
 - **WHEN** o usuário perde o acesso à empresa ativa enquanto usa a aplicação e uma requisição é recusada por falta de acesso a essa empresa

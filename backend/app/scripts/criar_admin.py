@@ -28,13 +28,12 @@ async def criar(email: str, nome: str, senha: str, empresa_id: UUID | None, empr
         usuario = await sessao.scalar(select(Usuario).where(Usuario.email == email))
         novo = usuario is None
         if usuario is None:
-            usuario = Usuario(email=email.lower(), nome=nome, admin=False)
+            usuario = Usuario(email=email.lower(), nome=nome)
             sessao.add(usuario)
             await sessao.flush()
         else:
             usuario.nome = nome
             usuario.ativo = True
-        usuario.admin = False
         usuario.senha_hash = gerar_hash(senha)
         usuario.versao_sessao += 1
 

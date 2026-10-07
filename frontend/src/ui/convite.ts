@@ -2,6 +2,7 @@
  * Tela pública de aceitação de convite.
  * Exibida quando a URL é /convite/:token — substitui toda a interface do Hub.
  */
+import { rotuloDoPapel } from "@/domain/papeis";
 import { api } from "@/api/endpoints";
 import { ErroApi, sessaoToken } from "@/api/http";
 import type { ConviteInfo } from "@/api/tipos";
@@ -35,7 +36,7 @@ function renderValido(info: ConviteInfo, token: string): void {
   const el = document.getElementById("cvConteudo");
   if (!el) return;
 
-  const papel = info.papel === "admin" ? "Administrador" : "Membro";
+  const papel = rotuloDoPapel(info.papel);
   el.innerHTML = `
     <form id="cvForm" class="lg-form" novalidate>
       <h1>Aceitar convite</h1>
@@ -82,7 +83,7 @@ function renderContaExistente(info: ConviteInfo, token: string): void {
   const el = document.getElementById("cvConteudo");
   if (!el) return;
 
-  const papel = info.papel === "admin" ? "Administrador" : "Membro";
+  const papel = rotuloDoPapel(info.papel);
   el.innerHTML = `
     <div class="lg-form">
       <h1>Aceitar convite</h1>

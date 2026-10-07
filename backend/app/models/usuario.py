@@ -18,11 +18,13 @@ class Usuario(ComAuditoria, Base):
     senha_hash: Mapped[str | None]
     versao_sessao: Mapped[int] = mapped_column(default=0, server_default="0")
     senha_definida: Mapped[bool] = mapped_column(Computed("senha_hash IS NOT NULL", persisted=True))
-    admin: Mapped[bool] = mapped_column(default=False)
     ativo: Mapped[bool] = mapped_column(default=True)
     ultimo_acesso: Mapped[datetime | None]
     totp_secret: Mapped[str | None] = mapped_column(nullable=True)
     totp_ativo: Mapped[bool] = mapped_column(default=False, server_default="false")
+
+    # Papel na empresa ativa: não é coluna; a listagem da equipe e a criação/atualização o preenchem para a resposta.
+    papel = None
 
 
 class CategoriaDespesa(ComAuditoria, ComEmpresa, Base):

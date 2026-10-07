@@ -4,7 +4,18 @@
 
 `empresa` é dona dos cadastros operacionais. Cada requisição autenticada que acesse esses dados envia `X-Empresa-ID`; o backend valida uma associação ativa em `usuario_empresa` e define `app.usuario_id` e `app.empresa_id` na transação. O cliente web guarda a seleção localmente e envia o cabeçalho em HTTP. O handshake WebSocket valida a mesma associação.
 
-Papéis `admin` e `membro` pertencem à associação, não à identidade global. A coluna histórica `usuarios.admin` é convertida em associações durante a migração e zerada; a aplicação usa o papel da empresa ativa.
+Os papéis `admin`, `financeiro`, `comercial` e `membro` pertencem à associação (`usuario_empresa.papel`), não à identidade global. A coluna `usuarios.admin` foi removida na migração 0010; a aplicação usa o papel da empresa ativa.
+
+Permissões derivadas do papel (`app/domain/papeis.py`; o backend recusa com 403 e o front decide menus e carga só pela lista de permissões de `GET /empresas`):
+
+| Permissão | Cobre | admin | financeiro | comercial | membro |
+|---|---|:-:|:-:|:-:|:-:|
+| `base` | painel (blocos permitidos), tarefas, projetos, equipe (lista), lista mínima de clientes, Minha conta, consulta de CNPJ | ✓ | ✓ | ✓ | ✓ |
+| `comercial` | clientes (cadastro completo), negócios, orçamentos, produtos | ✓ | | ✓ | |
+| `financeiro` | módulo financeiro, parceiros, faturamento, despesas, relatórios | ✓ | ✓ | | |
+| `administracao` | usuários, convites, dados da empresa, onboarding | ✓ | | | |
+
+`tests/test_permissoes_rotas.py` falha se uma rota de dados não declarar permissão (`exige(...)`). A migração 0010 converteu os antigos `membro` em `comercial`. Empresas são criadas só pelo operador (`criar_admin`); `POST /empresas` não existe e `criar_empresa` não é executável pela credencial da API.
 
 O GUC tenant é contexto transacional definido pelo backend depois de validar a associação. RLS protege contra consultas da aplicação sem filtro e contra erros de escopo; como qualquer GUC customizado do PostgreSQL pode ser alterado por uma sessão SQL com acesso ao runtime, RLS não é uma barreira contra execução arbitrária de SQL sob a própria credencial runtime. Evite SQL dinâmico não parametrizado e proteja a credencial runtime.
 

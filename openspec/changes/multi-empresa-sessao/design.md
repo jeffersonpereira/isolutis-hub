@@ -4,9 +4,9 @@
 
 **Papel já é por empresa**, em `usuario_empresa.papel` (constraint `ck_usuario_empresa_papel`: `admin` ou `membro`). `deps.administrador` consulta a membership. Já `Usuario.admin` é um flag global vestigial: `criar_admin` e `convites` gravam `False`, e `UsuarioLeitura.admin` é preenchido por `set_committed_value` a partir do papel na listagem de equipe.
 
-**Autorização hoje:** só `/financeiro` (router-level), `/parceiros`, onboarding e gestão de usuários exigem `admin`. Os demais routers entram em `main.py` com `Depends(empresa_atual)` apenas, ou seja, qualquer membro acessa clientes, negócios, orçamentos, produtos, projetos, tarefas, despesas, faturamento, painel e relatórios (DRE e fluxo de caixa). O front esconde menus com `somenteAdmin` e lê `eu.admin`.
+**Autorização hoje:** só `/financeiro` (router-level), `/parceiros`, onboarding e gestão de usuários exigem `admin`. Os demais routers entram em `main.py` com `Depends(empresa_atual)` apenas, ou seja, qualquer membro acessa clientes, negócios, orçamentos, produtos, projetos, tarefas, despesas, faturamento, painel e relatórios (DRE e fluxo de caixa). O front esconde menus com `somenteAdmin` e lê `eu.admin` (`nucleo.ts`, `main.ts`, `ui/onboarding.ts`, `features/equipe.ts`).
 
-**Front:** `selecionarEmpresa()` escolhe em silêncio (última do `localStorage` ou primeira) e mostra um `<select>` só com 2 ou mais empresas; a troca faz `location.reload()`. `carregarTudo()` dispara todos os carregadores (`clientes`, `negocios`, `orcamentos`, `produtos`, `projetos`, `tarefas`, `equipe`) com `Promise.all` sem tratamento; o WebSocket também aciona `recarregar(recurso)` para qualquer recurso avisado. `projetos.ts` usa `dados.negocios` (negócios ganhos) e `nomeCliente`/`seletorCliente` usam `dados.clientes` em várias telas.
+**Front (após `design-system-e-shell`):** `selecionarEmpresa()` escolhe em silêncio (última do `localStorage` ou primeira) e alimenta um `<select id="empresaAtiva">` oculto em `index.html`; o menu do usuário da barra superior (`ui/barra-superior.ts`, `blocoEmpresa()`) espelha esse select e, com 2 ou mais empresas, mostra um seletor que dispara o `change` do oculto; a troca faz `location.reload()`. A navegação é por URL (`state/roteador.ts`, `caminhos.ts`): abrir a rota de uma tela sem permissão já cai no painel e corrige o endereço. A paleta de comandos (`ui/paleta.ts`) e o menu "+ Novo" (`acoesRapidas`) listam telas e ações a partir das vistas registradas. `carregarTudo()` dispara todos os carregadores (`clientes`, `negocios`, `orcamentos`, `produtos`, `projetos`, `tarefas`, `equipe`) com `Promise.all` sem tratamento; o WebSocket também aciona `recarregar(recurso)` para qualquer recurso avisado. `projetos.ts` usa `dados.negocios` (negócios ganhos) e `nomeCliente`/`seletorCliente` usam `dados.clientes` em várias telas.
 
 **Criação de empresa:** `POST /empresas` chama a função SQL `criar_empresa` (SECURITY DEFINER, `EXECUTE` concedido a `hub_runtime`). O front nunca chama essa rota. O script `criar_admin` cria empresa e administrador pela credencial migradora.
 
@@ -50,10 +50,12 @@ As dependências ficam no `include_router` de `main.py` (ou no `APIRouter(depend
 
 | Permissão | Routers |
 |---|---|
-| `base` | `painel`, `tarefas`, `projetos`, `equipe` (lista), `GET /clientes/referencias`, `GET /empresas`, `/auth/*`, `/parceiros/papeis` |
+| `base` | `painel`, `tarefas`, `projetos`, `equipe` (lista), `GET /clientes/referencias`, `GET /empresas`, `/auth/*` (inclui o 2FA de Minha conta), `/parceiros/papeis`, `GET /cnpj/{cnpj}` |
 | `comercial` | `clientes`, `negocios`, `orcamentos`, `produtos` |
 | `financeiro` | `/financeiro/*`, `/parceiros` (hub), `faturamento`, `despesas`, `relatorios` (DRE e fluxo de caixa) |
-| `administracao` | `/usuarios`, `/convite*`, `/empresas/ativa` (PATCH), `/onboarding/*` |
+| `administracao` | `/usuarios`, `/convite*`, `/empresas/ativa` (PATCH, inclui o cadastro completo da empresa), `/onboarding/*` |
+
+O teste de D3 é o que garante que endpoints criados por outras changes (`GET /cnpj/{cnpj}`, atualização completa da empresa) não nasçam sem permissão. `GET /cnpj` fica em `base` por consultar apenas dados públicos e já ter autenticação e limite de taxa próprios.
 
 `ws.py` (tempo real) continua exigindo membership; o conteúdo é só aviso de que um recurso mudou.
 
@@ -71,6 +73,8 @@ Um teste percorre `app.routes` sob `/api/v1` e falha para qualquer rota que não
 ### D6. Carga de dados do front por permissão
 Cada carregador em `nucleo.ts` declara a permissão que exige. `carregarTudo()` e `recarregar()` executam apenas os permitidos para a empresa ativa e usam `Promise.allSettled`, para que uma falha isolada não derrube a inicialização. Avisos do WebSocket para recursos não permitidos são ignorados. `Vista.somenteAdmin` é substituído por `Vista.permissao?: Permissao`, filtrando o menu com `permissoes.includes(...)`.
 
+A permissão também governa as três superfícies de descoberta de telas, hoje independentes: o menu (`renderMenu`), a paleta (`itensAtuais`) e o menu "+ Novo" (`acoesRapidas`) passam a filtrar pela mesma função `vistaPermitida(v)`, e `resolverRotaInicial` usa a mesma função para decidir se a URL pedida cai no painel. Uma única fonte evita a divergência "está no menu mas não abre".
+
 `projetos.ts`, que lê `dados.negocios` para o vínculo com negócio ganho, degrada sem `comercial`: o seletor "Negócio vendido" fica vazio e o aviso de ganhos sem projeto não aparece.
 
 ### D7. Escolha de empresa: por aba, sempre visível após o login
@@ -86,7 +90,8 @@ Nova tela `ui/escolha-empresa.ts`, montada em `main.ts` entre a autenticação e
 ```
 
 - **"Sempre":** a tela aparece após cada login e em cada aba nova (que nasce sem `sessionStorage`). Um recarregamento (F5) na mesma aba mantém a escolha, desde que ela ainda conste na lista devolvida por `/empresas`.
-- **Troca:** o bloco de conta da barra lateral mostra "Empresa · Papel" e o botão "Trocar de empresa", que limpa a escolha da aba e recarrega, reabrindo a tela. O `<select id="empresaAtiva">` é removido.
+- **Troca:** o cabeçalho do menu do usuário da barra superior (`blocoEmpresa()`) mostra "Empresa · Papel" e a ação "Trocar de empresa", que limpa a escolha da aba e recarrega, reabrindo a tela. O `<select id="empresaAtiva">` oculto de `index.html` e o ouvinte `#empresaDoMenu` são removidos; `blocoEmpresa()` passa a ler o estado (empresa e papel) em vez do DOM.
+- **Rota de destino preservada:** a tela de escolha é uma etapa reservada (como login e segundo fator em `navegacao-por-url`); a URL pedida originalmente é resolvida **depois** da escolha, já com as permissões da empresa escolhida. Um link para uma tela que o papel não permite cai no painel.
 - **Logout:** limpa `sessionStorage` e `localStorage` (hoje a empresa antiga permanece entre usuários no mesmo navegador).
 - **`http.ts`:** `sessaoToken.empresa()` passa a ler `sessionStorage` e `definirEmpresa` grava nos dois armazenamentos, com `try/catch` como o código atual.
 - **Perda de acesso durante a sessão:** um 403 vindo de `empresa_atual` limpa a escolha da aba e recarrega, reabrindo a tela.
@@ -120,7 +125,8 @@ Remove `POST /empresas`, o schema `EmpresaNova` e o `GRANT` da função SQL. A f
 - **[Conflito com a lista de acesso básico informada]** Relatórios foi listado como básico, mas são DRE e fluxo de caixa (financeiros). → Tratado como `financeiro`; ver Open Questions.
 - **[Remover `Usuario.admin` é irreversível para dados]** O campo é sempre falso hoje. → Conferir dependências no banco antes do `DROP`; `down` recria a coluna.
 - **[Tela de escolha a cada aba nova]** Atrito deliberado. → "Última usada" vem pré-selecionada, então o custo é um clique; F5 não pergunta de novo.
-- **[Ordem com `correcoes-imediatas-convite-2fa-menu`]** As duas mudam o convite e o bootstrap de `main.ts`. → Aplicar esta depois; a lógica de convite pendente roda antes da escolha de empresa.
+- **[Ordem do bootstrap em `main.ts`]** Já existem convite pendente (`correcoes-imediatas-convite-2fa-menu`), login com 2FA e resolução de rota inicial. → A escolha de empresa entra depois da autenticação e do convite pendente e antes de `resolverRotaInicial`; teste e2e cobrindo convite com duas empresas.
+- **[Endpoints de outras changes sem permissão]** `GET /cnpj/{cnpj}`, a atualização completa da empresa e rotas novas surgem antes desta change. → O teste D3 falha para qualquer rota sem `exige(...)`; aplicar esta change por último ou adicionar `exige` já nas outras.
 - **[Testes existentes assumem `membro` com acesso comercial e `admin` no schema]** → Atualizar os testes e criar fixtures por papel.
 
 ## Migration Plan
@@ -132,5 +138,4 @@ Remove `POST /empresas`, o schema `EmpresaNova` e o `GRANT` da função SQL. A f
 
 ## Open Questions
 
-- Relatórios (DRE e fluxo de caixa) em `financeiro`, conforme inferido, ou `membro` deve mesmo vê-los? A lista de acesso básico informada incluía relatórios, mas o conteúdo é financeiro.
-- A lista mínima de clientes (`id` e `nome`) em `base` é aceitável, ou o cadastro de clientes deve ficar inteiramente restrito a `comercial`, aceitando que nomes apareçam como "—" em projetos, tarefas e faturamento?
+Nenhuma. As duas decisões pendentes foram confirmadas pelo usuário em 2026-10-07: relatórios (DRE e fluxo de caixa) em `financeiro`; lista mínima de clientes (`id` e `nome`) em `base`.

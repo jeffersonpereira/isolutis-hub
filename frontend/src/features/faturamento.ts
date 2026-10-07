@@ -5,7 +5,7 @@ import { MES3, MESES, brl, dataBR, hoje, addMeses } from "@/core/formato";
 import { html, type Safe } from "@/core/html";
 import { numero, paraCampo } from "@/core/numero";
 import { OPCOES_REPETICAO, TIPOS } from "@/domain/constantes";
-import { dados, podeEscrever, ui } from "@/state/estado";
+import { nomeCliente, podeEscrever, ui } from "@/state/estado";
 import { recarregar, registrarVista } from "@/state/nucleo";
 import { registrarAcao } from "@/ui/acoes";
 import { campo, fv, inp, sel } from "@/ui/campos";
@@ -76,7 +76,7 @@ function vista(): Safe {
   </div>`;
 }
 
-registrarVista({ id: "faturamento", nome: "Faturamento", grupo: "Financeiro", carregar, depende: ["faturamento", "negocios"], desenhar: vista });
+registrarVista({ id: "faturamento", permissao: "financeiro", nome: "Faturamento", grupo: "Financeiro", carregar, depende: ["faturamento", "negocios"], desenhar: vista });
 
 function formLanc(l?: Lancamento): void {
   abrirGaveta({
@@ -148,10 +148,10 @@ function formLanc(l?: Lancamento): void {
 function gerarFaturamento(g: VendaFechada): void {
   if (!podeEscrever()) return;
   const h = hoje();
-  const cliente = dados.clientes.find((c) => c.id === g.cliente_id);
+  const nomeDoCliente = nomeCliente(g.cliente_id);
   abrirGaveta({
     titulo: "Lançar faturamento",
-    corpo: html`<p style="margin:0">Venda fechada com <b>${cliente?.nome ?? "—"}</b>${g.titulo ? " · " + g.titulo : ""}. Confira como o valor entra no faturamento.</p>
+    corpo: html`<p style="margin:0">Venda fechada com <b>${nomeDoCliente}</b>${g.titulo ? " · " + g.titulo : ""}. Confira como o valor entra no faturamento.</p>
     <div class="gen"><label class="check"><input type="checkbox" name="usaUnico" id="f-usaUnico"${g.unico ? " checked" : ""}> Projeto</label>
       <div class="fields">${campo("Valor total (R$)", inp("unico", paraCampo(g.unico), 'inputmode="decimal"'))}${campo("Parcelas", inp("parcelas", 1, 'type="number" min="1" max="24"'))}${campo("Primeiro vencimento", inp("dataU", h, 'type="date"'))}</div></div>
     <div class="gen"><label class="check"><input type="checkbox" name="usaMensal" id="f-usaMensal"${g.mensal ? " checked" : ""}> Manutenção mensal</label>

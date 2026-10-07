@@ -1,4 +1,4 @@
-"""Rotas do módulo financeiro. Restritas a administradores (US: "usuário com acesso ao painel administrativo")."""
+"""Rotas do módulo financeiro. Exigem a permissão `financeiro` (papéis admin e financeiro)."""
 
 from datetime import date
 from typing import Annotated, Literal
@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Response
 
-from app.deps import Sessao, administrador, usuario_atual
+from app.deps import Sessao, requer_base, requer_financeiro
 from app.financeiro import servicos as svc
 from app.financeiro.schemas import (
     ContaBancariaEntrada,
@@ -21,9 +21,9 @@ from app.financeiro.schemas import (
     TituloLeitura,
 )
 
-router = APIRouter(prefix="/financeiro", tags=["Financeiro"], dependencies=[Depends(administrador)])
-# Referências (municípios e instituições) são dados públicos de apoio a formulários: qualquer pessoa logada lê.
-router_referencias = APIRouter(prefix="/financeiro", tags=["Financeiro"], dependencies=[Depends(usuario_atual)])
+router = APIRouter(prefix="/financeiro", tags=["Financeiro"], dependencies=[Depends(requer_financeiro)])
+# Referências (municípios e instituições) são dados públicos de apoio a formulários: qualquer papel lê.
+router_referencias = APIRouter(prefix="/financeiro", tags=["Financeiro"], dependencies=[Depends(requer_base)])
 
 Ano = Annotated[int, Query(ge=2000, le=2100)]
 

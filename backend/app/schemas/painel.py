@@ -41,28 +41,32 @@ class AlertaItem(Leitura):
 
 
 class AlertasInfo(Leitura):
-    lancamentos_vencidos: AlertaItem
-    orcamentos_parados: AlertaItem
-    projetos_atrasados: AlertaItem
+    lancamentos_vencidos: AlertaItem | None = None  # `financeiro`
+    orcamentos_parados: AlertaItem | None = None  # `comercial`
+    projetos_atrasados: AlertaItem  # `base`
 
 
 class Painel(Leitura):
+    """Campos de `financeiro` e `comercial` só vêm quando o papel tem a permissão; o front omite o que não vier."""
+
     ano: int
     mes: int
-    recebido_no_mes: Dinheiro
-    previsto_no_mes: Dinheiro
-    recorrente_no_mes: Dinheiro
-    funil_abertos: int
-    funil_valor: Dinheiro
-    funil_mensal: Dinheiro
-    ganhos: int
-    perdidos: int
-    conversao_pct: int | None
-    orcamentos_aguardando_qtd: int
-    orcamentos_aguardando_valor: Dinheiro
     banco_vazio: bool
-    serie: list[PontoSerie]
-    por_etapa: list[EtapaFunil]
-    proximos_fechamentos: list[ProximoFechamento]
-    orcamentos_aguardando: list[OrcamentoAguardando]
     alertas: AlertasInfo
+    # financeiro
+    recebido_no_mes: Dinheiro | None = None
+    previsto_no_mes: Dinheiro | None = None
+    recorrente_no_mes: Dinheiro | None = None
+    serie: list[PontoSerie] | None = None
+    # comercial
+    funil_abertos: int | None = None
+    funil_valor: Dinheiro | None = None
+    funil_mensal: Dinheiro | None = None
+    ganhos: int | None = None
+    perdidos: int | None = None
+    conversao_pct: int | None = None
+    orcamentos_aguardando_qtd: int | None = None
+    orcamentos_aguardando_valor: Dinheiro | None = None
+    por_etapa: list[EtapaFunil] | None = None
+    proximos_fechamentos: list[ProximoFechamento] | None = None
+    orcamentos_aguardando: list[OrcamentoAguardando] | None = None

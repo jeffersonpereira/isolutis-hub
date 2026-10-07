@@ -150,7 +150,6 @@ async def aceitar_convite(
         usuario = Usuario(
             email=convite.email,
             nome=convite.email.split("@")[0],  # nome provisório; pode ser atualizado depois
-            admin=False,
             senha_hash=gerar_hash(senha),
         )
         sessao.add(usuario)

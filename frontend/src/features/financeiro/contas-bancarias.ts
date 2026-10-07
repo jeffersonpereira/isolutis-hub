@@ -32,7 +32,7 @@ function vista(): Safe {
   }`;
 }
 
-registrarVista({ id: "fin-contas", nome: "Conta Bancária", grupo: GRUPO, somenteAdmin: true, carregar, depende: ["financeiro"], desenhar: vista });
+registrarVista({ id: "fin-contas", nome: "Conta Bancária", grupo: GRUPO, permissao: "financeiro", carregar, depende: ["financeiro"], desenhar: vista });
 
 async function formConta(c?: ContaBancaria): Promise<void> {
   const instituicoes = await tentar(() => apiFinanceiro.instituicoes());

@@ -38,7 +38,7 @@ function vista(): Safe {
   </tbody></table></div>`;
 }
 
-registrarVista({ id: "fin-fluxo", nome: "Fluxo de Caixa", grupo: GRUPO, somenteAdmin: true, carregar, depende: ["financeiro"], desenhar: vista });
+registrarVista({ id: "fin-fluxo", nome: "Fluxo de Caixa", grupo: GRUPO, permissao: "financeiro", carregar, depende: ["financeiro"], desenhar: vista });
 
 registrarAcao("mudarAnoFluxo", async (alvo) => {
   ui.ano = Number((alvo as HTMLSelectElement).value);

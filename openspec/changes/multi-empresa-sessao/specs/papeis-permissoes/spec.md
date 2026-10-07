@@ -76,6 +76,23 @@ O sistema SHALL informar ao cliente, para cada empresa acessível, o papel do us
 - **AND** nenhuma requisição a recursos sem permissão é disparada
 - **AND** a aplicação abre normalmente, sem erro
 
+#### Scenario: Paleta de comandos e menu "+ Novo" respeitam o papel
+- **WHEN** um usuário `membro` abre a paleta de comandos ou o menu "+ Novo"
+- **THEN** são listadas apenas telas e ações que o papel permite
+- **AND** nenhuma tela ou ação comercial, financeira ou administrativa aparece
+
+#### Scenario: URL direta de tela sem permissão
+- **WHEN** um usuário abre pela barra de endereço a URL de uma tela que o papel dele não permite
+- **THEN** o painel é exibido e o endereço é corrigido para o do painel
+
+#### Scenario: Minha conta e consulta de CNPJ para qualquer papel
+- **WHEN** um usuário de qualquer papel abre "Minha conta" ou consulta um CNPJ
+- **THEN** o acesso é permitido pela permissão `base`
+
+#### Scenario: Dados da empresa exigem administração
+- **WHEN** um usuário que não é `admin` tenta ler ou atualizar os dados cadastrais da empresa
+- **THEN** o sistema responde 403
+
 #### Scenario: Falha isolada não impede a abertura
 - **WHEN** uma das requisições de carga inicial falha
 - **THEN** a aplicação abre com os demais dados carregados

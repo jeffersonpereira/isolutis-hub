@@ -2,9 +2,10 @@
  * Barra superior: título da tela, "+ Novo", gatilho da paleta, tema e menu do usuário.
  * O HTML dos botões vive em `index.html` (vazios); aqui se preenche e se liga o comportamento.
  */
-import { html, raw } from "@/core/html";
+import { html } from "@/core/html";
 import { iniciais, primeiroNome } from "@/core/formato";
-import { eu } from "@/state/estado";
+import { acesso, eu } from "@/state/estado";
+import { rotuloDoPapel } from "@/domain/papeis";
 import { acoesRapidas, aoRenderizar, ir } from "@/state/nucleo";
 import { despachar } from "@/ui/acoes";
 import { icone } from "@/ui/icones";
@@ -13,6 +14,8 @@ import { definirTema, iniciarTema, lerPreferencia, type PreferenciaTema } from "
 
 export interface DependenciasDaBarra {
   aoSair: () => void;
+  /** Descarta a empresa desta aba e reabre a escolha de empresa. */
+  aoTrocarEmpresa: () => void;
   aoTrocarSenha: () => void;
   aoAbrirPaleta: () => void;
 }
@@ -33,13 +36,10 @@ function atualizarBotaoTema(pref: PreferenciaTema): void {
   b.title = `Tema: ${ROTULO_TEMA[pref]}`;
 }
 
-/** Bloco "Empresa ativa" do menu do usuário. Reflete o seletor oculto que o `main.ts` mantém. */
+/** Bloco "Empresa ativa" do menu do usuário: nome da empresa e o papel do usuário nela (vêm do estado, não do DOM). */
 function blocoEmpresa(): ReturnType<typeof html> {
-  const origem = $id<HTMLSelectElement>("empresaAtiva");
-  const opcoes = origem ? [...origem.options] : [];
-  if (!origem || !opcoes.length) return html``;
-  if (opcoes.length === 1) return html`<div class="emp"><label>Empresa ativa</label><b>${opcoes[0]?.textContent ?? ""}</b></div>`;
-  return html`<div class="emp"><label for="empresaDoMenu">Empresa ativa</label><select id="empresaDoMenu">${opcoes.map((o) => html`<option value="${o.value}"${raw(o.value === origem.value ? " selected" : "")}>${o.textContent ?? ""}</option>`)}</select></div>`;
+  if (!acesso.empresaId) return html``;
+  return html`<div class="emp"><label>Empresa ativa</label><b>${acesso.empresaNome}</b><span class="papel">${rotuloDoPapel(acesso.papel)}</span></div>`;
 }
 
 export function iniciarBarraSuperior(deps: DependenciasDaBarra): void {
@@ -90,17 +90,10 @@ export function iniciarBarraSuperior(deps: DependenciasDaBarra): void {
       cabecalho: () => html`${cabecalhoDoUsuario(iniciais(eu.nome), eu.nome, eu.email)}${blocoEmpresa()}<hr>`,
       itens: () => [
         { rotulo: "Minha conta", icone: "conta", aoEscolher: () => void ir("conta") },
+        { rotulo: "Trocar de empresa", icone: "empresa", aoEscolher: deps.aoTrocarEmpresa },
         { rotulo: "Trocar senha", icone: "chave", aoEscolher: deps.aoTrocarSenha },
         { rotulo: "Sair", icone: "sair", separador: true, aoEscolher: deps.aoSair },
       ],
-      aoAbrir: (m) => {
-        m.querySelector<HTMLSelectElement>("#empresaDoMenu")?.addEventListener("change", (e) => {
-          const origem = $id<HTMLSelectElement>("empresaAtiva");
-          if (!origem) return;
-          origem.value = (e.target as HTMLSelectElement).value;
-          origem.dispatchEvent(new Event("change"));
-        });
-      },
     });
   }
 

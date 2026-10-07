@@ -1,6 +1,6 @@
 import { api } from "@/api/endpoints";
 import { html, raw, type Safe } from "@/core/html";
-import { registrarVista, render } from "@/state/nucleo";
+import { registrarVista, render, travarConteudo } from "@/state/nucleo";
 import { registrarAcao } from "@/ui/acoes";
 import { cabecalhoDePagina, carregando, estadoDeErro } from "@/ui/componentes";
 import { fluxoAtivar2FA, fluxoDesativar2FA, trocarSenha } from "@/ui/login";
@@ -10,7 +10,8 @@ import { toast } from "@/ui/toast";
 const tela: {
   totp2fa: boolean | null; // null = ainda carregando
   erro: string;
-} = { totp2fa: null, erro: "" };
+  emFluxo: boolean; // fluxo de ativar/desativar 2FA aberto: ignora novo clique e congela o redesenho
+} = { totp2fa: null, erro: "", emFluxo: false };
 
 async function carregar(): Promise<void> {
   try {
@@ -61,22 +62,28 @@ registrarAcao("recarregarConta", async () => {
 
 registrarAcao("trocarMinhaSenha", () => void trocarSenha());
 
-registrarAcao("ativar2fa", async () => {
+/**
+ * Conduz um fluxo de 2FA dentro de `#container2fa`. Enquanto ele está aberto, o conteúdo fica travado: um
+ * `recarregar()` em segundo plano redesenharia a tela e apagaria o QR code e o campo do código.
+ */
+async function conduzir2FA(fluxo: (container: HTMLElement) => Promise<boolean>, ativo: boolean, aviso: string): Promise<void> {
   const container = document.getElementById("container2fa");
-  if (!container) return;
-  if (await fluxoAtivar2FA(container)) {
-    tela.totp2fa = true;
-    render();
-    toast("2FA ativado com sucesso.");
+  if (!container || tela.emFluxo) return;
+  tela.emFluxo = true;
+  travarConteudo(true);
+  let concluido: boolean;
+  try {
+    concluido = await fluxo(container);
+  } finally {
+    travarConteudo(false);
+    tela.emFluxo = false;
   }
-});
+  if (concluido) {
+    tela.totp2fa = ativo;
+    toast(aviso);
+  }
+  render();
+}
 
-registrarAcao("desativar2fa", async () => {
-  const container = document.getElementById("container2fa");
-  if (!container) return;
-  if (await fluxoDesativar2FA(container)) {
-    tela.totp2fa = false;
-    render();
-    toast("2FA desativado.");
-  }
-});
+registrarAcao("ativar2fa", () => conduzir2FA(fluxoAtivar2FA, true, "2FA ativado com sucesso."));
+registrarAcao("desativar2fa", () => conduzir2FA(fluxoDesativar2FA, false, "2FA desativado."));

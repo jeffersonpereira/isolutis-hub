@@ -7,7 +7,7 @@ const ano = (a: number) => ({ ano: a });
 
 export const api = {
   empresas: {
-    listar: () => http.get<Array<{ id: string; nome: string; papel: "admin" | "membro" }>>("/empresas"),
+    listar: () => http.get<T.EmpresaAcesso[]>("/empresas"),
     atualizar: (nome: string) => http.patch<void>("/empresas/ativa", { nome }),
   },
   auth: {
@@ -49,6 +49,8 @@ export const api = {
   },
   clientes: {
     listar: () => http.get<T.Cliente[]>("/clientes"),
+    /** Só id e nome, aberta a qualquer papel (mostra o nome do cliente em projetos, tarefas e faturamento). */
+    referencias: () => http.get<T.ClienteReferencia[]>("/clientes/referencias"),
     criar: (d: T.ClienteEntrada) => http.post<S["ClienteLeitura"]>("/clientes", d),
     atualizar: (id: string, d: T.ClienteEntrada & { versao: number }) => http.put<S["ClienteLeitura"]>(`/clientes/${id}`, d),
     excluir: (id: string) => http.delete(`/clientes/${id}`),

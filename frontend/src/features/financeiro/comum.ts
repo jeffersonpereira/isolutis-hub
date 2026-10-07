@@ -14,6 +14,12 @@ export function formatarDocumento(doc: string | null | undefined): string {
   return doc;
 }
 
+/** RN04: título a pagar (`P`) usa conta analítica de despesa (`D`); a receber (`R`), de receita (`R`). */
+export function contasDoPlanoParaTitulo<T extends { tipo_conta: string; natureza: string }>(plano: readonly T[], tipoTitulo: string): T[] {
+  const natureza = tipoTitulo === "P" ? "D" : "R";
+  return plano.filter((c) => c.tipo_conta === "A" && c.natureza === natureza);
+}
+
 export const formatarCep = (cep?: string | null): string => (cep && cep.length === 8 ? cep.replace(/(\d{5})(\d{3})/, "$1-$2") : (cep ?? ""));
 
 /** Botões de editar/excluir na linha de uma tabela (`acao` é o prefixo das ações registradas). */

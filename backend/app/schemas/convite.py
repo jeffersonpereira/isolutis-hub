@@ -3,13 +3,14 @@ from uuid import UUID
 
 from pydantic import EmailStr, Field
 
+from app.domain.papeis import Papel
 from app.schemas.comum import Entrada, Leitura
 
 
 class ConviteEntrada(Entrada):
     nome: str = Field(min_length=1, max_length=200)
     email: EmailStr
-    papel: str = Field(pattern="^(admin|membro)$")
+    papel: Papel
 
 
 class ConviteLeitura(Leitura):

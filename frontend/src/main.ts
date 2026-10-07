@@ -4,7 +4,10 @@ import { api } from "@/api/endpoints";
 import { sessaoToken } from "@/api/http";
 import type { Usuario } from "@/api/tipos";
 import { $, obrigatorio } from "@/core/dom";
-import { conexao, eu, ui } from "@/state/estado";
+import type { EmpresaAcesso } from "@/api/tipos";
+import { decidirEmpresa } from "@/state/empresa-ativa";
+import { escolherEmpresa, telaSemAcesso } from "@/ui/escolha-empresa";
+import { acesso, conexao, eu, ui } from "@/state/estado";
 import { abaSalva, atualizarUrl, carregarTudo, definirAtual, observarNavegacao, recarregar, render } from "@/state/nucleo";
 import { aplicarRegistroDaRota, iniciarRoteador, resolverRotaInicial } from "@/state/roteador";
 import { tempoReal } from "@/state/realtime";
@@ -54,7 +57,7 @@ function ligarBuscas(): void {
 }
 
 function iniciarSessaoNaTela(usuario: Usuario): void {
-  Object.assign(eu, { id: usuario.id, nome: usuario.nome, email: usuario.email, admin: usuario.admin });
+  Object.assign(eu, { id: usuario.id, nome: usuario.nome, email: usuario.email });
   mostrarUsuario();
 }
 
@@ -100,26 +103,41 @@ async function iniciarApp(usuario: Usuario): Promise<void> {
   tempoReal.presenca({ area: abaSalva(), editando: null });
 }
 
-/** Retorna a empresa ativa e se o usuário é admin. */
-async function selecionarEmpresa(): Promise<{ admin: boolean; empresa: { id: string; nome: string; onboarding_concluido?: boolean } }> {
+/** Sai da sessão: nada da escolha de empresa pode sobrar para a próxima pessoa no mesmo navegador. */
+function sair(): void {
+  tempoReal.parar();
+  sessaoToken.definir(null);
+  sessaoToken.limparEmpresas();
+  convitePendente.limpar();
+  location.replace(location.pathname);
+}
+
+/** Descarta a empresa desta aba e recarrega: a tela de escolha reaparece e nenhum dado da empresa anterior fica em memória. */
+function trocarEmpresa(): void {
+  tempoReal.parar();
+  sessaoToken.esquecerEmpresaDaAba();
+  location.reload();
+}
+
+/**
+ * Define a empresa ativa desta aba: mantém a guardada se o usuário ainda tem acesso a ela, senão mostra a tela de escolha
+ * (a última usada vem pré-selecionada). Sem nenhuma empresa, explica e só oferece sair; nada é carregado.
+ */
+async function selecionarEmpresa(): Promise<EmpresaAcesso> {
   const empresas = await api.empresas.listar();
-  const primeiraEmpresa = empresas[0];
-  if (!primeiraEmpresa) throw new Error("Usuário sem associação ativa a uma empresa.");
-  const seletor = obrigatorio<HTMLSelectElement>("#empresaAtiva");
-  seletor.replaceChildren(...empresas.map((e) => {
-    const opcao = document.createElement("option");
-    opcao.value = e.id;
-    opcao.textContent = e.nome;
-    return opcao;
-  }));
-  const ativa = empresas.find((empresa) => empresa.id === sessaoToken.empresa()) ?? primeiraEmpresa;
-  seletor.value = ativa.id;
-  sessaoToken.definirEmpresa(seletor.value);
-  seletor.addEventListener("change", () => {
-    sessaoToken.definirEmpresa(seletor.value);
-    location.reload();
-  });
-  return { admin: ativa.papel === "admin", empresa: ativa };
+  const decisao = decidirEmpresa(empresas, sessaoToken.empresa(), sessaoToken.ultimaEmpresa());
+  if (decisao.tipo === "nenhuma") {
+    sessaoToken.esquecerEmpresaDaAba();
+    telaSemAcesso(sair);
+    return new Promise<EmpresaAcesso>(() => {}); // a aplicação não segue
+  }
+  const ativa = decisao.tipo === "seguir" ? decisao.empresa : await escolherEmpresa(empresas, decisao.sugerida, sair);
+  sessaoToken.definirEmpresa(ativa.id);
+  acesso.empresaId = ativa.id;
+  acesso.empresaNome = ativa.nome;
+  acesso.papel = ativa.papel;
+  acesso.permissoes = ativa.permissoes;
+  return ativa;
 }
 
 async function principal(): Promise<void> {
@@ -138,16 +156,17 @@ async function principal(): Promise<void> {
   });
   iniciarBarraLateral();
   iniciarBarraSuperior({
-    aoSair: () => {
-      tempoReal.parar();
-      sessaoToken.definir(null);
-      convitePendente.limpar();
-      location.replace(location.pathname);
-    },
+    aoSair: sair,
+    aoTrocarEmpresa: trocarEmpresa,
     aoTrocarSenha: () => void trocarSenha(),
     aoAbrirPaleta: abrirPaleta,
   });
   ligarAtalhoDaPaleta();
+  // Se o servidor recusar a empresa ativa (acesso removido durante a sessão), a aba volta à escolha de empresa.
+  sessaoToken.aoPerderEmpresa(() => {
+    tempoReal.parar();
+    location.reload();
+  });
   sessaoToken.aoExpirar(() => {
     tempoReal.parar();
     void pedirLogin("Sua sessão expirou. Entre de novo para continuar.").then(() => location.reload());
@@ -166,19 +185,18 @@ async function principal(): Promise<void> {
   // Convite de quem já tinha conta: conclui o aceite agora que o login (e o 2FA) aconteceu.
   await concluirConvitePendente();
 
-  let selecao: Awaited<ReturnType<typeof selecionarEmpresa>>;
+  let empresaAtiva: EmpresaAcesso;
   try {
-    selecao = await selecionarEmpresa();
+    empresaAtiva = await selecionarEmpresa();
   } catch (erro) {
     console.error(erro);
     sessaoToken.definir(null);
     usuario = await pedirLogin("Não foi possível selecionar uma empresa para esta conta.");
-    selecao = await selecionarEmpresa();
+    empresaAtiva = await selecionarEmpresa();
   }
-  usuario.admin = selecao.admin;
 
-  // Wizard de onboarding: exibido para admins de empresa nova antes de montar o app.
-  if (detectarOnboarding({ usuario, empresa: selecao.empresa })) {
+  // Wizard de onboarding: exibido para administradores de empresa nova antes de montar o app.
+  if (detectarOnboarding({ usuario, empresa: empresaAtiva, permissoes: empresaAtiva.permissoes })) {
     await iniciarWizardOnboarding();
   }
 

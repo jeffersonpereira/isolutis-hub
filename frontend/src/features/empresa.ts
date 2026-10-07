@@ -1,3 +1,4 @@
+import type { EmpresaAcesso } from "@/api/tipos";
 import { api } from "@/api/endpoints";
 import { sessaoToken } from "@/api/http";
 import { $ } from "@/core/dom";
@@ -7,7 +8,7 @@ import { registrarAcao } from "@/ui/acoes";
 import { cabecalhoDePagina, estadoDeErro } from "@/ui/componentes";
 import { toast } from "@/ui/toast";
 
-type Empresa = { id: string; nome: string; papel: "admin" | "membro" };
+type Empresa = EmpresaAcesso;
 const tela: { empresa: Empresa | null; erro: string } = { empresa: null, erro: "" };
 
 async function carregar(): Promise<void> {
@@ -29,7 +30,7 @@ function vista(): Safe {
     </div><div class="tools fim"><button class="btn primary" data-act="salvarEmpresa">Salvar alterações</button></div></section>` : ""}`;
 }
 
-registrarVista({ id: "empresa", nome: "Dados da empresa", grupo: "Administração", somenteAdmin: true, carregar, depende: ["empresa"], desenhar: vista });
+registrarVista({ id: "empresa", nome: "Dados da empresa", grupo: "Administração", permissao: "administracao", carregar, depende: ["empresa"], desenhar: vista });
 
 registrarAcao("salvarEmpresa", async () => {
   const empresa = tela.empresa;

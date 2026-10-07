@@ -181,6 +181,7 @@ function vista(): Safe {
 
 registrarVista({
   id: "relatorios",
+  permissao: "financeiro",
   nome: "Relatórios",
   grupo: "Financeiro",
   carregar,

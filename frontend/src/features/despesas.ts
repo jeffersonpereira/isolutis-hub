@@ -94,7 +94,7 @@ const linhaDespesa = (d: Despesa, escrever: boolean): Safe => html`<div class="l
 const linhaInvestimento = (i: Investimento): Safe => html`<div class="li" data-open="invest:${i.id}" tabindex="0"><div><div class="t">${i.descricao || "Investimento"}</div><div class="sub">${dataBR(i.data)} · Investido por <b>${i.investidor_nome}</b>${i.forma ? " · " + i.forma : ""}</div></div>
   <div style="text-align:right"><div class="num">${brl(i.valor)}</div><span class="pill info">Investimento</span></div></div>`;
 
-registrarVista({ id: "despesas", nome: "Despesas e investimentos", carregar, depende: ["despesas", "faturamento"], desenhar: vista });
+registrarVista({ id: "despesas", permissao: "financeiro", nome: "Despesas e investimentos", carregar, depende: ["despesas", "faturamento"], desenhar: vista });
 
 type Tipo = "despesa" | "investimento";
 

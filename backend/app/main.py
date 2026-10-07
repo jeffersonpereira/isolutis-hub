@@ -11,7 +11,7 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 
 from app.config import get_settings
 from app.db import engine
-from app.deps import empresa_atual, usuario_atual
+from app.deps import requer_base, requer_comercial, requer_financeiro
 from app.errors import registrar_tratadores
 from app.financeiro import rotas as financeiro
 from app.routers import (
@@ -92,20 +92,25 @@ def criar_app() -> FastAPI:
     app.add_middleware(CabecalhosDeSeguranca)
 
     api = APIRouter(prefix="/api/v1")
-    # Públicos (cada um cuida da própria autenticação): login, equipe e WebSocket.
+    # Cada um cuida da própria autenticação e permissão: login, equipe (rota a rota) e WebSocket.
     for modulo in (auth, equipe, ws):
         api.include_router(modulo.router)
-    # Todo o restante exige login; o usuário autenticado também alimenta a auditoria no banco.
-    protegidos = (clientes, produtos, negocios, orcamentos, faturamento, despesas, projetos, tarefas, painel)
-    for modulo in protegidos:
-        api.include_router(modulo.router, dependencies=[Depends(empresa_atual)])
-    # Módulo financeiro: exige administrador (a dependência já está no próprio router).
+    # Toda rota de dados declara a permissão exigida pelo papel na empresa ativa (ver app.domain.papeis);
+    # tests/test_permissoes.py falha se uma rota nova ficar sem checagem. A dependência também alimenta a auditoria.
+    for modulo in (projetos, tarefas, painel):  # `base`: qualquer papel
+        api.include_router(modulo.router, dependencies=[Depends(requer_base)])
+    api.include_router(clientes.router_referencias)  # `base`: só id e nome
+    for modulo in (clientes, produtos, negocios, orcamentos):  # `comercial`
+        api.include_router(modulo.router, dependencies=[Depends(requer_comercial)])
+    for modulo in (faturamento, despesas):  # `financeiro`
+        api.include_router(modulo.router, dependencies=[Depends(requer_financeiro)])
+    # Módulo financeiro (`financeiro`) e referências de apoio a formulários (`base`): dependências nos próprios routers.
     api.include_router(financeiro.router)
     api.include_router(financeiro.router_referencias)
-    # Hub de parceiros: lista/edita todos os papéis (administradores); os papéis disponíveis qualquer logado consulta.
-    api.include_router(parceiros.router, dependencies=[Depends(empresa_atual)])
-    api.include_router(parceiros.router_papeis, dependencies=[Depends(empresa_atual)])
-    # Onboarding: configuração inicial da empresa (admin).
+    # Hub de parceiros (`financeiro`); os papéis disponíveis qualquer papel consulta (`base`).
+    api.include_router(parceiros.router)
+    api.include_router(parceiros.router_papeis)
+    # Onboarding: configuração inicial da empresa (`administracao`; o status é `base`).
     api.include_router(router_onboarding.router, tags=["onboarding"])
     # Módulos opcionais da Onda 2 (registrados somente quando os arquivos existirem).
     if _relatorios_disponivel:

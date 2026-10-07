@@ -12,7 +12,6 @@ from app.models import Usuario, UsuarioEmpresa
 from app.schemas.usuario import UsuarioAtualizar, UsuarioCriar
 from app.security import gerar_hash, precisa_rehash, verificar_senha
 from app.services.base import aplicar, conferir_versao, confirmar, obter
-from sqlalchemy.orm.attributes import set_committed_value
 
 # Hash fictício para gastar o mesmo tempo quando o e-mail não existe (evita revelar quem é da equipe).
 _HASH_FALSO = gerar_hash("senha-inexistente")
@@ -51,7 +50,7 @@ async def equipe(sessao: AsyncSession, empresa_id: UUID) -> list[Usuario]:
     )).all()
     usuarios = []
     for usuario, papel in linhas:
-        set_committed_value(usuario, "admin", papel == "admin")
+        usuario.papel = papel
         usuarios.append(usuario)
     return usuarios
 
@@ -64,11 +63,12 @@ async def criar(sessao: AsyncSession, empresa_id: UUID, dados: UsuarioCriar) -> 
             raise RegraDeNegocio("Este usuário já faz parte da equipe da empresa.")
         usuario = existente
     else:
-        usuario = Usuario(email=str(dados.email).lower(), nome=dados.nome, admin=False, senha_hash=gerar_hash(dados.senha))
+        usuario = Usuario(email=str(dados.email).lower(), nome=dados.nome, senha_hash=gerar_hash(dados.senha))
         sessao.add(usuario)
         await sessao.flush()
-    sessao.add(UsuarioEmpresa(empresa_id=empresa_id, usuario_id=usuario.id, papel="admin" if dados.admin else "membro"))
+    sessao.add(UsuarioEmpresa(empresa_id=empresa_id, usuario_id=usuario.id, papel=dados.papel))
     await _salvar(sessao)
+    usuario.papel = dados.papel
     return usuario
 
 
@@ -79,16 +79,17 @@ async def atualizar(sessao: AsyncSession, quem: Usuario, empresa_id: UUID, id_: 
         from app.errors import NaoEncontrado
         raise NaoEncontrado("Membro")
     conferir_versao(usuario, dados.versao)
-    if usuario.id == quem.id and not (dados.admin and dados.ativo):
+    if usuario.id == quem.id and not (dados.papel == "admin" and dados.ativo):
         raise RegraDeNegocio("Você não pode tirar o seu próprio acesso de administrador nem se desativar.")
     aplicar(usuario, {"nome": dados.nome})
-    membership.papel = "admin" if dados.admin else "membro"
+    membership.papel = dados.papel
     membership.ativo = dados.ativo
     if dados.senha:
         usuario.senha_hash = gerar_hash(dados.senha)
         usuario.versao_sessao += 1
     await _garantir_algum_admin(sessao, empresa_id)
     await _salvar(sessao)
+    usuario.papel = dados.papel
     return usuario
 
 

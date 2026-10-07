@@ -5,6 +5,18 @@ type S = components["schemas"];
 
 export type Usuario = S["UsuarioLeitura"];
 export type MembroEquipe = S["MembroEquipe"];
+export type ClienteReferencia = S["ClienteReferencia"];
+
+/** Papel do usuário numa empresa e as permissões que o servidor deriva dele (o front decide só por elas). */
+export type Papel = "admin" | "financeiro" | "comercial" | "membro";
+export type Permissao = "base" | "comercial" | "financeiro" | "administracao";
+/** Empresa acessível ao usuário, com o papel e as permissões dele nela (`GET /empresas`). */
+export interface EmpresaAcesso {
+  id: string;
+  nome: string;
+  papel: Papel;
+  permissoes: Permissao[];
+}
 export type Cliente = S["ClienteResumo"];
 export type ClienteEntrada = S["ClienteEntrada"];
 export type ClienteRelacionados = S["ClienteRelacionados"];
@@ -47,7 +59,7 @@ export interface Convite {
 export interface ConviteEntrada {
   nome: string;
   email: string;
-  papel: "admin" | "membro";
+  papel: Papel;
 }
 
 /** Conta nova define a senha; conta existente aceita autenticada e não envia nada. */

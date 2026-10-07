@@ -1,17 +1,17 @@
-"""Hub de parceiros de negócio (cadastro único com papéis). Restrito a administradores."""
+"""Hub de parceiros de negócio (cadastro único com papéis). Exige a permissão `financeiro`."""
 
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Response
 
-from app.deps import EmpresaAtual, Sessao, administrador, usuario_atual
+from app.deps import EmpresaAtual, Sessao, requer_base, requer_financeiro
 from app.schemas.parceiro import PapelLeitura, ParceiroAtualizar, ParceiroEntrada, ParceiroLeitura
 from app.services import parceiros as svc
 from app.schemas.tag import TagEntrada, TagLeitura, TagsParceiroEntrada
 from app.services import tags as svc_tags
 
-router = APIRouter(prefix="/parceiros", tags=["Parceiros de negócio"], dependencies=[Depends(administrador)])
-router_papeis = APIRouter(prefix="/parceiros", tags=["Parceiros de negócio"], dependencies=[Depends(usuario_atual)])
+router = APIRouter(prefix="/parceiros", tags=["Parceiros de negócio"], dependencies=[Depends(requer_financeiro)])
+router_papeis = APIRouter(prefix="/parceiros", tags=["Parceiros de negócio"], dependencies=[Depends(requer_base)])
 
 
 @router.get("/tags", response_model=list[TagLeitura])

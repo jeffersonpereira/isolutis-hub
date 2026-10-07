@@ -80,7 +80,7 @@ function vista(): Safe {
   }`;
 }
 
-registrarVista({ id: "fin-plano", nome: "Plano de Contas", grupo: GRUPO, somenteAdmin: true, carregar, depende: ["financeiro"], desenhar: vista });
+registrarVista({ id: "fin-plano", nome: "Plano de Contas", grupo: GRUPO, permissao: "financeiro", carregar, depende: ["financeiro"], desenhar: vista });
 
 function formConta(modo: "nova" | "editar", base?: PlanoConta, paiInicial?: PlanoConta): void {
   const editando = modo === "editar" && base;

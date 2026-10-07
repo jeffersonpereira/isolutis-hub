@@ -7,13 +7,15 @@ import { ErroApi } from "@/api/http";
 import type { Usuario } from "@/api/tipos";
 
 export interface EstadoApp {
-  usuario: (Usuario & { admin?: boolean }) | null;
+  usuario: Usuario | null;
+  /** Permissões da empresa ativa. */
+  permissoes: readonly string[];
   empresa: { id: string; nome: string; onboarding_concluido?: boolean } | null;
 }
 
 /** Verifica se o wizard de onboarding deve ser exibido. */
 export function detectarOnboarding(estado: EstadoApp): boolean {
-  return (estado.usuario?.admin === true) && (estado.empresa?.onboarding_concluido === false);
+  return estado.permissoes.includes("administracao") && estado.empresa?.onboarding_concluido === false;
 }
 
 // ─── Estado interno do wizard ─────────────────────────────────────────────────

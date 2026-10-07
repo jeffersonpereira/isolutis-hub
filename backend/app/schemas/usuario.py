@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import ConfigDict, EmailStr, Field
 
+from app.domain.papeis import Papel
+
 from app.schemas.comum import ComVersao, Entrada, Leitura
 
 SENHA = Field(min_length=8, max_length=128)
@@ -14,11 +16,11 @@ class UsuarioLeitura(Leitura):
     id: UUID
     email: str
     nome: str
-    admin: bool
+    papel: Papel | None = None  # papel na empresa ativa; nulo onde não há empresa (ex.: /auth/eu)
     ativo: bool
     senha_definida: bool
     ultimo_acesso: datetime | None
-    versao: int = Field(alias="versao_sessao")
+    versao: int = Field(validation_alias="versao_sessao")  # lê a coluna versao_sessao, mas a API devolve "versao"
     totp_ativo: bool = False
 
 
@@ -51,11 +53,11 @@ class UsuarioCriar(Entrada):
     nome: str = Field(min_length=1, max_length=200)
     email: EmailStr
     senha: str = SENHA
-    admin: bool = False
+    papel: Papel = "membro"
 
 
 class UsuarioAtualizar(ComVersao):
     nome: str = Field(min_length=1, max_length=200)
-    admin: bool
+    papel: Papel
     ativo: bool = True
     senha: str | None = Field(default=None, min_length=8, max_length=128)

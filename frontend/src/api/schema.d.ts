@@ -55,6 +55,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/convite/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Verificar Convite
+         * @description Retorna informações públicas do convite para exibir na tela de aceitação.
+         */
+        get: operations["verificar_convite_api_v1_auth_convite__token__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/convite/{token}/aceitar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Aceitar Convite
+         * @description Aceita o convite. Conta nova define a senha; conta existente aceita autenticada, sem alterar a senha.
+         */
+        post: operations["aceitar_convite_api_v1_auth_convite__token__aceitar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/empresas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Empresas Do Usuario
+         * @description Empresas acessíveis para a seleção do contexto ativo.
+         */
+        get: operations["empresas_do_usuario_api_v1_empresas_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/equipe": {
         parameters: {
             query?: never;
@@ -64,7 +124,7 @@ export interface paths {
         };
         /**
          * Equipe
-         * @description Pessoas da equipe (qualquer usuário logado): usado em responsáveis e na autoria dos registros.
+         * @description Pessoas da equipe (qualquer papel): usado em responsáveis e na autoria dos registros.
          */
         get: operations["equipe_api_v1_equipe_get"];
         put?: never;
@@ -106,6 +166,251 @@ export interface paths {
         post?: never;
         /** Remover Usuario */
         delete: operations["remover_usuario_api_v1_usuarios__id___delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/convite": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Criar Convite Route */
+        post: operations["criar_convite_route_api_v1_convite_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/convites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar Convites Route */
+        get: operations["listar_convites_route_api_v1_convites_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/convite/{convite_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Cancelar Convite Route */
+        delete: operations["cancelar_convite_route_api_v1_convite__convite_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/empresas/ativa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Atualizar Empresa Ativa */
+        patch: operations["atualizar_empresa_ativa_api_v1_empresas_ativa_patch"];
+        trace?: never;
+    };
+    "/api/v1/projetos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar */
+        get: operations["listar_api_v1_projetos_get"];
+        put?: never;
+        /** Criar */
+        post: operations["criar_api_v1_projetos_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projetos/modelo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Modelo */
+        get: operations["modelo_api_v1_projetos_modelo_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projetos/etapas-padrao": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Etapas Padrao */
+        get: operations["etapas_padrao_api_v1_projetos_etapas_padrao_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projetos/{id_}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Atualizar */
+        put: operations["atualizar_api_v1_projetos__id___put"];
+        post?: never;
+        /** Excluir */
+        delete: operations["excluir_api_v1_projetos__id___delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projetos/{id_}/relatorio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Relatorio */
+        get: operations["relatorio_api_v1_projetos__id___relatorio_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tarefas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar */
+        get: operations["listar_api_v1_tarefas_get"];
+        put?: never;
+        /** Criar */
+        post: operations["criar_api_v1_tarefas_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tarefas/{id_}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Atualizar */
+        put: operations["atualizar_api_v1_tarefas__id___put"];
+        post?: never;
+        /** Excluir */
+        delete: operations["excluir_api_v1_tarefas__id___delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tarefas/{id_}/coluna": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Mover */
+        patch: operations["mover_api_v1_tarefas__id___coluna_patch"];
+        trace?: never;
+    };
+    "/api/v1/painel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Painel
+         * @description Painel por papel: só entram os blocos autorizados (`exclude_unset` omite os demais da resposta).
+         */
+        get: operations["painel_api_v1_painel_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/clientes/referencias": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Referencias */
+        get: operations["referencias_api_v1_clientes_referencias_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -570,163 +875,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/projetos": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Listar */
-        get: operations["listar_api_v1_projetos_get"];
-        put?: never;
-        /** Criar */
-        post: operations["criar_api_v1_projetos_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/projetos/modelo": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Modelo */
-        get: operations["modelo_api_v1_projetos_modelo_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/projetos/etapas-padrao": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Etapas Padrao */
-        get: operations["etapas_padrao_api_v1_projetos_etapas_padrao_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/projetos/{id_}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Atualizar */
-        put: operations["atualizar_api_v1_projetos__id___put"];
-        post?: never;
-        /** Excluir */
-        delete: operations["excluir_api_v1_projetos__id___delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/projetos/{id_}/relatorio": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Relatorio */
-        get: operations["relatorio_api_v1_projetos__id___relatorio_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/tarefas": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Listar */
-        get: operations["listar_api_v1_tarefas_get"];
-        put?: never;
-        /** Criar */
-        post: operations["criar_api_v1_tarefas_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/tarefas/{id_}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Atualizar */
-        put: operations["atualizar_api_v1_tarefas__id___put"];
-        post?: never;
-        /** Excluir */
-        delete: operations["excluir_api_v1_tarefas__id___delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/tarefas/{id_}/coluna": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Mover */
-        patch: operations["mover_api_v1_tarefas__id___coluna_patch"];
-        trace?: never;
-    };
-    "/api/v1/painel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Painel */
-        get: operations["painel_api_v1_painel_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/financeiro/plano-contas": {
         parameters: {
             query?: never;
@@ -903,6 +1051,59 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/parceiros/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar Tags */
+        get: operations["listar_tags_api_v1_parceiros_tags_get"];
+        put?: never;
+        /** Criar Tag */
+        post: operations["criar_tag_api_v1_parceiros_tags_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parceiros/tags/{tag_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Atualizar Tag */
+        put: operations["atualizar_tag_api_v1_parceiros_tags__tag_id__put"];
+        post?: never;
+        /** Arquivar Tag */
+        delete: operations["arquivar_tag_api_v1_parceiros_tags__tag_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parceiros/{id_}/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Atribuir Tags */
+        put: operations["atribuir_tags_api_v1_parceiros__id___tags_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/parceiros": {
         parameters: {
             query?: never;
@@ -959,6 +1160,216 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/onboarding/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Status Onboarding
+         * @description Retorna se o onboarding da empresa já foi concluído.
+         */
+        get: operations["status_onboarding_api_v1_onboarding_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/onboarding/concluir": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Concluir Onboarding
+         * @description Cria produtos iniciais (se fornecidos) e marca o onboarding como concluído.
+         *
+         *     Apenas administradores podem concluir o onboarding.
+         *     Chamadas repetidas são idempotentes.
+         */
+        post: operations["concluir_onboarding_api_v1_onboarding_concluir_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/onboarding/empresa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Salvar Empresa Onboarding
+         * @description Atualiza nome e segmento da empresa (usado no wizard e na tela de configurações).
+         */
+        patch: operations["salvar_empresa_onboarding_api_v1_onboarding_empresa_patch"];
+        trace?: never;
+    };
+    "/api/v1/onboarding/produtos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Salvar Produtos Onboarding
+         * @description Cadastra produtos iniciais durante o onboarding (sem duplicar produtos já existentes).
+         */
+        post: operations["salvar_produtos_onboarding_api_v1_onboarding_produtos_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/relatorios/dre": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Dre
+         * @description DRE mensal do ano. Formato: json (padrão), pdf ou xlsx.
+         */
+        get: operations["dre_api_v1_relatorios_dre_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/relatorios/fluxo-caixa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Fluxo Caixa
+         * @description Fluxo de Caixa mensal do ano. Formato: json (padrão), pdf ou xlsx.
+         */
+        get: operations["fluxo_caixa_api_v1_relatorios_fluxo_caixa_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/2fa/setup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Setup 2Fa
+         * @description Inicia o setup do 2FA: gera segredo, QR code e backup codes provisórios.
+         *
+         *     O 2FA só fica ativo após confirmar um código em /auth/2fa/confirmar.
+         */
+        post: operations["setup_2fa_api_v1_auth_2fa_setup_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/2fa/confirmar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirmar 2Fa
+         * @description Confirma o primeiro código TOTP e ativa 2FA.
+         *
+         *     Invalida todas as sessões existentes (incrementa versao_sessao) e emite
+         *     um novo JWT completo para a sessão atual continuar sem re-login.
+         */
+        post: operations["confirmar_2fa_api_v1_auth_2fa_confirmar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/2fa/verificar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Verificar 2Fa
+         * @description Endpoint público: valida código TOTP ou backup code após login parcial e emite JWT completo.
+         *
+         *     O token parcial é de uso único e é invalidado após 5 códigos incorretos.
+         */
+        post: operations["verificar_2fa_api_v1_auth_2fa_verificar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/2fa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Desativar 2Fa
+         * @description Desativa 2FA após confirmar o código TOTP atual.
+         */
+        delete: operations["desativar_2fa_api_v1_auth_2fa_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saude": {
         parameters: {
             query?: never;
@@ -976,10 +1387,37 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/prontidao": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Prontidao */
+        get: operations["prontidao_api_prontidao_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * AceitarConviteEntrada
+         * @description Conta nova define a senha aqui; conta existente aceita autenticada e ignora estes campos.
+         */
+        AceitarConviteEntrada: {
+            /** Senha */
+            senha?: string | null;
+            /** Confirmar Senha */
+            confirmar_senha?: string | null;
+        };
         /** AlertaItem */
         AlertaItem: {
             /** Quantidade */
@@ -989,8 +1427,8 @@ export interface components {
         };
         /** AlertasInfo */
         AlertasInfo: {
-            lancamentos_vencidos: components["schemas"]["AlertaItem"];
-            orcamentos_parados: components["schemas"]["AlertaItem"];
+            lancamentos_vencidos?: components["schemas"]["AlertaItem"] | null;
+            orcamentos_parados?: components["schemas"]["AlertaItem"] | null;
             projetos_atrasados: components["schemas"]["AlertaItem"];
         };
         /** AprovacaoSaida */
@@ -1102,6 +1540,11 @@ export interface components {
              */
             id: string;
             /**
+             * Empresa Id
+             * Format: uuid
+             */
+            empresa_id: string;
+            /**
              * Criado Em
              * Format: date-time
              */
@@ -1150,6 +1593,19 @@ export interface components {
             /** Papeis */
             papeis: string[];
         };
+        /**
+         * ClienteReferencia
+         * @description Identificação mínima do cliente (id e nome), aberta a qualquer papel para exibir o nome em outras telas.
+         */
+        ClienteReferencia: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Nome */
+            nome: string;
+        };
         /** ClienteRelacionados */
         ClienteRelacionados: {
             /** Negocios */
@@ -1171,6 +1627,11 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /**
+             * Empresa Id
+             * Format: uuid
+             */
+            empresa_id: string;
             /**
              * Criado Em
              * Format: date-time
@@ -1224,6 +1685,21 @@ export interface components {
             /** Faturado */
             faturado: number;
         };
+        /** ConcluirOnboardingEntrada */
+        ConcluirOnboardingEntrada: {
+            /**
+             * Produtos
+             * @default []
+             */
+            produtos: components["schemas"]["ProdutoInicial"][];
+        };
+        /** ConfirmarTotpEntrada */
+        ConfirmarTotpEntrada: {
+            /** Codigo */
+            codigo: string;
+            /** Backup Codes */
+            backup_codes: string[];
+        };
         /** ContaBancariaEntrada */
         ContaBancariaEntrada: {
             /**
@@ -1259,6 +1735,63 @@ export interface components {
             nome: string;
             /** Saldo Inicial */
             saldo_inicial: number;
+        };
+        /** ConviteEntrada */
+        ConviteEntrada: {
+            /** Nome */
+            nome: string;
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /**
+             * Papel
+             * @enum {string}
+             */
+            papel: "admin" | "financeiro" | "comercial" | "membro";
+        };
+        /**
+         * ConviteInfo
+         * @description Informações públicas do convite para exibir na tela de aceitação.
+         */
+        ConviteInfo: {
+            /** Email */
+            email: string;
+            /** Papel */
+            papel: string;
+            /** Empresa Nome */
+            empresa_nome: string;
+            /** Criado Por Nome */
+            criado_por_nome: string;
+            /** Estado */
+            estado: string;
+            /**
+             * Conta Existente
+             * @default false
+             */
+            conta_existente: boolean;
+        };
+        /** ConviteLeitura */
+        ConviteLeitura: {
+            /** Id */
+            id: number;
+            /** Email */
+            email: string;
+            /** Papel */
+            papel: string;
+            /**
+             * Criado Em
+             * Format: date-time
+             */
+            criado_em: string;
+            /**
+             * Expira Em
+             * Format: date-time
+             */
+            expira_em: string;
+            /** Usado Em */
+            usado_em?: string | null;
         };
         /** DespesaAtualizar */
         DespesaAtualizar: {
@@ -1328,6 +1861,11 @@ export interface components {
              */
             id: string;
             /**
+             * Empresa Id
+             * Format: uuid
+             */
+            empresa_id: string;
+            /**
              * Criado Em
              * Format: date-time
              */
@@ -1373,6 +1911,18 @@ export interface components {
             parcela: number | null;
             /** Total Parcelas */
             total_parcelas: number | null;
+        };
+        /** EmpresaAtualizar */
+        EmpresaAtualizar: {
+            /** Nome */
+            nome: string;
+        };
+        /** EmpresaOnboardingEntrada */
+        EmpresaOnboardingEntrada: {
+            /** Nome */
+            nome: string;
+            /** Segmento */
+            segmento?: string | null;
         };
         /** EtapaEntrada */
         EtapaEntrada: {
@@ -1567,6 +2117,11 @@ export interface components {
              */
             id: string;
             /**
+             * Empresa Id
+             * Format: uuid
+             */
+            empresa_id: string;
+            /**
              * Criado Em
              * Format: date-time
              */
@@ -1724,6 +2279,11 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /**
+             * Empresa Id
+             * Format: uuid
+             */
+            empresa_id: string;
             /**
              * Criado Em
              * Format: date-time
@@ -1992,6 +2552,11 @@ export interface components {
              */
             id: string;
             /**
+             * Empresa Id
+             * Format: uuid
+             */
+            empresa_id: string;
+            /**
              * Criado Em
              * Format: date-time
              */
@@ -2145,6 +2710,11 @@ export interface components {
              */
             id: string;
             /**
+             * Empresa Id
+             * Format: uuid
+             */
+            empresa_id: string;
+            /**
              * Criado Em
              * Format: date-time
              */
@@ -2203,45 +2773,48 @@ export interface components {
             /** Itens */
             itens: components["schemas"]["ItemLeitura"][];
         };
-        /** Painel */
+        /**
+         * Painel
+         * @description Campos de `financeiro` e `comercial` só vêm quando o papel tem a permissão; o front omite o que não vier.
+         */
         Painel: {
             /** Ano */
             ano: number;
             /** Mes */
             mes: number;
-            /** Recebido No Mes */
-            recebido_no_mes: number;
-            /** Previsto No Mes */
-            previsto_no_mes: number;
-            /** Recorrente No Mes */
-            recorrente_no_mes: number;
-            /** Funil Abertos */
-            funil_abertos: number;
-            /** Funil Valor */
-            funil_valor: number;
-            /** Funil Mensal */
-            funil_mensal: number;
-            /** Ganhos */
-            ganhos: number;
-            /** Perdidos */
-            perdidos: number;
-            /** Conversao Pct */
-            conversao_pct: number | null;
-            /** Orcamentos Aguardando Qtd */
-            orcamentos_aguardando_qtd: number;
-            /** Orcamentos Aguardando Valor */
-            orcamentos_aguardando_valor: number;
             /** Banco Vazio */
             banco_vazio: boolean;
-            /** Serie */
-            serie: components["schemas"]["PontoSerie"][];
-            /** Por Etapa */
-            por_etapa: components["schemas"]["EtapaFunil"][];
-            /** Proximos Fechamentos */
-            proximos_fechamentos: components["schemas"]["ProximoFechamento"][];
-            /** Orcamentos Aguardando */
-            orcamentos_aguardando: components["schemas"]["OrcamentoAguardando"][];
             alertas: components["schemas"]["AlertasInfo"];
+            /** Recebido No Mes */
+            recebido_no_mes?: number | null;
+            /** Previsto No Mes */
+            previsto_no_mes?: number | null;
+            /** Recorrente No Mes */
+            recorrente_no_mes?: number | null;
+            /** Serie */
+            serie?: components["schemas"]["PontoSerie"][] | null;
+            /** Funil Abertos */
+            funil_abertos?: number | null;
+            /** Funil Valor */
+            funil_valor?: number | null;
+            /** Funil Mensal */
+            funil_mensal?: number | null;
+            /** Ganhos */
+            ganhos?: number | null;
+            /** Perdidos */
+            perdidos?: number | null;
+            /** Conversao Pct */
+            conversao_pct?: number | null;
+            /** Orcamentos Aguardando Qtd */
+            orcamentos_aguardando_qtd?: number | null;
+            /** Orcamentos Aguardando Valor */
+            orcamentos_aguardando_valor?: number | null;
+            /** Por Etapa */
+            por_etapa?: components["schemas"]["EtapaFunil"][] | null;
+            /** Proximos Fechamentos */
+            proximos_fechamentos?: components["schemas"]["ProximoFechamento"][] | null;
+            /** Orcamentos Aguardando */
+            orcamentos_aguardando?: components["schemas"]["OrcamentoAguardando"][] | null;
         };
         /** PapelLeitura */
         PapelLeitura: {
@@ -2329,6 +2902,11 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /**
+             * Empresa Id
+             * Format: uuid
+             */
+            empresa_id: string;
             /**
              * Criado Em
              * Format: date-time
@@ -2521,6 +3099,13 @@ export interface components {
             /** Descricao */
             descricao?: string | null;
         };
+        /** ProdutoInicial */
+        ProdutoInicial: {
+            /** Nome */
+            nome: string;
+            /** Preco */
+            preco: number | string;
+        };
         /** ProdutoLeitura */
         ProdutoLeitura: {
             /**
@@ -2528,6 +3113,11 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /**
+             * Empresa Id
+             * Format: uuid
+             */
+            empresa_id: string;
             /**
              * Criado Em
              * Format: date-time
@@ -2556,6 +3146,14 @@ export interface components {
             ativo: boolean;
             /** Descricao */
             descricao: string | null;
+        };
+        /** ProdutosIniciais */
+        ProdutosIniciais: {
+            /**
+             * Produtos
+             * @default []
+             */
+            produtos: components["schemas"]["ProdutoInicial"][];
         };
         /** ProjetoAtualizar */
         ProjetoAtualizar: {
@@ -2644,6 +3242,11 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /**
+             * Empresa Id
+             * Format: uuid
+             */
+            empresa_id: string;
             /**
              * Criado Em
              * Format: date-time
@@ -2790,6 +3393,37 @@ export interface components {
             /** Total Recorrente */
             total_recorrente: number;
         };
+        /** SetupTotpSaida */
+        SetupTotpSaida: {
+            /** Qr Code */
+            qr_code: string;
+            /** Provisioning Uri */
+            provisioning_uri: string;
+            /** Backup Codes */
+            backup_codes: string[];
+        };
+        /** TagEntrada */
+        TagEntrada: {
+            /** Nome */
+            nome: string;
+        };
+        /** TagLeitura */
+        TagLeitura: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Nome */
+            nome: string;
+            /** Ativo */
+            ativo: boolean;
+        };
+        /** TagsParceiroEntrada */
+        TagsParceiroEntrada: {
+            /** Tag Ids */
+            tag_ids: string[];
+        };
         /** TarefaAtualizar */
         TarefaAtualizar: {
             /** Titulo */
@@ -2863,6 +3497,11 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /**
+             * Empresa Id
+             * Format: uuid
+             */
+            empresa_id: string;
             /**
              * Criado Em
              * Format: date-time
@@ -3041,8 +3680,11 @@ export interface components {
             versao: number;
             /** Nome */
             nome: string;
-            /** Admin */
-            admin: boolean;
+            /**
+             * Papel
+             * @enum {string}
+             */
+            papel: "admin" | "financeiro" | "comercial" | "membro";
             /**
              * Ativo
              * @default true
@@ -3063,10 +3705,11 @@ export interface components {
             /** Senha */
             senha: string;
             /**
-             * Admin
-             * @default false
+             * Papel
+             * @default membro
+             * @enum {string}
              */
-            admin: boolean;
+            papel: "admin" | "financeiro" | "comercial" | "membro";
         };
         /** UsuarioLeitura */
         UsuarioLeitura: {
@@ -3079,8 +3722,8 @@ export interface components {
             email: string;
             /** Nome */
             nome: string;
-            /** Admin */
-            admin: boolean;
+            /** Papel */
+            papel?: ("admin" | "financeiro" | "comercial" | "membro") | null;
             /** Ativo */
             ativo: boolean;
             /** Senha Definida */
@@ -3089,7 +3732,10 @@ export interface components {
             ultimo_acesso: string | null;
             /** Versao */
             versao: number;
-            /** Totp Ativo */
+            /**
+             * Totp Ativo
+             * @default false
+             */
             totp_ativo: boolean;
         };
         /** ValidationError */
@@ -3104,6 +3750,13 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** VerificarTotpEntrada */
+        VerificarTotpEntrada: {
+            /** Token Temporario */
+            token_temporario: string;
+            /** Codigo */
+            codigo: string;
         };
     };
     responses: never;
@@ -3198,10 +3851,100 @@ export interface operations {
             };
         };
     };
-    equipe_api_v1_equipe_get: {
+    verificar_convite_api_v1_auth_convite__token__get: {
         parameters: {
             query?: never;
             header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConviteInfo"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    aceitar_convite_api_v1_auth_convite__token__aceitar_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AceitarConviteEntrada"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TokenSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    empresas_do_usuario_api_v1_empresas_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+        };
+    };
+    equipe_api_v1_equipe_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3216,12 +3959,23 @@ export interface operations {
                     "application/json": components["schemas"]["MembroEquipe"][];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     listar_usuarios_api_v1_usuarios_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3236,12 +3990,23 @@ export interface operations {
                     "application/json": components["schemas"]["UsuarioLeitura"][];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     criar_usuario_api_v1_usuarios_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3274,7 +4039,9 @@ export interface operations {
     atualizar_usuario_api_v1_usuarios__id___put: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -3309,7 +4076,9 @@ export interface operations {
     remover_usuario_api_v1_usuarios__id___delete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -3335,10 +4104,609 @@ export interface operations {
             };
         };
     };
+    criar_convite_route_api_v1_convite_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConviteEntrada"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConviteLeitura"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_convites_route_api_v1_convites_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConviteLeitura"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancelar_convite_route_api_v1_convite__convite_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path: {
+                convite_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    atualizar_empresa_ativa_api_v1_empresas_ativa_patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmpresaAtualizar"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_api_v1_projetos_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjetoLeitura"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    criar_api_v1_projetos_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjetoEntrada"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjetoLeitura"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    modelo_api_v1_projetos_modelo_get: {
+        parameters: {
+            query: {
+                negocio_id: string;
+            };
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModeloProjeto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    etapas_padrao_api_v1_projetos_etapas_padrao_get: {
+        parameters: {
+            query?: {
+                inicio?: string | null;
+                entrega?: string | null;
+            };
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EtapaSugerida"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    atualizar_api_v1_projetos__id___put: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path: {
+                id_: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjetoAtualizar"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjetoLeitura"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    excluir_api_v1_projetos__id___delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path: {
+                id_: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    relatorio_api_v1_projetos__id___relatorio_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path: {
+                id_: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_api_v1_tarefas_get: {
+        parameters: {
+            query?: {
+                busca?: string | null;
+            };
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TarefaLeitura"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    criar_api_v1_tarefas_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TarefaEntrada"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TarefaLeitura"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    atualizar_api_v1_tarefas__id___put: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path: {
+                id_: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TarefaAtualizar"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TarefaLeitura"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    excluir_api_v1_tarefas__id___delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path: {
+                id_: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mover_api_v1_tarefas__id___coluna_patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path: {
+                id_: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MoverTarefa"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TarefaLeitura"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    painel_api_v1_painel_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Painel"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    referencias_api_v1_clientes_referencias_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClienteReferencia"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     listar_api_v1_clientes_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3353,12 +4721,23 @@ export interface operations {
                     "application/json": components["schemas"]["ClienteResumo"][];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     criar_api_v1_clientes_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3391,7 +4770,9 @@ export interface operations {
     atualizar_api_v1_clientes__id___put: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -3426,7 +4807,9 @@ export interface operations {
     excluir_api_v1_clientes__id___delete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -3455,7 +4838,9 @@ export interface operations {
     relacionados_api_v1_clientes__id___relacionados_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -3486,7 +4871,9 @@ export interface operations {
     listar_api_v1_produtos_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3501,12 +4888,23 @@ export interface operations {
                     "application/json": components["schemas"]["ProdutoLeitura"][];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     criar_api_v1_produtos_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3539,7 +4937,9 @@ export interface operations {
     criar_catalogo_api_v1_produtos_catalogo_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3554,12 +4954,23 @@ export interface operations {
                     "application/json": components["schemas"]["ProdutoLeitura"][];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     atualizar_api_v1_produtos__id___put: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -3594,7 +5005,9 @@ export interface operations {
     excluir_api_v1_produtos__id___delete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -3623,7 +5036,9 @@ export interface operations {
     listar_api_v1_negocios_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3638,12 +5053,23 @@ export interface operations {
                     "application/json": components["schemas"]["NegocioLeitura"][];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     criar_api_v1_negocios_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3676,7 +5102,9 @@ export interface operations {
     atualizar_api_v1_negocios__id___put: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -3711,7 +5139,9 @@ export interface operations {
     excluir_api_v1_negocios__id___delete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -3740,7 +5170,9 @@ export interface operations {
     mover_api_v1_negocios__id___etapa_patch: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -3777,7 +5209,9 @@ export interface operations {
             query?: {
                 status?: ("rascunho" | "enviado" | "aprovado" | "recusado" | "vencido") | null;
             };
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3806,7 +5240,9 @@ export interface operations {
     criar_api_v1_orcamentos_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3839,7 +5275,9 @@ export interface operations {
     atualizar_api_v1_orcamentos__id___put: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -3874,7 +5312,9 @@ export interface operations {
     excluir_api_v1_orcamentos__id___delete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -3903,7 +5343,9 @@ export interface operations {
     aprovar_api_v1_orcamentos__id___aprovar_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -3934,7 +5376,9 @@ export interface operations {
     documento_api_v1_orcamentos__id___documento_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -3966,7 +5410,9 @@ export interface operations {
                 ano?: number | null;
                 mes?: number | null;
             };
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3995,7 +5441,9 @@ export interface operations {
     criar_api_v1_faturamento_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -4030,7 +5478,9 @@ export interface operations {
             query: {
                 ano: number;
             };
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -4061,7 +5511,9 @@ export interface operations {
             query: {
                 ano: number;
             };
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -4088,7 +5540,9 @@ export interface operations {
     criar_em_lote_api_v1_faturamento_lote_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -4121,7 +5575,9 @@ export interface operations {
     atualizar_api_v1_faturamento__id___put: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -4156,7 +5612,9 @@ export interface operations {
     excluir_api_v1_faturamento__id___delete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -4185,7 +5643,9 @@ export interface operations {
     receber_api_v1_faturamento__id___receber_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -4219,7 +5679,9 @@ export interface operations {
                 ano?: number | null;
                 mes?: number | null;
             };
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -4248,7 +5710,9 @@ export interface operations {
     criar_api_v1_despesas_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -4281,7 +5745,9 @@ export interface operations {
     opcoes_api_v1_despesas_opcoes_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -4296,6 +5762,15 @@ export interface operations {
                     "application/json": components["schemas"]["OpcoesDespesa"];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     resumo_api_v1_despesas_resumo_get: {
@@ -4303,7 +5778,9 @@ export interface operations {
             query: {
                 ano: number;
             };
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -4332,7 +5809,9 @@ export interface operations {
     atualizar_api_v1_despesas__id___put: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -4367,7 +5846,9 @@ export interface operations {
     excluir_api_v1_despesas__id___delete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -4396,7 +5877,9 @@ export interface operations {
     pagar_api_v1_despesas__id___pagar_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -4429,7 +5912,9 @@ export interface operations {
             query?: {
                 ano?: number | null;
             };
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -4458,7 +5943,9 @@ export interface operations {
     criar_investimento_api_v1_investimentos_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -4491,7 +5978,9 @@ export interface operations {
     atualizar_investimento_api_v1_investimentos__id___put: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -4526,7 +6015,9 @@ export interface operations {
     excluir_investimento_api_v1_investimentos__id___delete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -4548,398 +6039,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    listar_api_v1_projetos_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProjetoLeitura"][];
-                };
-            };
-        };
-    };
-    criar_api_v1_projetos_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ProjetoEntrada"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProjetoLeitura"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    modelo_api_v1_projetos_modelo_get: {
-        parameters: {
-            query: {
-                negocio_id: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ModeloProjeto"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    etapas_padrao_api_v1_projetos_etapas_padrao_get: {
-        parameters: {
-            query?: {
-                inicio?: string | null;
-                entrega?: string | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EtapaSugerida"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    atualizar_api_v1_projetos__id___put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id_: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ProjetoAtualizar"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProjetoLeitura"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    excluir_api_v1_projetos__id___delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id_: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    relatorio_api_v1_projetos__id___relatorio_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id_: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    listar_api_v1_tarefas_get: {
-        parameters: {
-            query?: {
-                busca?: string | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TarefaLeitura"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    criar_api_v1_tarefas_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TarefaEntrada"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TarefaLeitura"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    atualizar_api_v1_tarefas__id___put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id_: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TarefaAtualizar"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TarefaLeitura"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    excluir_api_v1_tarefas__id___delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id_: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    mover_api_v1_tarefas__id___coluna_patch: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id_: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["MoverTarefa"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TarefaLeitura"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    painel_api_v1_painel_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Painel"];
                 };
             };
         };
@@ -4947,7 +6046,9 @@ export interface operations {
     listar_plano_api_v1_financeiro_plano_contas_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -4962,12 +6063,23 @@ export interface operations {
                     "application/json": components["schemas"]["PlanoContaLeitura"][];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     criar_conta_api_v1_financeiro_plano_contas_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -5002,7 +6114,9 @@ export interface operations {
             query?: {
                 pai_id?: string | null;
             };
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -5031,7 +6145,9 @@ export interface operations {
     atualizar_conta_api_v1_financeiro_plano_contas__id___put: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -5066,7 +6182,9 @@ export interface operations {
     excluir_conta_api_v1_financeiro_plano_contas__id___delete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -5095,7 +6213,9 @@ export interface operations {
     listar_contas_bancarias_api_v1_financeiro_contas_bancarias_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -5110,12 +6230,23 @@ export interface operations {
                     "application/json": components["schemas"]["ContaBancariaLeitura"][];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     criar_conta_bancaria_api_v1_financeiro_contas_bancarias_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -5148,7 +6279,9 @@ export interface operations {
     atualizar_conta_bancaria_api_v1_financeiro_contas_bancarias__id___put: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -5183,7 +6316,9 @@ export interface operations {
     excluir_conta_bancaria_api_v1_financeiro_contas_bancarias__id___delete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -5218,7 +6353,9 @@ export interface operations {
                 ate?: string | null;
                 busca?: string | null;
             };
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -5247,7 +6384,9 @@ export interface operations {
     criar_titulo_api_v1_financeiro_titulos_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -5280,7 +6419,9 @@ export interface operations {
     atualizar_titulo_api_v1_financeiro_titulos__id___put: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -5315,7 +6456,9 @@ export interface operations {
     excluir_titulo_api_v1_financeiro_titulos__id___delete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -5346,7 +6489,9 @@ export interface operations {
             query: {
                 ano: number;
             };
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -5379,7 +6524,9 @@ export interface operations {
                 busca?: string | null;
                 limite?: number;
             };
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -5410,7 +6557,9 @@ export interface operations {
             query?: {
                 busca?: string | null;
             };
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -5436,13 +6585,187 @@ export interface operations {
             };
         };
     };
+    listar_tags_api_v1_parceiros_tags_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagLeitura"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    criar_tag_api_v1_parceiros_tags_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagEntrada"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagLeitura"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    atualizar_tag_api_v1_parceiros_tags__tag_id__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path: {
+                tag_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagEntrada"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagLeitura"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    arquivar_tag_api_v1_parceiros_tags__tag_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path: {
+                tag_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagLeitura"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    atribuir_tags_api_v1_parceiros__id___tags_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path: {
+                id_: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagsParceiroEntrada"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     listar_api_v1_parceiros_get: {
         parameters: {
             query?: {
                 papel?: string | null;
                 busca?: string | null;
+                tag_ids?: string[];
             };
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -5471,7 +6794,9 @@ export interface operations {
     criar_api_v1_parceiros_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -5504,7 +6829,9 @@ export interface operations {
     atualizar_api_v1_parceiros__id___put: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -5539,7 +6866,9 @@ export interface operations {
     excluir_api_v1_parceiros__id___delete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path: {
                 id_: string;
             };
@@ -5568,7 +6897,9 @@ export interface operations {
     papeis_api_v1_parceiros_papeis_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -5583,9 +6914,359 @@ export interface operations {
                     "application/json": components["schemas"]["PapelLeitura"][];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    status_onboarding_api_v1_onboarding_status_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    concluir_onboarding_api_v1_onboarding_concluir_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConcluirOnboardingEntrada"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    salvar_empresa_onboarding_api_v1_onboarding_empresa_patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmpresaOnboardingEntrada"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    salvar_produtos_onboarding_api_v1_onboarding_produtos_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProdutosIniciais"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    dre_api_v1_relatorios_dre_get: {
+        parameters: {
+            query?: {
+                ano?: number;
+                formato?: string;
+            };
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    fluxo_caixa_api_v1_relatorios_fluxo_caixa_get: {
+        parameters: {
+            query?: {
+                ano?: number;
+                formato?: string;
+            };
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    setup_2fa_api_v1_auth_2fa_setup_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetupTotpSaida"];
+                };
+            };
+        };
+    };
+    confirmar_2fa_api_v1_auth_2fa_confirmar_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmarTotpEntrada"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TokenSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verificar_2fa_api_v1_auth_2fa_verificar_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerificarTotpEntrada"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TokenSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    desativar_2fa_api_v1_auth_2fa_delete: {
+        parameters: {
+            query: {
+                codigo: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     saude_api_saude_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
+                };
+            };
+        };
+    };
+    prontidao_api_prontidao_get: {
         parameters: {
             query?: never;
             header?: never;
