@@ -2,6 +2,7 @@ import { api } from "@/api/endpoints";
 import { ErroApi, sessaoToken } from "@/api/http";
 import type { Usuario } from "@/api/tipos";
 import { obrigatorio } from "@/core/dom";
+import { abrirSegundoFator, tokenSegundoFator } from "@/ui/segundo-fator";
 
 /** Telas de entrada e de troca de senha (mesmo visual do sistema anterior). */
 const el = <T extends HTMLElement>(id: string): T => obrigatorio<T>(`#${id}`);
@@ -22,112 +23,6 @@ export const esconderLogin = (): void => {
   mensagem("");
 };
 
-// ─── 2FA ─────────────────────────────────────────────────────────────────────
-
-/**
- * Exibe o formulário de código 2FA sobre o formulário de login.
- * Resolve com o usuário autenticado quando o código for verificado.
- */
-function mostrarTela2FA(tokenTemporario: string): Promise<Usuario> {
-  const lgEntrar = el("lgEntrar");
-
-  // Injeta o formulário de 2FA dentro da caixa de login existente
-  const conteiner = document.createElement("div");
-  conteiner.id = "lg2fa";
-  conteiner.innerHTML = `
-    <form id="lg2faForm" novalidate style="display:flex;flex-direction:column;gap:12px">
-      <h2 style="margin:0;font-size:1rem;font-weight:600">Autenticação em dois fatores</h2>
-      <p style="margin:0;font-size:var(--text-xs);color:var(--muted)">
-        Digite o código de 6 dígitos do seu aplicativo autenticador.
-      </p>
-      <div class="field">
-        <label for="lg2faCodigo">Código</label>
-        <input id="lg2faCodigo" name="codigo" inputmode="numeric" maxlength="6"
-          autocomplete="one-time-code" placeholder="000000" required
-          style="font-size:1.25rem;letter-spacing:.2em;text-align:center">
-      </div>
-      <p id="lg2faMsg" class="lg-msg" role="status" style="margin:0"></p>
-      <button class="btn primary" type="submit" id="lg2faBotao">Verificar</button>
-      <button class="btn ghost" type="button" id="lg2faVoltar" style="text-align:center">
-        Voltar ao login
-      </button>
-      <button class="btn ghost" type="button" id="lg2faBackup"
-        style="font-size:var(--text-xs);text-align:center">
-        Usar código de backup
-      </button>
-    </form>`;
-
-  lgEntrar.hidden = true;
-  lgEntrar.parentElement?.insertBefore(conteiner, lgEntrar.nextSibling);
-
-  const form2fa = document.getElementById("lg2faForm") as HTMLFormElement;
-  const campoCodigo = document.getElementById("lg2faCodigo") as HTMLInputElement;
-  const botao2fa = document.getElementById("lg2faBotao") as HTMLButtonElement;
-
-  const msg2fa = (texto: string, erro = false): void => {
-    const m = document.getElementById("lg2faMsg");
-    if (!m) return;
-    m.textContent = texto;
-    m.classList.toggle("erro", erro);
-  };
-
-  setTimeout(() => campoCodigo.focus(), 50);
-
-  let usandoBackup = false;
-  document.getElementById("lg2faBackup")?.addEventListener("click", () => {
-    usandoBackup = !usandoBackup;
-    if (usandoBackup) {
-      campoCodigo.removeAttribute("inputmode");
-      campoCodigo.removeAttribute("maxlength");
-      campoCodigo.placeholder = "Código de backup";
-      campoCodigo.style.letterSpacing = "normal";
-      campoCodigo.style.fontSize = "1rem";
-      (document.getElementById("lg2faBackup") as HTMLButtonElement).textContent = "Usar código do app";
-    } else {
-      campoCodigo.setAttribute("inputmode", "numeric");
-      campoCodigo.setAttribute("maxlength", "6");
-      campoCodigo.placeholder = "000000";
-      campoCodigo.style.letterSpacing = ".2em";
-      campoCodigo.style.fontSize = "1.25rem";
-      (document.getElementById("lg2faBackup") as HTMLButtonElement).textContent = "Usar código de backup";
-    }
-    campoCodigo.value = "";
-    campoCodigo.focus();
-  });
-
-  return new Promise((resolve) => {
-    document.getElementById("lg2faVoltar")?.addEventListener("click", () => {
-      conteiner.remove();
-      lgEntrar.hidden = false;
-      mensagem("");
-      setTimeout(() => el("lgEmail").focus(), 50);
-      // Registrar novamente o handler de submit para permitir nova tentativa
-      // (a promise ficará sem resolução; o caller de pedirLogin recria o handler via onsubmit)
-    });
-
-    form2fa.onsubmit = async (e) => {
-      e.preventDefault();
-      const codigo = campoCodigo.value.trim().replace(/\s/g, "");
-      if (!codigo) return msg2fa("Digite o código.", true);
-      botao2fa.disabled = true;
-      msg2fa("Verificando…");
-      try {
-        const r = await api.auth.totp.verificar({ token_temporario: tokenTemporario, codigo });
-        sessaoToken.definir(r.access_token);
-        conteiner.remove();
-        lgEntrar.hidden = false;
-        mensagem("");
-        resolve(r.usuario);
-      } catch (err) {
-        msg2fa(err instanceof ErroApi ? err.message : "Código inválido. Tente de novo.", true);
-        campoCodigo.value = "";
-        campoCodigo.focus();
-        botao2fa.disabled = false;
-      }
-    };
-  });
-}
-
 /** Mostra o login e resolve com o usuário quando a pessoa entra. */
 export function pedirLogin(aviso?: string): Promise<Usuario> {
   mostrar("lgEntrar");
@@ -146,12 +41,12 @@ export function pedirLogin(aviso?: string): Promise<Usuario> {
         const r = await api.auth.login(email, senha);
 
         if (r.requer_2fa && r.token_temporario) {
-          // 2FA requerido: limpar senha e mostrar tela de código
+          // 2FA requerido: a etapa do código tem rota própria; cancelar devolve ao formulário
           el<HTMLInputElement>("lgSenha").value = "";
           mensagem("");
-          botao.disabled = false;
-          const usuario = await mostrarTela2FA(r.token_temporario);
-          resolve(usuario);
+          tokenSegundoFator.definir(r.token_temporario);
+          const usuario = await abrirSegundoFator(mensagem);
+          if (usuario) resolve(usuario);
           return;
         }
 
@@ -275,45 +170,6 @@ export async function fluxoAtivar2FA(container: HTMLElement): Promise<boolean> {
         botaoConfirmar.disabled = false;
       }
     });
-  });
-}
-
-/**
- * Exibe overlay bloqueante obrigando o admin a configurar 2FA antes de continuar.
- * Resolve quando o setup é concluído; não pode ser cancelado.
- */
-export function forcarSetup2FA(): Promise<void> {
-  return new Promise((resolve) => {
-    const overlay = document.createElement("div");
-    overlay.style.cssText =
-      "position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);display:grid;place-items:center;padding:16px";
-    overlay.innerHTML = `
-      <div style="background:var(--surface);border-radius:12px;padding:32px;max-width:480px;width:100%;box-shadow:var(--shadow-lg)">
-        <h2 style="margin:0 0 8px;font-size:var(--text-lg)">Autenticação em dois fatores obrigatória</h2>
-        <p style="margin:0 0 20px;font-size:var(--text-sm);color:var(--muted)">
-          Administradores precisam ativar o 2FA antes de acessar o sistema. Configure agora usando Google Authenticator, Authy ou outro app TOTP.
-        </p>
-        <div id="forcado2faContainer"></div>
-      </div>`;
-    document.body.appendChild(overlay);
-    const container = overlay.querySelector("#forcado2faContainer") as HTMLElement;
-
-    const tentar = (): void => {
-      container.innerHTML = "";
-      void fluxoAtivar2FA(container).then((ativado) => {
-        if (ativado) {
-          overlay.remove();
-          resolve();
-        } else {
-          container.innerHTML = `
-            <p style="color:var(--bad);font-size:var(--text-sm);margin:0 0 12px">Configure o 2FA para continuar.</p>
-            <button class="btn primary" id="tentarNovamente2fa">Tentar novamente</button>`;
-          document.getElementById("tentarNovamente2fa")?.addEventListener("click", tentar);
-        }
-      });
-    };
-
-    tentar();
   });
 }
 

@@ -45,6 +45,8 @@ def ler_token(token: str) -> tuple[UUID, int] | None:
     """Devolve (id, versão da sessão), ou None se inválido/expirado."""
     try:
         dados = jwt.decode(token, get_settings().secret_key, algorithms=[ALGORITMO])
+        if dados.get("requer_2fa"):
+            return None  # token parcial do 2FA nunca vale como token de acesso
         versao = dados.get("sv", 0)  # tokens anteriores à versão de sessão continuam válidos até expirarem
         if not isinstance(versao, int) or versao < 0:
             return None

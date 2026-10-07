@@ -17,3 +17,10 @@
 .lg-link:focus-visible{outline:2px solid #0d8792;outline-offset:2px}
 .lg-msg{margin:0;min-height:1.4em;color:#c6d0de;font-size:13px;text-align:center}
 .lg-msg.erro{color:#f19189}
+
+/* Etapa de código do 2FA (/login/2fa) */
+.lg-form input.lg-codigo{font-size:1.5rem;letter-spacing:.3em;text-align:center;font-variant-numeric:tabular-nums}
+.lg-form input.lg-codigo.lg-codigo-backup{font-size:1rem;letter-spacing:.05em}
+.lg-form[aria-busy="true"]{cursor:progress}
+.lg-form .btn:disabled{opacity:.6;cursor:not-allowed}
+@media (max-width:480px){.lg-form input.lg-codigo{letter-spacing:.2em}}

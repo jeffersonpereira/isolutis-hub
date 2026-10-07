@@ -1,3 +1,4 @@
+import uuid
 from datetime import UTC, datetime, timedelta
 
 import jwt as _jwt
@@ -30,6 +31,7 @@ def _criar_token_parcial(usuario_id: object) -> str:
     payload = {
         "sub": str(usuario_id),
         "requer_2fa": True,
+        "jti": uuid.uuid4().hex,
         "iat": agora,
         "exp": agora + timedelta(minutes=_MINUTOS_TOKEN_PARCIAL),
     }

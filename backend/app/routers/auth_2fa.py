@@ -25,9 +25,10 @@ from app.deps import Sessao, UsuarioLogado
 from app.errors import ErroApp, NaoAutenticado
 from app.models import Usuario
 from app.models.base import Base
+from app.ratelimit import controle_token_parcial, limitador_de_2fa
 from app.schemas.comum import Entrada, Leitura
 from app.schemas.usuario import TokenSaida, UsuarioLeitura
-from app.security import ALGORITMO, criar_token, gerar_hash, ler_token, verificar_senha
+from app.security import ALGORITMO, criar_token, gerar_hash, verificar_senha
 from app.services.totp import (
     criptografar_segredo,
     descriptografar_segredo,
@@ -131,30 +132,32 @@ async def confirmar_2fa(
     )
 
 
+def _ler_token_parcial(token: str) -> tuple[uuid.UUID, str]:
+    """Valida o token parcial do login e devolve (usuario_id, jti)."""
+    try:
+        payload = _jwt.decode(token, get_settings().secret_key, algorithms=[ALGORITMO])
+        usuario_id = uuid.UUID(payload["sub"])
+    except (_jwt.PyJWTError, KeyError, ValueError):
+        raise NaoAutenticado("Token temporário inválido ou expirado.") from None
+    jti = payload.get("jti")
+    if not payload.get("requer_2fa") or not isinstance(jti, str) or not jti:
+        raise NaoAutenticado("Token temporário inválido ou expirado.")
+    return usuario_id, jti
+
+
 @router.post("/verificar", response_model=TokenSaida)
 async def verificar_2fa(dados: VerificarTotpEntrada, sessao: Sessao) -> TokenSaida:
-    """Endpoint público: valida código TOTP ou backup code após login parcial e emite JWT completo."""
-    # 1. Decodificar token temporário
-    identidade = ler_token(dados.token_temporario)
-    if identidade is None:
-        raise NaoAutenticado("Token temporário inválido ou expirado.")
+    """Endpoint público: valida código TOTP ou backup code após login parcial e emite JWT completo.
 
-    usuario_id, _ = identidade
+    O token parcial é de uso único e é invalidado após 5 códigos incorretos.
+    """
+    usuario_id, jti = _ler_token_parcial(dados.token_temporario)
+    if controle_token_parcial.revogado(jti):
+        raise NaoAutenticado("Sessão de verificação encerrada. Entre novamente com seu e-mail e senha.")
 
-    # 2. Verificar claim requer_2fa no payload
-    try:
-        payload = _jwt.decode(
-            dados.token_temporario,
-            get_settings().secret_key,
-            algorithms=[ALGORITMO],
-        )
-    except _jwt.PyJWTError:
-        raise NaoAutenticado("Token temporário inválido ou expirado.")
+    chave = f"2fa|{usuario_id}"
+    limitador_de_2fa.verificar(chave)
 
-    if not payload.get("requer_2fa"):
-        raise NaoAutenticado("Token não é de autenticação parcial.")
-
-    # 3. Buscar usuário
     usuario = await sessao.get(Usuario, usuario_id)
     if usuario is None or not usuario.ativo:
         raise NaoAutenticado("Usuário não encontrado ou inativo.")
@@ -164,34 +167,36 @@ async def verificar_2fa(dados: VerificarTotpEntrada, sessao: Sessao) -> TokenSai
 
     segredo = descriptografar_segredo(usuario.totp_secret)
 
-    # 4a. Código TOTP normal
-    if verificar_codigo(segredo, dados.codigo):
-        await sessao.refresh(usuario)
-        return TokenSaida(
-            access_token=criar_token(usuario.id, usuario.versao_sessao),
-            usuario=UsuarioLeitura.model_validate(usuario),
-        )
-
-    # 4b. Backup code
-    resultado = await sessao.execute(
-        select(TotpBackupCode).where(
-            TotpBackupCode.usuario_id == usuario.id,
-            TotpBackupCode.usado_em.is_(None),
-        )
-    )
-    for backup in resultado.scalars().all():
-        if verificar_senha(dados.codigo, backup.codigo_hash):
-            backup.usado_em = datetime.now(UTC)
-            await sessao.commit()
-            await sessao.refresh(usuario)
-            return TokenSaida(
-                access_token=criar_token(usuario.id, usuario.versao_sessao),
-                usuario=UsuarioLeitura.model_validate(usuario),
+    aceito = verificar_codigo(segredo, dados.codigo)
+    if not aceito:
+        resultado = await sessao.execute(
+            select(TotpBackupCode).where(
+                TotpBackupCode.usuario_id == usuario.id,
+                TotpBackupCode.usado_em.is_(None),
             )
+        )
+        for backup in resultado.scalars().all():
+            if verificar_senha(dados.codigo, backup.codigo_hash):
+                backup.usado_em = datetime.now(UTC)
+                await sessao.commit()
+                aceito = True
+                break
 
-    raise ErroApp(
-        "Código inválido. Verifique o horário do seu dispositivo ou use um backup code.",
-        codigo="codigo_invalido",
+    if not aceito:
+        limitador_de_2fa.registrar_falha(chave)
+        if controle_token_parcial.registrar_erro(jti):
+            raise NaoAutenticado("Muitos códigos incorretos. Entre novamente com seu e-mail e senha.")
+        raise ErroApp(
+            "Código inválido. Verifique o horário do seu dispositivo ou use um backup code.",
+            codigo="codigo_invalido",
+        )
+
+    limitador_de_2fa.zerar(chave)
+    controle_token_parcial.revogar(jti)  # uso único
+    await sessao.refresh(usuario)
+    return TokenSaida(
+        access_token=criar_token(usuario.id, usuario.versao_sessao),
+        usuario=UsuarioLeitura.model_validate(usuario),
     )
 
 
