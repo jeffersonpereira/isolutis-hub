@@ -1,63 +1,4 @@
-# autenticacao-2fa Specification
-
-## Purpose
-Autenticação em dois fatores (TOTP) opcional para todos os usuários, com etapa de código em rota própria (`/login/2fa`) e proteção contra tentativas.
-
-## Requirements
-
-### Requirement: Configuração de 2FA pelo usuário
-O sistema SHALL permitir que qualquer usuário ative autenticação de dois fatores via TOTP, compatível com Google Authenticator e Authy.
-
-#### Scenario: Usuário inicia setup de 2FA
-- **WHEN** o usuário acessa Configurações → Segurança e clica em "Ativar autenticação em dois fatores"
-- **THEN** o sistema gera um segredo TOTP e exibe um QR code para escanear com o aplicativo autenticador
-- **AND** exibe o código de provisão URI como alternativa ao QR code
-- **AND** exibe 8 códigos de backup para uso em caso de perda do dispositivo
-
-#### Scenario: Confirmação valida que o app foi configurado corretamente
-- **WHEN** o usuário escaneia o QR code e insere o código de 6 dígitos gerado pelo app
-- **THEN** o sistema valida o código e ativa o 2FA para o usuário
-- **AND** invalida todas as sessões ativas (forçando novo login com 2FA)
-- **AND** exibe confirmação "Autenticação em dois fatores ativada"
-
-#### Scenario: Código inválido no setup
-- **WHEN** o usuário insere um código TOTP incorreto durante a confirmação de setup
-- **THEN** o sistema exibe erro "Código inválido. Verifique o horário do seu dispositivo."
-- **AND** o 2FA não é ativado
-
-
----
-
-### Requirement: Login com 2FA ativo
-O sistema SHALL exigir o segundo fator no login quando o usuário tem 2FA ativo. O frontend SHALL conduzir essa etapa na rota `/login/2fa`.
-
-#### Scenario: Login solicita segundo fator
-- **WHEN** o usuário entra com e-mail e senha corretos e tem 2FA ativo
-- **THEN** o sistema retorna `{ requer_2fa: true, token_temporario }` sem emitir JWT de acesso
-- **AND** o frontend navega para `/login/2fa` para inserir o código TOTP
-
-#### Scenario: Código TOTP correto completa o login
-- **WHEN** o usuário insere o código TOTP válido na tela de segundo fator
-- **THEN** o sistema emite o JWT de acesso normalmente
-- **AND** o usuário é redirecionado para o painel
-
-#### Scenario: Código de backup aceito em caso de perda do dispositivo
-- **WHEN** o usuário insere um código de backup válido (não usado anteriormente)
-- **THEN** o login é completado normalmente
-- **AND** o código de backup é marcado como usado e não pode ser reutilizado
-
-
----
-
-### Requirement: Desativação e gestão de 2FA
-O sistema SHALL permitir que o usuário desative o 2FA após confirmar a identidade.
-
-#### Scenario: Desativar 2FA exige confirmação
-- **WHEN** o usuário clica em "Desativar 2FA" nas configurações de segurança
-- **THEN** o sistema solicita o código TOTP atual (ou código de backup) para confirmar
-- **AND** após validação, o 2FA é desativado e o segredo é removido
-
----
+## ADDED Requirements
 
 ### Requirement: 2FA opcional para todos os usuários
 O sistema SHALL tratar a autenticação em dois fatores como opcional para todos os usuários, independentemente de perfil (incluindo administradores) ou ambiente. O sistema MUST NOT forçar a ativação do 2FA como condição de acesso.
@@ -70,7 +11,6 @@ O sistema SHALL tratar a autenticação em dois fatores como opcional para todos
 #### Scenario: Ambiente de produção não altera a regra
 - **WHEN** `AMBIENTE = "producao"` e qualquer usuário sem 2FA faz login
 - **THEN** o login é concluído sem exigir ativação de 2FA
-
 
 ---
 
@@ -102,7 +42,6 @@ O sistema SHALL apresentar a etapa de código do segundo fator em uma rota próp
 - **THEN** o sistema emite o JWT de acesso e o frontend segue para o painel
 - **AND** o token temporário é descartado da memória
 
-
 ---
 
 ### Requirement: Proteção contra tentativas no segundo fator
@@ -128,3 +67,33 @@ O sistema SHALL limitar as tentativas de código em `POST /auth/2fa/verificar` e
 #### Scenario: Token temporário é de uso único
 - **WHEN** o usuário conclui o segundo fator com sucesso
 - **THEN** o mesmo token temporário não pode ser usado novamente em `/auth/2fa/verificar`
+
+## MODIFIED Requirements
+
+### Requirement: Login com 2FA ativo
+O sistema SHALL exigir o segundo fator no login quando o usuário tem 2FA ativo. O frontend SHALL conduzir essa etapa na rota `/login/2fa`.
+
+#### Scenario: Login solicita segundo fator
+- **WHEN** o usuário entra com e-mail e senha corretos e tem 2FA ativo
+- **THEN** o sistema retorna `{ requer_2fa: true, token_temporario }` sem emitir JWT de acesso
+- **AND** o frontend navega para `/login/2fa` para inserir o código TOTP
+
+#### Scenario: Código TOTP correto completa o login
+- **WHEN** o usuário insere o código TOTP válido na tela de segundo fator
+- **THEN** o sistema emite o JWT de acesso normalmente
+- **AND** o usuário é redirecionado para o painel
+
+#### Scenario: Código de backup aceito em caso de perda do dispositivo
+- **WHEN** o usuário insere um código de backup válido (não usado anteriormente)
+- **THEN** o login é completado normalmente
+- **AND** o código de backup é marcado como usado e não pode ser reutilizado
+
+---
+
+### Requirement: Desativação e gestão de 2FA
+O sistema SHALL permitir que o usuário desative o 2FA após confirmar a identidade.
+
+#### Scenario: Desativar 2FA exige confirmação
+- **WHEN** o usuário clica em "Desativar 2FA" nas configurações de segurança
+- **THEN** o sistema solicita o código TOTP atual (ou código de backup) para confirmar
+- **AND** após validação, o 2FA é desativado e o segredo é removido
