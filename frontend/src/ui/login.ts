@@ -279,45 +279,6 @@ export async function fluxoAtivar2FA(container: HTMLElement): Promise<boolean> {
 }
 
 /**
- * Exibe overlay bloqueante obrigando o admin a configurar 2FA antes de continuar.
- * Resolve quando o setup é concluído; não pode ser cancelado.
- */
-export function forcarSetup2FA(): Promise<void> {
-  return new Promise((resolve) => {
-    const overlay = document.createElement("div");
-    overlay.style.cssText =
-      "position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);display:grid;place-items:center;padding:16px";
-    overlay.innerHTML = `
-      <div style="background:var(--surface);border-radius:12px;padding:32px;max-width:480px;width:100%;box-shadow:var(--shadow-lg)">
-        <h2 style="margin:0 0 8px;font-size:var(--text-lg)">Autenticação em dois fatores obrigatória</h2>
-        <p style="margin:0 0 20px;font-size:var(--text-sm);color:var(--muted)">
-          Administradores precisam ativar o 2FA antes de acessar o sistema. Configure agora usando Google Authenticator, Authy ou outro app TOTP.
-        </p>
-        <div id="forcado2faContainer"></div>
-      </div>`;
-    document.body.appendChild(overlay);
-    const container = overlay.querySelector("#forcado2faContainer") as HTMLElement;
-
-    const tentar = (): void => {
-      container.innerHTML = "";
-      void fluxoAtivar2FA(container).then((ativado) => {
-        if (ativado) {
-          overlay.remove();
-          resolve();
-        } else {
-          container.innerHTML = `
-            <p style="color:var(--bad);font-size:var(--text-sm);margin:0 0 12px">Configure o 2FA para continuar.</p>
-            <button class="btn primary" id="tentarNovamente2fa">Tentar novamente</button>`;
-          document.getElementById("tentarNovamente2fa")?.addEventListener("click", tentar);
-        }
-      });
-    };
-
-    tentar();
-  });
-}
-
-/**
  * Fluxo de desativação de 2FA: pede código atual e chama DELETE /auth/2fa.
  * Resolve `true` se desativado, `false` se cancelado.
  */
