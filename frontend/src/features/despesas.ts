@@ -64,7 +64,7 @@ function vista(): Safe {
     <div class="tbl-wrap"><table style="min-width:520px"><thead><tr><th>Mês</th><th class="r">Recebido</th><th class="r">Despesas</th><th class="r">Resultado</th><th class="r">Investimentos</th></tr></thead><tbody>
       ${r.meses.map(
         (m) => html`<tr tabindex="0" data-act="mes" data-valor="${m.mes}" style="${ui.mes === m.mes ? "background:var(--teal-pale)" : ""}"><td>${MESES[m.mes - 1]}${m.mes === mesAtual ? html` <span class="pill teal-mid">atual</span>` : ""}</td><td class="r num">${m.recebido ? brl(m.recebido) : "—"}</td><td class="r num">${m.despesas ? brl(m.despesas) : "—"}</td>
-        <td class="r num" style="${m.resultado < 0 ? "color:var(--bad)" : ""}">${m.recebido || m.despesas ? brl(m.resultado) : "—"}</td><td class="r num">${m.investimentos ? brl(m.investimentos) : "—"}</td></tr>`,
+        <td class="r num" style="${m.resultado < 0 ? "color:var(--bad-texto)" : ""}">${m.recebido || m.despesas ? brl(m.resultado) : "—"}</td><td class="r num">${m.investimentos ? brl(m.investimentos) : "—"}</td></tr>`,
       )}
     </tbody><tfoot><tr><td>Total ${ano}</td><td class="r num">${brl(r.recebido_no_ano)}</td><td class="r num">${brl(totalDespesas)}</td><td class="r num">${brl(r.recebido_no_ano - totalDespesas)}</td><td class="r num">${brl(r.investido_no_ano)}</td></tr></tfoot></table></div>
     <div class="panel"><h2>Quem investiu</h2>
@@ -94,7 +94,7 @@ const linhaDespesa = (d: Despesa, escrever: boolean): Safe => html`<div class="l
 const linhaInvestimento = (i: Investimento): Safe => html`<div class="li" data-open="invest:${i.id}" tabindex="0"><div><div class="t">${i.descricao || "Investimento"}</div><div class="sub">${dataBR(i.data)} · Investido por <b>${i.investidor_nome}</b>${i.forma ? " · " + i.forma : ""}</div></div>
   <div style="text-align:right"><div class="num">${brl(i.valor)}</div><span class="pill info">Investimento</span></div></div>`;
 
-registrarVista({ id: "despesas", nome: "Despesas e investimentos", carregar, depende: ["despesas", "faturamento"], desenhar: vista });
+registrarVista({ id: "despesas", permissao: "financeiro", nome: "Despesas e investimentos", carregar, depende: ["despesas", "faturamento"], desenhar: vista });
 
 type Tipo = "despesa" | "investimento";
 

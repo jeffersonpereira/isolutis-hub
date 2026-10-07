@@ -11,10 +11,9 @@ from app.models.posvenda import Projeto, ProjetoEtapa
 ABERTAS = [e.value for e in ETAPAS_ABERTAS]
 
 
-async def montar(sessao: AsyncSession) -> dict:
+async def _financeiro(sessao: AsyncSession) -> dict:
+    """Bloco `financeiro`: recebimentos dos últimos 12 meses e lançamentos vencidos."""
     h = hoje()
-
-    # --- faturamento: últimos 12 meses (inclui o atual) ---
     primeiro = adicionar_meses(h.replace(day=1), -11)
     ano_mes = (extract("year", LancamentoReceita.vencimento), extract("month", LancamentoReceita.vencimento))
     linhas = await sessao.execute(
@@ -35,6 +34,32 @@ async def montar(sessao: AsyncSession) -> dict:
         d = adicionar_meses(d, 1)
     r_mes, p_mes, rec_mes = por_mes.get((h.year, h.month), (ZERO, ZERO, ZERO))
 
+    alerta_lancamentos = (
+        await sessao.execute(
+            select(
+                func.count().label("quantidade"),
+                func.coalesce(func.array_agg(LancamentoReceita.id), text("ARRAY[]::uuid[]")).label("ids"),
+            ).where(
+                LancamentoReceita.vencimento < func.current_date() - text("INTERVAL '3 days'"),
+                LancamentoReceita.status != "recebido",
+            )
+        )
+    ).one()
+    n_lancamentos = await sessao.scalar(select(func.count()).select_from(LancamentoReceita))
+    return {
+        "recebido_no_mes": r_mes,
+        "previsto_no_mes": r_mes + p_mes,
+        "recorrente_no_mes": rec_mes,
+        "serie": serie,
+        "alertas": {
+            "lancamentos_vencidos": {"quantidade": alerta_lancamentos.quantidade, "ids": list(alerta_lancamentos.ids or [])}
+        },
+        "_vazio": not n_lancamentos,
+    }
+
+
+async def _comercial(sessao: AsyncSession) -> dict:
+    """Bloco `comercial`: funil, fechamentos, orçamentos aguardando e orçamentos parados."""
     # --- funil: agregação via GROUP BY (sem carregar objetos em memória) ---
     funil_rows = (
         await sessao.execute(
@@ -118,8 +143,6 @@ async def montar(sessao: AsyncSession) -> dict:
             .where(Orcamento.status == "enviado")
         )
     ).one()
-    aguardando_qtd = orc_rows.quantidade
-    aguardando_valor = orc_rows.soma_valor
 
     # Orçamentos para o painel (lista resumida, máx 6)
     aguardando_lista = (
@@ -132,25 +155,9 @@ async def montar(sessao: AsyncSession) -> dict:
         )
     ).all()
 
-    # --- banco vazio ---
     n_clientes = await sessao.scalar(
         select(func.count()).select_from(ParceiroPapel).where(ParceiroPapel.papel == "cliente")
     )
-    n_lancamentos = await sessao.scalar(select(func.count()).select_from(LancamentoReceita))
-    n_negocios = funil_abertos + ganhos + perdidos
-
-    # --- alertas: lançamentos vencidos há mais de 3 dias ---
-    alerta_lancamentos = (
-        await sessao.execute(
-            select(
-                func.count().label("quantidade"),
-                func.coalesce(func.array_agg(LancamentoReceita.id), text("ARRAY[]::uuid[]")).label("ids"),
-            ).where(
-                LancamentoReceita.vencimento < func.current_date() - text("INTERVAL '3 days'"),
-                LancamentoReceita.status != "recebido",
-            )
-        )
-    ).one()
 
     # --- alertas: orçamentos sem resposta há mais de 15 dias ---
     alerta_orcamentos = (
@@ -165,46 +172,15 @@ async def montar(sessao: AsyncSession) -> dict:
         )
     ).one()
 
-    # --- alertas: projetos com entrega atrasada ---
-    try:
-        alerta_projetos = (
-            await sessao.execute(
-                select(
-                    func.count().label("quantidade"),
-                    func.coalesce(func.array_agg(Projeto.id), text("ARRAY[]::uuid[]")).label("ids"),
-                ).where(
-                    Projeto.entrega < func.current_date(),
-                    exists(
-                        select(ProjetoEtapa.id).where(
-                            ProjetoEtapa.projeto_id == Projeto.id,
-                            ProjetoEtapa.status != "concluida",
-                        )
-                    ),
-                )
-            )
-        ).one()
-        projetos_atrasados_qtd = alerta_projetos.quantidade
-        projetos_atrasados_ids = list(alerta_projetos.ids or [])
-    except Exception:
-        projetos_atrasados_qtd = 0
-        projetos_atrasados_ids = []
-
     return {
-        "ano": h.year,
-        "mes": h.month,
-        "recebido_no_mes": r_mes,
-        "previsto_no_mes": r_mes + p_mes,
-        "recorrente_no_mes": rec_mes,
         "funil_abertos": funil_abertos,
         "funil_valor": funil_valor,
         "funil_mensal": funil_mensal,
         "ganhos": ganhos,
         "perdidos": perdidos,
         "conversao_pct": round(100 * ganhos / (ganhos + perdidos)) if ganhos + perdidos else None,
-        "orcamentos_aguardando_qtd": aguardando_qtd,
-        "orcamentos_aguardando_valor": aguardando_valor,
-        "banco_vazio": not (n_clientes or n_negocios or n_lancamentos),
-        "serie": serie,
+        "orcamentos_aguardando_qtd": orc_rows.quantidade,
+        "orcamentos_aguardando_valor": orc_rows.soma_valor,
         "por_etapa": por_etapa,
         "proximos_fechamentos": [
             {
@@ -229,17 +205,60 @@ async def montar(sessao: AsyncSession) -> dict:
             for o in aguardando_lista
         ],
         "alertas": {
-            "lancamentos_vencidos": {
-                "quantidade": alerta_lancamentos.quantidade,
-                "ids": list(alerta_lancamentos.ids or []),
-            },
-            "orcamentos_parados": {
-                "quantidade": alerta_orcamentos.quantidade,
-                "ids": list(alerta_orcamentos.ids or []),
-            },
-            "projetos_atrasados": {
-                "quantidade": projetos_atrasados_qtd,
-                "ids": projetos_atrasados_ids,
-            },
+            "orcamentos_parados": {"quantidade": alerta_orcamentos.quantidade, "ids": list(alerta_orcamentos.ids or [])}
         },
+        "_vazio": not (n_clientes or funil_abertos + ganhos + perdidos),
     }
+
+
+async def _projetos_atrasados(sessao: AsyncSession) -> dict:
+    """Alerta de projetos com entrega atrasada (`base`: projetos são abertos a todos os papéis)."""
+    try:
+        alerta = (
+            await sessao.execute(
+                select(
+                    func.count().label("quantidade"),
+                    func.coalesce(func.array_agg(Projeto.id), text("ARRAY[]::uuid[]")).label("ids"),
+                ).where(
+                    Projeto.entrega < func.current_date(),
+                    exists(
+                        select(ProjetoEtapa.id).where(
+                            ProjetoEtapa.projeto_id == Projeto.id,
+                            ProjetoEtapa.status != "concluida",
+                        )
+                    ),
+                )
+            )
+        ).one()
+        return {"quantidade": alerta.quantidade, "ids": list(alerta.ids or [])}
+    except Exception:
+        return {"quantidade": 0, "ids": []}
+
+
+async def montar(sessao: AsyncSession, permissoes: frozenset[str] = frozenset({"base"})) -> dict:
+    """Painel com apenas os blocos que as permissões do papel autorizam; os demais campos ficam ausentes.
+
+    `base`: período, alerta de projetos atrasados e `banco_vazio`. `financeiro`: recebimentos e lançamentos vencidos.
+    `comercial`: funil, fechamentos, orçamentos. `banco_vazio` só considera o que o papel pode ver; sem
+    nenhum dos dois blocos é sempre falso (revela no máximo se há dados, nunca valores).
+    """
+    h = hoje()
+    resultado: dict = {"ano": h.year, "mes": h.month}
+    vazios: list[bool] = []
+    alertas: dict = {}
+
+    if "financeiro" in permissoes:
+        bloco = await _financeiro(sessao)
+        vazios.append(bloco.pop("_vazio"))
+        alertas.update(bloco.pop("alertas"))
+        resultado.update(bloco)
+    if "comercial" in permissoes:
+        bloco = await _comercial(sessao)
+        vazios.append(bloco.pop("_vazio"))
+        alertas.update(bloco.pop("alertas"))
+        resultado.update(bloco)
+
+    alertas["projetos_atrasados"] = await _projetos_atrasados(sessao)
+    resultado["alertas"] = alertas
+    resultado["banco_vazio"] = bool(vazios) and all(vazios)
+    return resultado

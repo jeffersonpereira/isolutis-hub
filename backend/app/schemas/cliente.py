@@ -8,7 +8,7 @@ from app.schemas.comum import Dinheiro, Leitura
 from app.schemas.parceiro import Origem, ParceiroLeitura, _CamposDoParceiro
 
 __all__ = [
-    "ClienteAtualizar", "ClienteEntrada", "ClienteLeitura", "ClienteRelacionados", "ClienteResumo", "Origem",
+    "ClienteAtualizar", "ClienteEntrada", "ClienteLeitura", "ClienteReferencia", "ClienteRelacionados", "ClienteResumo", "Origem",
     "RelNegocio", "RelOrcamento",
 ]  # fmt: skip
 
@@ -23,6 +23,13 @@ class ClienteAtualizar(ClienteEntrada):
 
 class ClienteLeitura(ParceiroLeitura):
     pass
+
+
+class ClienteReferencia(Leitura):
+    """Identificação mínima do cliente (id e nome), aberta a qualquer papel para exibir o nome em outras telas."""
+
+    id: UUID
+    nome: str
 
 
 class ClienteResumo(ClienteLeitura):

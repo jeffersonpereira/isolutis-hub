@@ -17,3 +17,6 @@ e2e/*.png
 test-results/
 playwright-report/
 .last-run.json
+
+# Capturas da varredura visual (geradas localmente)
+e2e/visual/saida-varredura/

@@ -1,7 +1,7 @@
 import { api } from "@/api/endpoints";
 import { html, raw, type Safe } from "@/core/html";
 import { compararTexto, hoje } from "@/core/formato";
-import { dados, eu, podeEscrever } from "@/state/estado";
+import { dados, eu, podeEscrever, temPermissao } from "@/state/estado";
 import { campo, fv, sel, type Opcao } from "./campos";
 import { toast } from "./toast";
 import { tentar } from "./erros";
@@ -21,13 +21,13 @@ export const opcoesEquipe = (vazio = "Sem responsável", marcarEu = false): Opca
 
 export const opcoesClientes = (vazio = "Selecione…"): Opcao[] => [
   ["", vazio],
-  ...[...dados.clientes].sort((a, b) => compararTexto(a.nome, b.nome)).map((c) => [c.id, c.nome] as const),
+  ...[...dados.referenciasClientes].sort((a, b) => compararTexto(a.nome, b.nome)).map((c) => [c.id, c.nome] as const),
 ];
 
 /** Campo "Cliente" com a opção "+ Novo cliente…" (cria o cliente junto com o registro). */
 export function seletorCliente(valor?: string | null): Safe {
   const ops: Opcao[] = [...opcoesClientes()];
-  if (podeEscrever()) ops.push(["__novo", "+ Novo cliente…"]);
+  if (podeEscrever() && temPermissao("comercial")) ops.push(["__novo", "+ Novo cliente…"]); // criar cliente é do comercial
   return campo("Cliente", html`${sel("cliente_id", ops, valor)}<input name="novo_cliente" id="f-novo_cliente" placeholder="Nome da empresa" hidden>`);
 }
 
@@ -52,7 +52,7 @@ export async function resolverCliente(form: HTMLFormElement): Promise<string | n
   }
   const criado = await tentar(() => api.clientes.criar({ nome }));
   if (!criado) return null;
-  dados.clientes = await api.clientes.listar();
+  [dados.clientes, dados.referenciasClientes] = await Promise.all([api.clientes.listar(), api.clientes.referencias()]);
   return criado.id;
 }
 

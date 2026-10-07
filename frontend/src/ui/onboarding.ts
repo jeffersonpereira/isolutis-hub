@@ -7,13 +7,15 @@ import { ErroApi } from "@/api/http";
 import type { Usuario } from "@/api/tipos";
 
 export interface EstadoApp {
-  usuario: (Usuario & { admin?: boolean }) | null;
+  usuario: Usuario | null;
+  /** Permissões da empresa ativa. */
+  permissoes: readonly string[];
   empresa: { id: string; nome: string; onboarding_concluido?: boolean } | null;
 }
 
 /** Verifica se o wizard de onboarding deve ser exibido. */
 export function detectarOnboarding(estado: EstadoApp): boolean {
-  return (estado.usuario?.admin === true) && (estado.empresa?.onboarding_concluido === false);
+  return estado.permissoes.includes("administracao") && estado.empresa?.onboarding_concluido === false;
 }
 
 // ─── Estado interno do wizard ─────────────────────────────────────────────────
@@ -60,7 +62,7 @@ function renderEtapa1(): string {
       </p>
       <div class="fields">
         <div class="field full">
-          <label for="obNome">Nome comercial <span style="color:var(--bad)">*</span></label>
+          <label for="obNome">Nome comercial <span style="color:var(--bad-texto)">*</span></label>
           <input id="obNome" name="nome" maxlength="150" required
             placeholder="Ex.: Acme Soluções Digitais"
             value="${esc(estado.nomeEmpresa)}"
@@ -73,7 +75,7 @@ function renderEtapa1(): string {
             value="${esc(estado.segmento)}">
         </div>
       </div>
-      <p id="obMsg1" style="min-height:1.2em;font-size:var(--text-xs);color:var(--bad);margin:8px 0 0"></p>
+      <p id="obMsg1" style="min-height:1.2em;font-size:var(--text-xs);color:var(--bad-texto);margin:8px 0 0"></p>
       <div style="margin-top:20px;display:flex;justify-content:flex-end">
         <button class="btn primary" id="obProx1" type="submit">Próximo →</button>
       </div>
@@ -110,7 +112,7 @@ function renderEtapa2(): string {
         ${estado.produtos.map((p, i) => renderProdutoLinha(i, p)).join("")}
       </div>
       ${podeMais ? `<button type="button" class="btn" id="obAddProd" style="margin-top:8px;width:100%">+ Adicionar produto/serviço</button>` : ""}
-      <p id="obMsg2" style="min-height:1.2em;font-size:var(--text-xs);color:var(--bad);margin:8px 0 0"></p>
+      <p id="obMsg2" style="min-height:1.2em;font-size:var(--text-xs);color:var(--bad-texto);margin:8px 0 0"></p>
       <div style="margin-top:20px;display:flex;gap:8px;justify-content:space-between">
         <button type="button" class="btn ghost" id="obPularEtapa2">Pular esta etapa</button>
         <div style="display:flex;gap:8px">
@@ -143,7 +145,7 @@ function renderEtapa3(): string {
             <div style="font-size:var(--text-xs);color:var(--muted)">${item.desc}</div>
           </div>`).join("")}
       </div>
-      <p id="obMsg3" style="min-height:1.2em;font-size:var(--text-xs);color:var(--bad);margin:0 0 8px"></p>
+      <p id="obMsg3" style="min-height:1.2em;font-size:var(--text-xs);color:var(--bad-texto);margin:0 0 8px"></p>
       <div style="display:flex;gap:8px;justify-content:space-between">
         <button type="button" class="btn" id="obVolt3">← Voltar</button>
         <button type="button" class="btn primary" id="obComecar">Começar a usar</button>

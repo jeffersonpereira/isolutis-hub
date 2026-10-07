@@ -35,6 +35,9 @@ export function iniciarEventos(): void {
 
     const ir_ = alvo.closest<HTMLElement>("[data-go]");
     if (ir_) {
+      // Ctrl, Cmd, Shift ou botão do meio: deixa o navegador abrir o link em outra aba/janela.
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+      e.preventDefault();
       await ir(ir_.dataset.go ?? "painel");
       return;
     }

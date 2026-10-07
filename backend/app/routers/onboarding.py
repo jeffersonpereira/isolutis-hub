@@ -2,10 +2,10 @@
 
 from decimal import Decimal
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 
-from app.deps import Administrador, EmpresaAtual, Sessao
+from app.deps import Administrador, EmpresaAtual, Sessao, requer_base
 from app.models import Produto
 from app.services.base import confirmar
 
@@ -21,7 +21,7 @@ class ConcluirOnboardingEntrada(BaseModel):
     produtos: list[ProdutoInicial] = []
 
 
-@router.get("/status")
+@router.get("/status", dependencies=[Depends(requer_base)])
 async def status_onboarding(empresa: EmpresaAtual) -> dict[str, bool]:
     """Retorna se o onboarding da empresa já foi concluído."""
     return {"concluido": empresa.onboarding_concluido}

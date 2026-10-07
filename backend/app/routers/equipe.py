@@ -2,10 +2,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Response
 
-from app.deps import Administrador, EmpresaAtual, Sessao, UsuarioLogado, usuario_atual
+from app.deps import Administrador, EmpresaAtual, Sessao, UsuarioLogado, requer_base, usuario_atual
+from app.domain.papeis import ordenadas, permissoes_do_papel
 from app.models import Empresa, UsuarioEmpresa
 from sqlalchemy import select
-from sqlalchemy import text
 from pydantic import BaseModel, Field
 from app.schemas.convite import ConviteEntrada, ConviteLeitura
 from app.schemas.usuario import MembroEquipe, UsuarioAtualizar, UsuarioCriar, UsuarioLeitura
@@ -14,10 +14,6 @@ from app.services import usuarios as svc
 from app.services.base import confirmar
 
 router = APIRouter(tags=["Equipe"])
-
-
-class EmpresaNova(BaseModel):
-    nome: str = Field(min_length=1, max_length=150)
 
 
 @router.get("/empresas", dependencies=[Depends(usuario_atual)])
@@ -29,20 +25,15 @@ async def empresas_do_usuario(sessao: Sessao, usuario: UsuarioLogado) -> list[di
         .where(UsuarioEmpresa.usuario_id == usuario.id, UsuarioEmpresa.ativo)
         .order_by(Empresa.nome)
     )
-    return [{"id": str(id_), "nome": nome, "papel": papel} for id_, nome, papel in linhas]
+    return [
+        {"id": str(id_), "nome": nome, "papel": papel, "permissoes": ordenadas(permissoes_do_papel(papel))}
+        for id_, nome, papel in linhas
+    ]
 
 
-@router.post("/empresas", status_code=201, dependencies=[Depends(usuario_atual)])
-async def criar_empresa(dados: EmpresaNova, sessao: Sessao, usuario: UsuarioLogado) -> dict[str, str]:
-    """Cria uma empresa e associa o solicitante como administrador inicial."""
-    empresa_id = await sessao.scalar(text("select criar_empresa(:nome)"), {"nome": dados.nome})
-    await sessao.commit()
-    return {"id": str(empresa_id), "nome": dados.nome.strip(), "papel": "admin"}
-
-
-@router.get("/equipe", response_model=list[MembroEquipe], dependencies=[Depends(usuario_atual)])
+@router.get("/equipe", response_model=list[MembroEquipe], dependencies=[Depends(requer_base)])
 async def equipe(sessao: Sessao, empresa: EmpresaAtual) -> list[MembroEquipe]:
-    """Pessoas da equipe (qualquer usuário logado): usado em responsáveis e na autoria dos registros."""
+    """Pessoas da equipe (qualquer papel): usado em responsáveis e na autoria dos registros."""
     return [MembroEquipe.model_validate(u) for u in await svc.equipe(sessao, empresa.id)]
 
 

@@ -4,16 +4,25 @@ import { api } from "@/api/endpoints";
 import { sessaoToken } from "@/api/http";
 import type { Usuario } from "@/api/tipos";
 import { $, obrigatorio } from "@/core/dom";
-import { conexao, eu, ui } from "@/state/estado";
-import { abaSalva, carregarTudo, definirAtual, observarNavegacao, recarregar, render } from "@/state/nucleo";
+import type { EmpresaAcesso } from "@/api/tipos";
+import { decidirEmpresa } from "@/state/empresa-ativa";
+import { escolherEmpresa, telaSemAcesso } from "@/ui/escolha-empresa";
+import { acesso, conexao, eu, ui } from "@/state/estado";
+import { abaSalva, atualizarUrl, carregarTudo, definirAtual, observarNavegacao, recarregar, render } from "@/state/nucleo";
+import { aplicarRegistroDaRota, iniciarRoteador, resolverRotaInicial } from "@/state/roteador";
 import { tempoReal } from "@/state/realtime";
-import { desenharOnline, indicarSincronizacao, mostrarConta } from "@/ui/casca";
+import { desenharOnline, indicarSincronizacao, iniciarBarraLateral } from "@/ui/casca";
+import { iniciarBarraSuperior, mostrarUsuario } from "@/ui/barra-superior";
 import { iniciarAvisoDeConflito } from "@/ui/conflito";
 import { detectarRotaConvite, iniciarTelaConvite } from "@/ui/convite";
+import { concluirConvitePendente, convitePendente } from "@/ui/convite-pendente";
 import { iniciarEventos } from "@/ui/eventos";
+import { abrirPaleta, ligarAtalhoDaPaleta } from "@/ui/paleta";
+import { montarSprite } from "@/ui/icones";
 import { observarGaveta } from "@/ui/gaveta";
-import { esconderLogin, forcarSetup2FA, pedirLogin, trocarSenha } from "@/ui/login";
+import { esconderLogin, pedirLogin, trocarSenha } from "@/ui/login";
 import { detectarOnboarding, iniciarWizardOnboarding } from "@/ui/onboarding";
+import { ROTA_2FA, tokenSegundoFator } from "@/ui/segundo-fator";
 
 // As funcionalidades se registram ao serem importadas; a ordem define a ordem do menu.
 import "@/features/painel";
@@ -29,6 +38,7 @@ import "@/features/faturamento";
 import "@/features/relatorios";
 import "@/features/equipe";
 import "@/features/empresa";
+import "@/features/conta";
 import "@/features/periodo";
 
 /** Busca nas listas: refaz a tela a cada tecla e devolve o foco ao campo. */
@@ -47,14 +57,16 @@ function ligarBuscas(): void {
 }
 
 function iniciarSessaoNaTela(usuario: Usuario): void {
-  Object.assign(eu, { id: usuario.id, nome: usuario.nome, email: usuario.email, admin: usuario.admin });
-  mostrarConta();
+  Object.assign(eu, { id: usuario.id, nome: usuario.nome, email: usuario.email });
+  mostrarUsuario();
 }
 
 async function iniciarApp(usuario: Usuario): Promise<void> {
   iniciarSessaoNaTela(usuario);
   esconderLogin();
-  definirAtual(abaSalva());
+  const inicial = resolverRotaInicial();
+  definirAtual(inicial.vista);
+  if (inicial.corrigir) atualizarUrl(inicial.corrigir, "replace");
   render();
   try {
     await carregarTudo();
@@ -65,6 +77,8 @@ async function iniciarApp(usuario: Usuario): Promise<void> {
     indicarSincronizacao("off", "Sem conexão com o banco de dados");
   }
   render();
+  aplicarRegistroDaRota(inicial.registro);
+  iniciarRoteador();
 
   let recargaPendente: number | undefined;
   const pendentes = new Set<string>();
@@ -89,39 +103,70 @@ async function iniciarApp(usuario: Usuario): Promise<void> {
   tempoReal.presenca({ area: abaSalva(), editando: null });
 }
 
-/** Retorna a empresa ativa e se o usuário é admin. */
-async function selecionarEmpresa(): Promise<{ admin: boolean; empresa: { id: string; nome: string; onboarding_concluido?: boolean } }> {
+/** Sai da sessão: nada da escolha de empresa pode sobrar para a próxima pessoa no mesmo navegador. */
+function sair(): void {
+  tempoReal.parar();
+  sessaoToken.definir(null);
+  sessaoToken.limparEmpresas();
+  convitePendente.limpar();
+  location.replace(location.pathname);
+}
+
+/** Descarta a empresa desta aba e recarrega: a tela de escolha reaparece e nenhum dado da empresa anterior fica em memória. */
+function trocarEmpresa(): void {
+  tempoReal.parar();
+  sessaoToken.esquecerEmpresaDaAba();
+  location.reload();
+}
+
+/**
+ * Define a empresa ativa desta aba: mantém a guardada se o usuário ainda tem acesso a ela, senão mostra a tela de escolha
+ * (a última usada vem pré-selecionada). Sem nenhuma empresa, explica e só oferece sair; nada é carregado.
+ */
+async function selecionarEmpresa(): Promise<EmpresaAcesso> {
   const empresas = await api.empresas.listar();
-  const primeiraEmpresa = empresas[0];
-  if (!primeiraEmpresa) throw new Error("Usuário sem associação ativa a uma empresa.");
-  const seletor = obrigatorio<HTMLSelectElement>("#empresaAtiva");
-  seletor.replaceChildren(...empresas.map((e) => {
-    const opcao = document.createElement("option");
-    opcao.value = e.id;
-    opcao.textContent = e.nome;
-    return opcao;
-  }));
-  const ativa = empresas.find((empresa) => empresa.id === sessaoToken.empresa()) ?? primeiraEmpresa;
-  seletor.value = ativa.id;
-  sessaoToken.definirEmpresa(seletor.value);
-  seletor.hidden = empresas.length < 2;
-  seletor.addEventListener("change", () => {
-    sessaoToken.definirEmpresa(seletor.value);
-    location.reload();
-  });
-  return { admin: ativa.papel === "admin", empresa: ativa };
+  const decisao = decidirEmpresa(empresas, sessaoToken.empresa(), sessaoToken.ultimaEmpresa());
+  if (decisao.tipo === "nenhuma") {
+    sessaoToken.esquecerEmpresaDaAba();
+    telaSemAcesso(sair);
+    return new Promise<EmpresaAcesso>(() => {}); // a aplicação não segue
+  }
+  const ativa = decisao.tipo === "seguir" ? decisao.empresa : await escolherEmpresa(empresas, decisao.sugerida, sair);
+  sessaoToken.definirEmpresa(ativa.id);
+  acesso.empresaId = ativa.id;
+  acesso.empresaNome = ativa.nome;
+  acesso.papel = ativa.papel;
+  acesso.permissoes = ativa.permissoes;
+  return ativa;
 }
 
 async function principal(): Promise<void> {
+  // /login/2fa só faz sentido logo após a senha; aberta direto ou recarregada, volta ao login.
+  if (location.pathname === ROTA_2FA && !tokenSegundoFator.existe()) {
+    history.replaceState(null, "", sessaoToken.obter() ? "/" : "/login");
+  }
   iniciarEventos();
   ligarBuscas();
   iniciarAvisoDeConflito();
-  obrigatorio("#sair").addEventListener("click", () => {
-    tempoReal.parar();
-    sessaoToken.definir(null);
-    location.replace(location.pathname);
+  montarSprite();
+  // "Pular para o conteúdo" leva o foco à área principal sem mexer no endereço
+  document.querySelector(".pular")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    document.getElementById("view")?.focus();
   });
-  obrigatorio("#trocarSenha").addEventListener("click", () => void trocarSenha());
+  iniciarBarraLateral();
+  iniciarBarraSuperior({
+    aoSair: sair,
+    aoTrocarEmpresa: trocarEmpresa,
+    aoTrocarSenha: () => void trocarSenha(),
+    aoAbrirPaleta: abrirPaleta,
+  });
+  ligarAtalhoDaPaleta();
+  // Se o servidor recusar a empresa ativa (acesso removido durante a sessão), a aba volta à escolha de empresa.
+  sessaoToken.aoPerderEmpresa(() => {
+    tempoReal.parar();
+    location.reload();
+  });
   sessaoToken.aoExpirar(() => {
     tempoReal.parar();
     void pedirLogin("Sua sessão expirou. Entre de novo para continuar.").then(() => location.reload());
@@ -137,30 +182,25 @@ async function principal(): Promise<void> {
   }
   if (!usuario) usuario = await pedirLogin();
 
-  let selecao: Awaited<ReturnType<typeof selecionarEmpresa>>;
+  // Convite de quem já tinha conta: conclui o aceite agora que o login (e o 2FA) aconteceu.
+  await concluirConvitePendente();
+
+  let empresaAtiva: EmpresaAcesso;
   try {
-    selecao = await selecionarEmpresa();
+    empresaAtiva = await selecionarEmpresa();
   } catch (erro) {
     console.error(erro);
     sessaoToken.definir(null);
     usuario = await pedirLogin("Não foi possível selecionar uma empresa para esta conta.");
-    selecao = await selecionarEmpresa();
-  }
-  usuario.admin = selecao.admin;
-
-  // 2FA obrigatório: admin sem 2FA ativo deve configurá-lo antes de acessar o sistema.
-  if (selecao.admin && !usuario.totp_ativo) {
-    await forcarSetup2FA();
-    // Recarrega usuário para refletir totp_ativo = true após configuração
-    usuario = await api.auth.eu();
-    usuario.admin = selecao.admin;
+    empresaAtiva = await selecionarEmpresa();
   }
 
-  // Wizard de onboarding: exibido para admins de empresa nova antes de montar o app.
-  if (detectarOnboarding({ usuario, empresa: selecao.empresa })) {
+  // Wizard de onboarding: exibido para administradores de empresa nova antes de montar o app.
+  if (detectarOnboarding({ usuario, empresa: empresaAtiva, permissoes: empresaAtiva.permissoes })) {
     await iniciarWizardOnboarding();
   }
 
+  if (location.pathname.startsWith("/login")) history.replaceState(null, "", "/");
   await iniciarApp(usuario);
 }
 

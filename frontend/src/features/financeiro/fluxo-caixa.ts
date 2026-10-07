@@ -25,20 +25,20 @@ function vista(): Safe {
     <div class="tools"><div class="field" style="flex-direction:row;align-items:center;gap:6px"><label for="anoFluxo">Ano</label><select id="anoFluxo" data-act="mudarAnoFluxo">${f.anos_disponiveis.map((a) => html`<option${a === f.ano ? " selected" : ""}>${a}</option>`)}</select></div></div></div>
   <div class="kpis">
     <div class="kpi"><span class="l">Saldo inicial de ${f.ano}</span><span class="v">${brl(f.saldo_inicial)}</span><span class="s">saldos das contas + movimento anterior</span></div>
-    <div class="kpi"><span class="l">Entradas no ano</span><span class="v" style="color:var(--ok)">${brl(f.total_entradas)}</span><span class="s">realizadas + previstas</span></div>
-    <div class="kpi"><span class="l">Saídas no ano</span><span class="v" style="color:var(--bad)">${brl(f.total_saidas)}</span><span class="s">realizadas + previstas</span></div>
+    <div class="kpi"><span class="l">Entradas no ano</span><span class="v" style="color:var(--ok-texto)">${brl(f.total_entradas)}</span><span class="s">realizadas + previstas</span></div>
+    <div class="kpi"><span class="l">Saídas no ano</span><span class="v" style="color:var(--bad-texto)">${brl(f.total_saidas)}</span><span class="s">realizadas + previstas</span></div>
     <div class="kpi"><span class="l">Saldo projetado</span><span class="v" style="color:${saldoFinal < 0 ? "var(--bad)" : "var(--ink)"}">${brl(saldoFinal)}</span><span class="s">em dezembro de ${f.ano}</span></div>
   </div>
   <div class="tbl-wrap"><table class="fluxo" style="min-width:820px"><thead><tr><th>Mês</th><th class="r">Entradas realizadas</th><th class="r">Entradas previstas</th><th class="r">Saídas realizadas</th><th class="r">Saídas previstas</th><th class="r">Saldo do mês</th><th class="r">Saldo acumulado</th></tr></thead><tbody>
     ${f.meses.map(
       (m) => html`<tr><td>${MESES[m.mes - 1]}${m.mes === mesAtual ? html` <span class="pill teal-mid">atual</span>` : ""}</td><td class="r num ent">${valorOuTraco(m.entradas_realizadas)}</td><td class="r num ent">${valorOuTraco(m.entradas_previstas)}</td>
       <td class="r num sai">${valorOuTraco(m.saidas_realizadas)}</td><td class="r num sai">${valorOuTraco(m.saidas_previstas)}</td>
-      <td class="r num" style="${m.saldo_do_mes < 0 ? "color:var(--bad)" : ""}">${valorOuTraco(m.saldo_do_mes)}</td><td class="r num" style="${m.saldo_acumulado < 0 ? "color:var(--bad)" : ""}"><b>${brl(m.saldo_acumulado)}</b></td></tr>`,
+      <td class="r num" style="${m.saldo_do_mes < 0 ? "color:var(--bad-texto)" : ""}">${valorOuTraco(m.saldo_do_mes)}</td><td class="r num" style="${m.saldo_acumulado < 0 ? "color:var(--bad-texto)" : ""}"><b>${brl(m.saldo_acumulado)}</b></td></tr>`,
     )}
   </tbody></table></div>`;
 }
 
-registrarVista({ id: "fin-fluxo", nome: "Fluxo de Caixa", grupo: GRUPO, somenteAdmin: true, carregar, depende: ["financeiro"], desenhar: vista });
+registrarVista({ id: "fin-fluxo", nome: "Fluxo de Caixa", grupo: GRUPO, permissao: "financeiro", carregar, depende: ["financeiro"], desenhar: vista });
 
 registrarAcao("mudarAnoFluxo", async (alvo) => {
   ui.ano = Number((alvo as HTMLSelectElement).value);

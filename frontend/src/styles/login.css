@@ -1,6 +1,6 @@
 /* Tela de login */
 /* login (Supabase) */
-.login{position:fixed;inset:0;z-index:40;background:#111b30;display:grid;place-items:center;padding:24px 16px;overflow-y:auto}
+.login{position:fixed;inset:0;z-index:var(--z-login);background:#111b30;display:grid;place-items:center;padding:24px 16px;overflow-y:auto}
 .login:before{content:"";position:fixed;right:-140px;top:-140px;width:420px;height:420px;border-radius:50%;border:56px solid #22C3CE;opacity:.12;pointer-events:none}
 .lg-box{position:relative;width:min(400px,100%);display:flex;flex-direction:column;gap:18px}
 .lg-topo{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
@@ -17,3 +17,20 @@
 .lg-link:focus-visible{outline:2px solid #0d8792;outline-offset:2px}
 .lg-msg{margin:0;min-height:1.4em;color:#c6d0de;font-size:13px;text-align:center}
 .lg-msg.erro{color:#f19189}
+
+/* Etapa de código do 2FA (/login/2fa) */
+.lg-form input.lg-codigo{font-size:1.5rem;letter-spacing:.3em;text-align:center;font-variant-numeric:tabular-nums}
+.lg-form input.lg-codigo.lg-codigo-backup{font-size:1rem;letter-spacing:.05em}
+.lg-form[aria-busy="true"]{cursor:progress}
+.lg-form .btn:disabled{opacity:.6;cursor:not-allowed}
+@media (max-width:480px){.lg-form input.lg-codigo{letter-spacing:.2em}}
+
+/* Escolha da empresa ativa (após o login e ao trocar de empresa) */
+.emp-lista{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.emp-card{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:center;padding:12px 14px;border:1px solid #d3dbe6;border-radius:8px;background:#eef1f6;color:#16223b}
+.emp-card:hover{border-color:#0d8792;background:#e4f4f5}
+.emp-card:focus-visible{outline:2px solid #0d8792;outline-offset:2px}
+.emp-card.ultima{border-color:#0d8792;box-shadow:inset 3px 0 0 #0d8792}
+.emp-nome{font-weight:600;color:#1B2B4B;overflow-wrap:anywhere}
+.emp-papel{font-size:var(--text-xs);color:#56647a;font-weight:600}
+.emp-ultima{grid-column:1 / -1;font-size:var(--text-xs);color:#0d8792;font-weight:600}

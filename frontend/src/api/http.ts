@@ -17,14 +17,18 @@ export class ErroApi extends Error {
 type Consulta = Record<string, string | number | boolean | null | undefined>;
 
 let token: string | null = null;
+/** Empresa ativa DESTA aba (sessionStorage). A última usada (localStorage) é só sugestão na tela de escolha. */
 let empresa: string | null = null;
+let ultimaEmpresa: string | null = null;
 try {
   token = localStorage.getItem(CHAVE_TOKEN);
-  empresa = localStorage.getItem(CHAVE_EMPRESA);
+  ultimaEmpresa = localStorage.getItem(CHAVE_EMPRESA);
+  empresa = sessionStorage.getItem(CHAVE_EMPRESA);
 } catch {
   /* armazenamento indisponível (modo privado): a sessão vale só até recarregar */
 }
 const ouvintesSessaoExpirada: Array<() => void> = [];
+const ouvintesEmpresaPerdida: Array<() => void> = [];
 
 export const sessaoToken = {
   definir(valor: string | null): void {
@@ -38,12 +42,35 @@ export const sessaoToken = {
   },
   obter: (): string | null => token,
   empresa: (): string | null => empresa,
-  definirEmpresa(valor: string | null): void {
+  ultimaEmpresa: (): string | null => ultimaEmpresa,
+  /** Escolhe a empresa desta aba e a lembra como a última usada. */
+  definirEmpresa(valor: string): void {
     empresa = valor;
+    ultimaEmpresa = valor;
     try {
-      if (valor) localStorage.setItem(CHAVE_EMPRESA, valor);
-      else localStorage.removeItem(CHAVE_EMPRESA);
+      sessionStorage.setItem(CHAVE_EMPRESA, valor);
+      localStorage.setItem(CHAVE_EMPRESA, valor);
     } catch { /* armazenamento indisponível */ }
+  },
+  /** Descarta só a empresa desta aba (troca de empresa ou acesso perdido); a última usada continua como sugestão. */
+  esquecerEmpresaDaAba(): void {
+    empresa = null;
+    try {
+      sessionStorage.removeItem(CHAVE_EMPRESA);
+    } catch { /* armazenamento indisponível */ }
+  },
+  /** Ao sair: nada da escolha de um usuário pode sobrar para o próximo no mesmo navegador. */
+  limparEmpresas(): void {
+    empresa = null;
+    ultimaEmpresa = null;
+    try {
+      sessionStorage.removeItem(CHAVE_EMPRESA);
+      localStorage.removeItem(CHAVE_EMPRESA);
+    } catch { /* armazenamento indisponível */ }
+  },
+  /** Chamado quando o servidor recusa a empresa ativa por falta de acesso (ela já foi descartada da aba). */
+  aoPerderEmpresa(fn: () => void): void {
+    ouvintesEmpresaPerdida.push(fn);
   },
   aoExpirar(fn: () => void): void {
     ouvintesSessaoExpirada.push(fn);
@@ -95,6 +122,10 @@ async function enviar(metodo: string, caminho: string, opcoes: { corpo?: unknown
     if (erro.status === 401 && token && caminho !== "/auth/login") {
       sessaoToken.definir(null);
       ouvintesSessaoExpirada.forEach((fn) => fn());
+    }
+    if (erro.status === 403 && erro.codigo === "empresa_inacessivel" && empresa) {
+      sessaoToken.esquecerEmpresaDaAba();
+      ouvintesEmpresaPerdida.forEach((fn) => fn());
     }
     throw erro;
   }

@@ -3,16 +3,16 @@
 from datetime import datetime
 from urllib.parse import quote
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import Response
 
-from app.deps import EmpresaAtual, Sessao, UsuarioLogado
+from app.deps import EmpresaAtual, Sessao, UsuarioLogado, requer_financeiro
 from app.documents.relatorio_pdf import relatorio_pdf
 from app.documents.relatorio_xlsx import relatorio_xlsx
 from app.errors import ErroApp
 from app.services.relatorios import calcular_dre, calcular_fluxo_caixa
 
-router = APIRouter(prefix="/relatorios", tags=["Relatórios"])
+router = APIRouter(prefix="/relatorios", tags=["Relatórios"], dependencies=[Depends(requer_financeiro)])
 
 _ANO_ATUAL = datetime.now().year
 

@@ -1,19 +1,15 @@
+import type { EmpresaAcesso } from "@/api/tipos";
 import { api } from "@/api/endpoints";
 import { sessaoToken } from "@/api/http";
 import { $ } from "@/core/dom";
-import { html, raw, type Safe } from "@/core/html";
-import { eu } from "@/state/estado";
+import { html, type Safe } from "@/core/html";
 import { registrarVista, render } from "@/state/nucleo";
 import { registrarAcao } from "@/ui/acoes";
-import { fluxoAtivar2FA, fluxoDesativar2FA } from "@/ui/login";
+import { cabecalhoDePagina, estadoDeErro } from "@/ui/componentes";
 import { toast } from "@/ui/toast";
 
-type Empresa = { id: string; nome: string; papel: "admin" | "membro" };
-const tela: {
-  empresa: Empresa | null;
-  erro: string;
-  totp2fa: boolean | null; // null = não carregado
-} = { empresa: null, erro: "", totp2fa: null };
+type Empresa = EmpresaAcesso;
+const tela: { empresa: Empresa | null; erro: string } = { empresa: null, erro: "" };
 
 async function carregar(): Promise<void> {
   try {
@@ -26,46 +22,15 @@ async function carregar(): Promise<void> {
   }
 }
 
-function vistaSecurity(): Safe {
-  const ativo = tela.totp2fa;
-  if (ativo === null) {
-    // Ainda não carregamos o status — botão para verificar
-    return html`
-      <section class="panel" style="max-width:680px;margin-top:16px">
-        <h2 style="font-size:1rem;margin:0 0 12px">Segurança</h2>
-        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-          <span>Autenticação em dois fatores: <b>—</b></span>
-          <button class="btn" data-act="verificarStatus2fa">Verificar status</button>
-        </div>
-      </section>`;
-  }
-  return html`
-    <section class="panel" style="max-width:680px;margin-top:16px">
-      <h2 style="font-size:1rem;margin:0 0 12px">Segurança</h2>
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-        <span>Autenticação em dois fatores:
-          ${ativo
-            ? raw(`<span class="pill ok">Ativado ✓</span>`)
-            : raw(`<span class="pill">Desativado</span>`)}
-        </span>
-        ${ativo
-          ? html`<button class="btn danger" data-act="desativar2fa">Desativar 2FA</button>`
-          : html`<button class="btn primary" data-act="ativar2fa">Ativar 2FA</button>`}
-      </div>
-      <div id="container2fa" style="margin-top:16px"></div>
-    </section>`;
-}
-
 function vista(): Safe {
-  return html`<div class="head"><div><h1>Dados da empresa</h1><p>Atualize o nome usado no Hub e nos registros da empresa.</p></div></div>
-    ${tela.erro ? html`<div class="banner" style="background:var(--bad-bg);color:var(--bad)">${tela.erro}</div>` : ""}
-    ${tela.empresa ? html`<section class="panel" style="max-width:680px"><div class="fields">
+  return html`${cabecalhoDePagina({ titulo: "Dados da empresa", descricao: "Atualize o nome usado no Hub e nos registros da empresa." })}
+    ${tela.erro ? estadoDeErro({ mensagem: tela.erro, acaoRepetir: "recarregarEmpresa" }) : ""}
+    ${tela.empresa ? html`<section class="panel estreita"><div class="fields">
       <div class="field full"><label for="nomeEmpresa">Nome da empresa</label><input id="nomeEmpresa" maxlength="150" value="${tela.empresa.nome}" autocomplete="organization" required></div>
-    </div><div class="tools" style="justify-content:flex-end;margin-top:16px"><button class="btn primary" data-act="salvarEmpresa">Salvar alterações</button></div></section>` : ""}
-    ${eu.id ? vistaSecurity() : ""}`;
+    </div><div class="tools fim"><button class="btn primary" data-act="salvarEmpresa">Salvar alterações</button></div></section>` : ""}`;
 }
 
-registrarVista({ id: "empresa", nome: "Dados da empresa", grupo: "Administração", somenteAdmin: true, carregar, depende: ["empresa"], desenhar: vista });
+registrarVista({ id: "empresa", nome: "Dados da empresa", grupo: "Administração", permissao: "administracao", carregar, depende: ["empresa"], desenhar: vista });
 
 registrarAcao("salvarEmpresa", async () => {
   const empresa = tela.empresa;
@@ -83,34 +48,7 @@ registrarAcao("salvarEmpresa", async () => {
   }
 });
 
-registrarAcao("verificarStatus2fa", async () => {
-  try {
-    const me = await api.auth.eu();
-    tela.totp2fa = me.totp_ativo;
-  } catch {
-    tela.totp2fa = false;
-  }
+registrarAcao("recarregarEmpresa", async () => {
+  await carregar();
   render();
-});
-
-registrarAcao("ativar2fa", async () => {
-  const container = document.getElementById("container2fa");
-  if (!container) return;
-  const ativado = await fluxoAtivar2FA(container);
-  if (ativado) {
-    tela.totp2fa = true;
-    render();
-    toast("2FA ativado com sucesso.");
-  }
-});
-
-registrarAcao("desativar2fa", async () => {
-  const container = document.getElementById("container2fa");
-  if (!container) return;
-  const desativado = await fluxoDesativar2FA(container);
-  if (desativado) {
-    tela.totp2fa = false;
-    render();
-    toast("2FA desativado.");
-  }
 });

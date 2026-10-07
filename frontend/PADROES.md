@@ -120,3 +120,35 @@ Implementado em `state/realtime.ts`.
 - [ ] Usar `recarregar()` após modificações
 - [ ] Tratar erros com `tentar()`
 - [ ] Adicionar testes (próxima sprint)
+
+## Formulário: gaveta ou página
+
+Dois padrões, com o mesmo contrato (conflito de edição, versão gravada pela própria sessão e presença
+"editando…", todos via `ui/registro-aberto.ts`):
+
+| Use | Quando | Como |
+|---|---|---|
+| **Gaveta** (`abrirGaveta`) | Edição curta: até ~8 campos, sem listas relacionadas (tarefa, produto, conta bancária…) | `ui/gaveta.ts` |
+| **Página** (`abrirFormularioPagina`) | Formulário longo, com seções ou listas relacionadas (cliente) | `ui/formulario-pagina.ts` |
+
+Para criar um formulário em página:
+
+1. Monte as seções (`{ id, titulo, descricao?, corpo }`). Os campos continuam sendo os de `ui/campos.ts`.
+2. Chame `abrirFormularioPagina({ vista, rotuloLista, caminho, titulo, secoes, salvar, excluir, registro, montar })`.
+   - `caminho` vem de `caminhoDoRegistro(vista, id)` ou `caminhoNovo(vista)` (`state/caminhos.ts`).
+   - `montar(form, fechar, raiz)` liga os eventos; `fechar()` volta à listagem (use depois de salvar ou excluir).
+3. Registre as rotas da tela para link direto, Voltar e recarregar:
+   `registrarRotaDeRegistro("clientes", { novo: () => formCliente(), abrir: (id) => ... })`.
+   Se o registro não existir, mostre `mostrarRegistroNaoEncontrado(...)`.
+
+A proteção contra perda de alterações já vem pronta: compara os valores do formulário (alterar e restaurar não conta)
+e pergunta antes de sair pelo menu, pela paleta, pelo Voltar ou ao recarregar a aba.
+
+## Telas: peças compartilhadas
+
+- Cabeçalho, listagem e estados: `ui/componentes.ts` (`cabecalhoDePagina`, `barraDeFerramentas`, `chip`,
+  `estadoVazio`, `estadoDeErro`, `carregando`). O visual vem de `styles/components.css`.
+- Ícones: `icone("nome")` de `ui/icones.ts`. Botão só com ícone exige nome: `botaoIcone("fechar", "Fechar")`.
+- Onde a tela aparece no menu, o ícone e as ações do "+ Novo" e da paleta: `state/menu.ts`.
+- Espaços, raios, camadas e alturas vêm dos tokens de `styles/tokens.css` (`--esp-*`, `--r-*`, `--z-*`,
+  `--controle-*`); não use `z-index` nem medidas soltas.

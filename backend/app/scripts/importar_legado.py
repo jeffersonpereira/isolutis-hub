@@ -135,14 +135,13 @@ class Importador:
             if existente:
                 await self._registrar("hub_membros", linha.id, existente.id)
                 usuario = existente
-                papel = "admin" if bool(linha.dados.get("admin")) else "membro"
+                papel = "admin" if bool(linha.dados.get("admin")) else "comercial"  # o membro legado tinha acesso comercial
             else:
                 nome = lg.texto(linha.dados.get("nome")) or email
-                usuario = Usuario(email=email, nome=nome, admin=False, senha_hash=None)
+                usuario = Usuario(email=email, nome=nome, senha_hash=None)
                 await self._adicionar("hub_membros", linha, usuario)
                 self.usuarios_por_email[email] = usuario
-                papel = "admin" if bool(linha.dados.get("admin")) else "membro"
-            usuario.admin = False
+                papel = "admin" if bool(linha.dados.get("admin")) else "comercial"  # o membro legado tinha acesso comercial
             membership = await self.sessao.get(UsuarioEmpresa, (self.empresa_id, usuario.id))
             if membership is None:
                 self.sessao.add(UsuarioEmpresa(empresa_id=self.empresa_id, usuario_id=usuario.id, papel=papel, ativo=usuario.ativo))

@@ -6,10 +6,10 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from uuid import UUID
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.errors import NaoEncontrado, RegraDeNegocio
+from app.errors import NaoAutenticado, NaoEncontrado, RegraDeNegocio, SemPermissao
 
 
 def _com_tz(dt: datetime) -> datetime:
@@ -103,6 +103,7 @@ async def verificar_convite_publico(sessao: AsyncSession, token: str) -> dict[st
 
     empresa = await sessao.get(Empresa, convite.empresa_id)
     criador = await sessao.get(Usuario, convite.criado_por)
+    conta_existente = await sessao.scalar(select(Usuario.id).where(Usuario.email == convite.email)) is not None
 
     agora = datetime.now(UTC)
     if convite.usado_em is not None:
@@ -118,11 +119,21 @@ async def verificar_convite_publico(sessao: AsyncSession, token: str) -> dict[st
         "empresa_nome": empresa.nome if empresa else "",
         "criado_por_nome": criador.nome if criador else "",
         "estado": estado,
+        "conta_existente": conta_existente,
     }
 
 
-async def aceitar_convite(sessao: AsyncSession, token: str, senha: str) -> Usuario:
-    convite = await sessao.scalar(select(Convite).where(Convite.token == token))
+async def aceitar_convite(
+    sessao: AsyncSession, token: str, senha: str | None, autenticado: Usuario | None
+) -> Usuario:
+    """Aceita o convite.
+
+    Conta nova: cria o usuário com a senha informada. Conta existente: exige que quem aceita esteja
+    autenticado (login normal, com 2FA se ativo) como o dono do e-mail do convite; a senha e o estado
+    da conta nunca são alterados por este fluxo.
+    """
+    # FOR UPDATE: dois aceites simultâneos do mesmo token são serializados e só o primeiro conclui.
+    convite = await sessao.scalar(select(Convite).where(Convite.token == token).with_for_update())
     if convite is None:
         raise NaoEncontrado("Convite")
 
@@ -132,32 +143,32 @@ async def aceitar_convite(sessao: AsyncSession, token: str, senha: str) -> Usuar
     if _com_tz(convite.expira_em) < agora:
         raise RegraDeNegocio("Este convite expirou. Peça ao administrador que envie um novo convite.")
 
-    # Verifica se já existe usuário com este e-mail
     usuario = await sessao.scalar(select(Usuario).where(Usuario.email == convite.email))
     if usuario is None:
+        if not senha:
+            raise RegraDeNegocio("Defina uma senha para aceitar o convite.")
         usuario = Usuario(
             email=convite.email,
             nome=convite.email.split("@")[0],  # nome provisório; pode ser atualizado depois
-            admin=False,
             senha_hash=gerar_hash(senha),
         )
         sessao.add(usuario)
         await sessao.flush()
     else:
-        # Usuário existe mas não era da empresa — define/atualiza senha e ativa
-        usuario.senha_hash = gerar_hash(senha)
-        usuario.ativo = True
+        if autenticado is None:
+            raise NaoAutenticado(f"Entre com a conta {convite.email} para aceitar este convite.")
+        if autenticado.id != usuario.id:
+            raise SemPermissao("Este convite é para outro e-mail.")
+        if not usuario.ativo:
+            raise RegraDeNegocio("Esta conta está desativada. Procure o administrador da empresa.")
 
-    # Vincula à empresa
-    membership = await sessao.get(UsuarioEmpresa, (convite.empresa_id, usuario.id))
-    if membership is None:
-        sessao.add(UsuarioEmpresa(empresa_id=convite.empresa_id, usuario_id=usuario.id, papel=convite.papel, ativo=True))
-    else:
-        membership.ativo = True
-        membership.papel = convite.papel
-
-    # Marca o convite como usado
-    convite.usado_em = agora
+    # A membership sai por função SECURITY DEFINER (migração 0009): o aceite é público e quem aceita ainda não é
+    # admin da empresa, então as políticas RLS de usuario_empresa recusariam um INSERT/UPDATE direto. A função
+    # revalida convite e usuário, cria ou reativa a membership com o papel do convite e consome o convite.
+    await sessao.execute(
+        text("select vincular_membro_por_convite(:convite, :usuario)"),
+        {"convite": convite.id, "usuario": usuario.id},
+    )
 
     await confirmar(sessao)
     await sessao.refresh(usuario)

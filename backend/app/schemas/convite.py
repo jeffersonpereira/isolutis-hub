@@ -3,13 +3,14 @@ from uuid import UUID
 
 from pydantic import EmailStr, Field
 
+from app.domain.papeis import Papel
 from app.schemas.comum import Entrada, Leitura
 
 
 class ConviteEntrada(Entrada):
     nome: str = Field(min_length=1, max_length=200)
     email: EmailStr
-    papel: str = Field(pattern="^(admin|membro)$")
+    papel: Papel
 
 
 class ConviteLeitura(Leitura):
@@ -22,8 +23,10 @@ class ConviteLeitura(Leitura):
 
 
 class AceitarConviteEntrada(Entrada):
-    senha: str = Field(min_length=8, max_length=128)
-    confirmar_senha: str = Field(min_length=1, max_length=128)
+    """Conta nova define a senha aqui; conta existente aceita autenticada e ignora estes campos."""
+
+    senha: str | None = Field(default=None, min_length=8, max_length=128)
+    confirmar_senha: str | None = Field(default=None, max_length=128)
 
 
 class ConviteInfo(Leitura):
@@ -34,3 +37,4 @@ class ConviteInfo(Leitura):
     empresa_nome: str
     criado_por_nome: str
     estado: str  # "valido" | "expirado" | "usado"
+    conta_existente: bool = False

@@ -1,15 +1,23 @@
 @media (max-width:860px){
-  .brand img{width:104px}
-  .brand{flex:none}
-  .app{grid-template-columns:minmax(0,1fr)}
-  aside{position:sticky;top:env(safe-area-inset-top,0px);height:auto;flex-direction:row;align-items:center;gap:10px;padding:10px 16px;z-index:10;overflow-x:auto}
-  .brand small,.sync,.on-t,.on-n,.conta span{display:none}
-  .conta{border:0;padding:0;flex:none}
-  .online{margin:0 0 0 auto;flex-direction:row;padding:0;border:0;gap:4px}
-  nav{flex-direction:row}
-  nav .count{display:none}
-  nav button{padding:7px 10px;white-space:nowrap}
-  nav button[aria-current="true"]{box-shadow:inset 0 -3px 0 #22C3CE}
+  .app,.app.recolhida{grid-template-columns:minmax(0,1fr)}
+  /* O menu vira um painel sobreposto, aberto pelo botão da barra superior */
+  aside{position:fixed;inset:0 auto 0 0;z-index:var(--z-sidebar);width:min(300px,86vw);transform:translateX(-102%);visibility:hidden;transition:transform .2s ease,visibility 0s linear .2s;box-shadow:var(--shadow-lg)}
+  .app.menu-aberto aside{transform:none;visibility:visible;transition-delay:0s}
+  .app.recolhida aside nav .tx,.app.recolhida aside nav .n,.app.recolhida aside nav .chev,.app.recolhida aside nav .rot,.app.recolhida .on-n,.app.recolhida .on-t,.app.recolhida .sync .tx{display:revert}
+  .app.recolhida aside nav .sub-menu{display:flex}
+  .app.recolhida aside nav .sub-menu.fechado{display:none}
+  .app.recolhida aside nav a,.app.recolhida aside nav .nav-grupo{justify-content:flex-start;padding:0 var(--esp-3)}
+  .app.recolhida .brand{align-items:flex-start;padding-inline:var(--esp-5)}
+  .app.recolhida .brand img:not(.marca-min),.app.recolhida .brand small{display:revert}
+  .app.recolhida .brand .marca-min{display:none}
+  .recolher{display:none}
+  .so-celular{display:grid}
+  .topbar{padding:0 var(--esp-3);gap:var(--esp-2)}
+  .titulo-tela{font-size:var(--text-base)}
+  .cmdk{width:var(--controle-md);justify-content:center;padding:0;border-color:transparent;background:none}
+  .cmdk .tx,.cmdk kbd,.me .nome,.novo .tx{display:none}
+  .novo{width:var(--controle-md);justify-content:center;padding:0}
+  main{padding-block:var(--esp-4) 48px;padding-inline:var(--esp-4)}
   .two{grid-template-columns:minmax(0,1fr)}
   .fields{grid-template-columns:minmax(0,1fr)}
   .frow{grid-template-columns:110px minmax(0,1fr) auto}

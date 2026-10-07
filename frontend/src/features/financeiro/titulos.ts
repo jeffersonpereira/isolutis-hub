@@ -12,7 +12,7 @@ import { espaco } from "@/ui/formularios";
 import { gravar } from "@/ui/gravacao";
 import { avisar } from "@/ui/toast";
 import { apiFinanceiro, type ContaBancaria, type Parceiro, type PlanoConta, type Titulo, type TituloEntrada } from "./api";
-import { acoesDaLinha, confirmarExclusao, formatarDocumento, GRUPO } from "./comum";
+import { acoesDaLinha, confirmarExclusao, contasDoPlanoParaTitulo, formatarDocumento, GRUPO } from "./comum";
 
 const STATUS: Record<string, readonly [string, string]> = { A: ["Aberto", "info"], Q: ["Quitado", "ok"], C: ["Cancelado", ""] };
 const TIPO: Record<string, string> = { P: "A pagar", R: "A receber" };
@@ -41,7 +41,7 @@ function vista(): Safe {
       ${lista.map((t) => {
         const [rot, cls] = STATUS[t.status] ?? ["", ""];
         const atrasado = t.status === "A" && t.data_vencimento < h;
-        return html`<tr><td class="num">${dataBR(t.data_vencimento)}${atrasado ? html`<div class="sub" style="color:var(--bad)">atrasado</div>` : ""}</td><td><span class="pill ${t.tipo_conta === "R" ? "ok" : "bad"}">${TIPO[t.tipo_conta]}</span></td>
+        return html`<tr><td class="num">${dataBR(t.data_vencimento)}${atrasado ? html`<div class="sub" style="color:var(--bad-texto)">atrasado</div>` : ""}</td><td><span class="pill ${t.tipo_conta === "R" ? "ok" : "bad"}">${TIPO[t.tipo_conta]}</span></td>
         <td><b>${t.parceiro_nome}</b></td><td><span class="num sub">${t.plano_conta_codigo}</span> ${t.plano_conta_nome}</td><td>${t.conta_bancaria_nome}</td>
         <td class="r num">${brl(t.valor_devido)}${t.status === "Q" && t.valor_quitacao !== t.valor_devido ? html`<div class="sub">pago ${brl(t.valor_quitacao)}</div>` : ""}</td><td><span class="pill ${cls}">${rot}</span>${t.data_pagamento ? html`<div class="sub num">${dataBR(t.data_pagamento)}</div>` : ""}</td><td class="r">${acoesDaLinha("titulo", t.id)}</td></tr>`;
       })}
@@ -51,19 +51,18 @@ function vista(): Safe {
   }`;
 }
 
-registrarVista({ id: "fin-titulos", nome: "Títulos Financeiros", grupo: GRUPO, somenteAdmin: true, carregar, depende: ["financeiro"], desenhar: vista });
+registrarVista({ id: "fin-titulos", nome: "Títulos Financeiros", grupo: GRUPO, permissao: "financeiro", carregar, depende: ["financeiro"], desenhar: vista });
 
 async function formTitulo(t?: Titulo): Promise<void> {
   // as listas de apoio são buscadas na hora, para refletir cadastros feitos há pouco
   const apoio = await tentar(() => Promise.all([apiFinanceiro.plano.listar(), apiFinanceiro.contas.listar(), apiFinanceiro.parceiros.listar()]));
   if (!apoio) return;
   const [plano, contas, parceiros]: [PlanoConta[], ContaBancaria[], Parceiro[]] = apoio;
-  const analiticas = plano.filter((c) => c.tipo_conta === "A");
   const tipoInicial = t?.tipo_conta ?? "R";
   /** RN04: contas a pagar mostram só despesas; a receber, só receitas. */
-  const contasDoTipo = (tipo: string): PlanoConta[] => analiticas.filter((c) => c.natureza === (tipo === "P" ? "D" : "R"));
+  const contasDoTipo = (tipo: string): PlanoConta[] => contasDoPlanoParaTitulo(plano, tipo);
   const opcoesPlano = (tipo: string, atual?: string): Safe =>
-    html`<option value="">Selecione…</option>${contasDoTipo(tipo).map((c) => html`<option value="${c.id}"${raw(c.id === atual ? " selected" : "")}>${c.codigo} ${c.nome}</option>`)}`;
+    html`<option value="">${contasDoTipo(tipo).length ? "Selecione…" : "Nenhuma conta disponível"}</option>${contasDoTipo(tipo).map((c) => html`<option value="${c.id}"${raw(c.id === atual ? " selected" : "")}>${c.codigo} ${c.nome}</option>`)}`;
 
   abrirGaveta({
     titulo: t ? `Título · ${t.parceiro_nome}` : "Novo título financeiro",

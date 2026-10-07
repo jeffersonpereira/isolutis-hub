@@ -59,9 +59,14 @@ async def sessao(engine) -> AsyncIterator[AsyncSession]:  # noqa: ANN001
 
 @pytest_asyncio.fixture
 async def admin(sessao: AsyncSession) -> Usuario:
-    u = Usuario(email="admin@isolutis.com.br", nome="Ana Admin", admin=True, senha_hash=gerar_hash(SENHA))
-    sessao.add(u)
+    """Administrador de uma empresa própria; `admin.empresa_id` guarda a empresa para o cabeçalho X-Empresa-ID."""
+    empresa = Empresa(nome="iSolutis")
+    u = Usuario(email="admin@isolutis.com.br", nome="Ana Admin", senha_hash=gerar_hash(SENHA))
+    sessao.add_all([empresa, u])
+    await sessao.flush()
+    sessao.add(UsuarioEmpresa(empresa_id=empresa.id, usuario_id=u.id, papel="admin", ativo=True))
     await sessao.commit()
+    u.empresa_id = empresa.id  # atributo de teste (não é coluna)
     return u
 
 
@@ -82,6 +87,7 @@ async def api(http: AsyncClient, admin: Usuario) -> AsyncClient:
     r = await http.post("/api/v1/auth/login", json={"email": admin.email, "senha": SENHA})
     assert r.status_code == 200, r.text
     http.headers["Authorization"] = f"Bearer {r.json()['access_token']}"
+    http.headers["X-Empresa-ID"] = str(admin.empresa_id)
     return http
 
 
