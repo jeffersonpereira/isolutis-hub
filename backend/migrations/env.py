@@ -1,4 +1,4 @@
-"""Ambiente do Alembic: a URL do banco vem da configuração da aplicação (HUB_DATABASE_URL)."""
+"""Ambiente do Alembic: usa HUB_MIGRATION_DATABASE_URL quando disponível (owner com DDL), senão HUB_DATABASE_URL."""
 
 from alembic import context
 from sqlalchemy import create_engine
@@ -9,14 +9,19 @@ from app.models import Base
 target_metadata = Base.metadata
 
 
+def _url() -> str:
+    s = get_settings()
+    return s.migration_database_url or s.database_url
+
+
 def run_migrations_offline() -> None:
-    context.configure(url=get_settings().database_url, target_metadata=target_metadata, literal_binds=True)
+    context.configure(url=_url(), target_metadata=target_metadata, literal_binds=True)
     with context.begin_transaction():
         context.run_migrations()
 
 
 def run_migrations_online() -> None:
-    engine = create_engine(get_settings().database_url)
+    engine = create_engine(_url())
     with engine.connect() as conexao:
         context.configure(connection=conexao, target_metadata=target_metadata)
         with context.begin_transaction():
