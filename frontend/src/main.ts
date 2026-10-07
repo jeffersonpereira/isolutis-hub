@@ -22,12 +22,12 @@ import "@/features/negocios";
 import "@/features/orcamentos";
 import "@/features/projetos";
 import "@/features/tarefas";
-import "@/features/faturamento";
 import "@/features/produtos";
-import "@/features/equipe";
 import "@/features/financeiro";
-import "@/features/periodo";
+import "@/features/faturamento";
 import "@/features/relatorios";
+import "@/features/equipe";
+import "@/features/periodo";
 
 /** Busca nas listas: refaz a tela a cada tecla e devolve o foco ao campo. */
 function ligarBuscas(): void {

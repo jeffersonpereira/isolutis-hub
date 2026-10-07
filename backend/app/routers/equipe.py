@@ -11,6 +11,7 @@ from app.schemas.convite import ConviteEntrada, ConviteLeitura
 from app.schemas.usuario import MembroEquipe, UsuarioAtualizar, UsuarioCriar, UsuarioLeitura
 from app.services import convites as svc_convites
 from app.services import usuarios as svc
+from app.services.base import confirmar
 
 router = APIRouter(tags=["Equipe"])
 
@@ -83,5 +84,19 @@ async def cancelar_convite_route(convite_id: int, empresa: EmpresaAtual, _: Admi
     await svc_convites.cancelar_convite(sessao, convite_id, empresa.id)
     return Response(status_code=204)
 
+
+class EmpresaAtualizar(BaseModel):
+    nome: str = Field(min_length=1, max_length=150)
+
+
+@router.patch("/empresas/ativa", status_code=204)
+async def atualizar_empresa_ativa(
+    dados: EmpresaAtualizar,
+    empresa: EmpresaAtual,
+    _: Administrador,
+    sessao: Sessao,
+) -> None:
+    empresa.nome = dados.nome.strip()
+    await confirmar(sessao)
 
 __all__ = ["router", "UsuarioLogado"]

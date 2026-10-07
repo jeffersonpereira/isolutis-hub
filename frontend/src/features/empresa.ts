@@ -73,10 +73,14 @@ registrarAcao("salvarEmpresa", async () => {
   const nome = input?.value.trim() ?? "";
   if (!empresa) return;
   if (!nome) return void toast("Informe o nome da empresa.");
-  // Atualizar localmente (backend não tem endpoint de atualizar empresa)
-  tela.empresa = { ...empresa, nome };
-  toast("Dados da empresa atualizados.");
-  render();
+  try {
+    await api.empresas.atualizar(nome);
+    tela.empresa = { ...empresa, nome };
+    toast("Dados da empresa atualizados.");
+    render();
+  } catch {
+    toast("Não foi possível salvar.");
+  }
 });
 
 registrarAcao("verificarStatus2fa", async () => {

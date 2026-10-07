@@ -9,7 +9,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal  # noqa: F401  (reexport de tipo usado por outros módulos)
 
-from sqlalchemy import FetchedValue, ForeignKey, func, text
+from sqlalchemy import FetchedValue, ForeignKey, String, func, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -26,6 +26,7 @@ class Empresa(Base):
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime | None]
     onboarding_concluido: Mapped[bool] = mapped_column(default=False, server_default="false")
+    segmento: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
 
 class Municipio(Base):

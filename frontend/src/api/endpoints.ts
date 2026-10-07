@@ -6,7 +6,10 @@ type S = components["schemas"];
 const ano = (a: number) => ({ ano: a });
 
 export const api = {
-  empresas: { listar: () => http.get<Array<{ id: string; nome: string; papel: "admin" | "membro" }>>("/empresas") },
+  empresas: {
+    listar: () => http.get<Array<{ id: string; nome: string; papel: "admin" | "membro" }>>("/empresas"),
+    atualizar: (nome: string) => http.patch<void>("/empresas/ativa", { nome }),
+  },
   auth: {
     login: (email: string, senha: string) => http.post<T.LoginResposta>("/auth/login", { email, senha }),
     eu: () => http.get<T.Usuario>("/auth/eu"),
