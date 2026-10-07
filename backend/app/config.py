@@ -49,10 +49,10 @@ class Settings(BaseSettings):
         erros: list[str] = []
         if self.secret_key == _CHAVE_DE_DESENVOLVIMENTO or len(self.secret_key) < 32:
             erros.append("Defina HUB_SECRET_KEY com pelo menos 32 caracteres antes de subir em produção.")
-        if not self.smtp_host:
-            erros.append("HUB_SMTP_HOST é obrigatório em produção")
         if self.ambiente == "producao" and erros:
             raise RuntimeError(" | ".join(erros))
+        if not self.smtp_host:
+            _logger.warning("HUB_SMTP_HOST não configurado — envio de e-mails desabilitado.")
 
         # Aviso: a verificação de admins sem 2FA exige acesso ao banco e deve ser
         # feita após o startup da aplicação (ver scheduler de notificações).
