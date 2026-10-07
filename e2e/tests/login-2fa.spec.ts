@@ -5,10 +5,13 @@ const USUARIO = { id: "u1", nome: "Ana", email: "ana@isolutis.com.br", admin: tr
 const EMPRESA = { id: "e1", nome: "Empresa Teste", papel: "admin", onboarding_concluido: true };
 const json = (corpo: unknown, status = 200) => ({ status, contentType: "application/json", body: JSON.stringify(corpo) });
 
-async function simularApi(page: Page, opcoes: { com2fa: boolean; verificar?: (n: number) => ReturnType<typeof json> }) {
+async function simularApi(
+  page: Page,
+  opcoes: { com2fa: boolean; papel?: string; verificar?: (n: number) => ReturnType<typeof json> },
+) {
   let tentativas = 0;
   await page.route("**/api/v1/**", (rota) => rota.fulfill(json([])));
-  await page.route("**/api/v1/empresas", (rota) => rota.fulfill(json([EMPRESA])));
+  await page.route("**/api/v1/empresas", (rota) => rota.fulfill(json([{ ...EMPRESA, papel: opcoes.papel ?? EMPRESA.papel }])));
   await page.route("**/api/v1/auth/eu", (rota) => rota.fulfill(json({ ...USUARIO, totp_ativo: opcoes.com2fa })));
   await page.route("**/api/v1/auth/login", (rota) =>
     rota.fulfill(
@@ -39,6 +42,16 @@ test("admin sem 2FA entra direto, sem tela de configuração obrigatória", asyn
   await expect(page.locator("nav button").first()).toBeVisible();
   await expect(page.getByText("Autenticação em dois fatores obrigatória")).toHaveCount(0);
   await expect(page.locator("#lg2fa")).toHaveCount(0);
+});
+
+test("membro sem papel de administrador encontra o 2FA em Minha conta", async ({ page }) => {
+  await simularApi(page, { com2fa: false, papel: "membro" });
+  await entrar(page);
+  await expect(page.locator("nav button").first()).toBeVisible();
+  await expect(page.locator("nav button", { hasText: "Dados da empresa" })).toHaveCount(0);
+  await page.locator("nav button", { hasText: "Minha conta" }).click();
+  await expect(page.getByRole("heading", { name: "Minha conta" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Ativar 2FA" })).toBeVisible();
 });
 
 test("login com 2FA leva a /login/2fa sem token na URL nem em storage e conclui com o código", async ({ page }) => {

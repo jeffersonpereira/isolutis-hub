@@ -6,7 +6,7 @@
   .brand small,.sync,.on-t,.on-n,.conta span{display:none}
   .conta{border:0;padding:0;flex:none}
   .online{margin:0 0 0 auto;flex-direction:row;padding:0;border:0;gap:4px}
-  nav{flex-direction:row}
+  nav{flex-direction:row;flex:none}
   nav .count{display:none}
   nav button{padding:7px 10px;white-space:nowrap}
   nav button[aria-current="true"]{box-shadow:inset 0 -3px 0 #22C3CE}

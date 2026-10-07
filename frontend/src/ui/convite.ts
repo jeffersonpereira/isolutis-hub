@@ -5,6 +5,8 @@
 import { api } from "@/api/endpoints";
 import { ErroApi, sessaoToken } from "@/api/http";
 import type { ConviteInfo } from "@/api/tipos";
+import { esc } from "@/core/html";
+import { convitePendente } from "@/ui/convite-pendente";
 
 function montarTela(): HTMLElement {
   const raiz = document.createElement("div");
@@ -38,10 +40,10 @@ function renderValido(info: ConviteInfo, token: string): void {
     <form id="cvForm" class="lg-form" novalidate>
       <h1>Aceitar convite</h1>
       <p class="sub" style="margin:0 0 4px">
-        <b>${info.criado_por_nome}</b> convidou você para entrar em
-        <b>${info.empresa_nome}</b> como <b>${papel}</b>.
+        <b>${esc(info.criado_por_nome)}</b> convidou você para entrar em
+        <b>${esc(info.empresa_nome)}</b> como <b>${papel}</b>.
       </p>
-      <p class="sub" style="margin:0 0 8px;font-size:12px">E-mail: ${info.email}</p>
+      <p class="sub" style="margin:0 0 8px;font-size:12px">E-mail: ${esc(info.email)}</p>
       <label for="cvSenha">Defina uma senha</label>
       <input id="cvSenha" name="senha" type="password" autocomplete="new-password" minlength="8" placeholder="Mínimo de 8 caracteres" required>
       <label for="cvConfirmar">Confirme a senha</label>
@@ -73,6 +75,33 @@ function renderValido(info: ConviteInfo, token: string): void {
       mensagem(err instanceof ErroApi ? err.message : "Não foi possível aceitar o convite agora.", true);
       botao.disabled = false;
     }
+  });
+}
+
+function renderContaExistente(info: ConviteInfo, token: string): void {
+  const el = document.getElementById("cvConteudo");
+  if (!el) return;
+
+  const papel = info.papel === "admin" ? "Administrador" : "Membro";
+  el.innerHTML = `
+    <div class="lg-form">
+      <h1>Aceitar convite</h1>
+      <p class="sub" style="margin:0 0 4px">
+        <b>${esc(info.criado_por_nome)}</b> convidou você para entrar em
+        <b>${esc(info.empresa_nome)}</b> como <b>${papel}</b>.
+      </p>
+      <p class="sub" style="margin:0 0 8px;font-size:12px">E-mail: ${esc(info.email)}</p>
+      <p>Você já tem uma conta. Entre com <b>${esc(info.email)}</b> para aceitar o convite. Sua senha não será alterada.</p>
+      <button class="btn primary" type="button" id="cvEntrar">Entrar para aceitar</button>
+    </div>`;
+
+  document.getElementById("cvEntrar")?.addEventListener("click", () => {
+    convitePendente.definir(token);
+    if (convitePendente.obter() !== token) {
+      mensagem("O navegador bloqueou o armazenamento temporário. Entre no Hub e abra este link de novo.", true);
+      return;
+    }
+    location.assign("/");
   });
 }
 
@@ -143,7 +172,8 @@ export async function iniciarTelaConvite(token: string): Promise<void> {
 
   switch (info.estado) {
     case "valido":
-      renderValido(info, token);
+      if (info.conta_existente) renderContaExistente(info, token);
+      else renderValido(info, token);
       break;
     case "expirado":
       renderExpirado();

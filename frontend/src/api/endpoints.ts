@@ -45,7 +45,7 @@ export const api = {
     criar: (d: T.ConviteEntrada) => http.post<T.Convite>("/convite", d),
     cancelar: (id: number) => http.delete(`/convite/${id}`),
     verificar: (token: string) => http.get<T.ConviteInfo>(`/auth/convite/${token}`),
-    aceitar: (token: string, d: T.AceitarConviteEntrada) => http.post<T.TokenSaida>(`/auth/convite/${token}/aceitar`, d),
+    aceitar: (token: string, d: T.AceitarConviteEntrada = {}) => http.post<T.TokenSaida>(`/auth/convite/${token}/aceitar`, d),
   },
   clientes: {
     listar: () => http.get<T.Cliente[]>("/clientes"),

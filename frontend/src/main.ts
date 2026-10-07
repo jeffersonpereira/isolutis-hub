@@ -10,6 +10,7 @@ import { tempoReal } from "@/state/realtime";
 import { desenharOnline, indicarSincronizacao, mostrarConta } from "@/ui/casca";
 import { iniciarAvisoDeConflito } from "@/ui/conflito";
 import { detectarRotaConvite, iniciarTelaConvite } from "@/ui/convite";
+import { concluirConvitePendente, convitePendente } from "@/ui/convite-pendente";
 import { iniciarEventos } from "@/ui/eventos";
 import { observarGaveta } from "@/ui/gaveta";
 import { esconderLogin, pedirLogin, trocarSenha } from "@/ui/login";
@@ -30,6 +31,7 @@ import "@/features/faturamento";
 import "@/features/relatorios";
 import "@/features/equipe";
 import "@/features/empresa";
+import "@/features/conta";
 import "@/features/periodo";
 
 /** Busca nas listas: refaz a tela a cada tecla e devolve o foco ao campo. */
@@ -124,6 +126,7 @@ async function principal(): Promise<void> {
   obrigatorio("#sair").addEventListener("click", () => {
     tempoReal.parar();
     sessaoToken.definir(null);
+    convitePendente.limpar();
     location.replace(location.pathname);
   });
   obrigatorio("#trocarSenha").addEventListener("click", () => void trocarSenha());
@@ -141,6 +144,9 @@ async function principal(): Promise<void> {
     }
   }
   if (!usuario) usuario = await pedirLogin();
+
+  // Convite de quem já tinha conta: conclui o aceite agora que o login (e o 2FA) aconteceu.
+  await concluirConvitePendente();
 
   let selecao: Awaited<ReturnType<typeof selecionarEmpresa>>;
   try {

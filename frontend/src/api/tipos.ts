@@ -50,9 +50,10 @@ export interface ConviteEntrada {
   papel: "admin" | "membro";
 }
 
+/** Conta nova define a senha; conta existente aceita autenticada e não envia nada. */
 export interface AceitarConviteEntrada {
-  senha: string;
-  confirmar_senha: string;
+  senha?: string;
+  confirmar_senha?: string;
 }
 
 export interface ConviteInfo {
@@ -61,6 +62,8 @@ export interface ConviteInfo {
   empresa_nome: string;
   criado_por_nome: string;
   estado: "valido" | "expirado" | "usado";
+  /** Já existe conta para o e-mail do convite: o aceite exige entrar com ela, sem definir senha. */
+  conta_existente: boolean;
 }
 
 export interface TokenSaida {

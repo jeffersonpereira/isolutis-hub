@@ -6,7 +6,7 @@ from fastapi import APIRouter, Request, Response
 from fastapi.responses import JSONResponse
 
 from app.config import get_settings
-from app.deps import Sessao, UsuarioLogado
+from app.deps import Sessao, UsuarioLogado, UsuarioOpcional
 from app.errors import NaoAutenticado, RegraDeNegocio
 from app.ratelimit import limitador_de_login
 from app.schemas.convite import AceitarConviteEntrada, ConviteInfo
@@ -83,11 +83,13 @@ async def verificar_convite(token: str, sessao: Sessao) -> ConviteInfo:
 
 
 @router.post("/convite/{token}/aceitar", response_model=TokenSaida, tags=["Convites"])
-async def aceitar_convite(token: str, dados: AceitarConviteEntrada, sessao: Sessao) -> TokenSaida:
-    """Aceita o convite e cria (ou ativa) o usuário com a senha informada."""
-    if dados.senha != dados.confirmar_senha:
+async def aceitar_convite(
+    token: str, dados: AceitarConviteEntrada, sessao: Sessao, autenticado: UsuarioOpcional
+) -> TokenSaida:
+    """Aceita o convite. Conta nova define a senha; conta existente aceita autenticada, sem alterar a senha."""
+    if dados.senha is not None and dados.senha != dados.confirmar_senha:
         raise RegraDeNegocio("As senhas não conferem.")
-    usuario = await svc_convites.aceitar_convite(sessao, token, dados.senha)
+    usuario = await svc_convites.aceitar_convite(sessao, token, dados.senha, autenticado)
     await sessao.refresh(usuario, ["senha_definida"])
     return TokenSaida(
         access_token=criar_token(usuario.id, usuario.versao_sessao),

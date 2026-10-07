@@ -17,18 +17,34 @@ Sessao = Annotated[AsyncSession, Depends(get_session)]
 _bearer = HTTPBearer(auto_error=False)
 
 
+async def _usuario_do_token(sessao: AsyncSession, token: str) -> Usuario | None:
+    identidade = ler_token(token)
+    usuario = await sessao.get(Usuario, identidade[0]) if identidade else None
+    if usuario is None or not usuario.ativo or usuario.versao_sessao != identidade[1]:
+        return None
+    # Contrato de auditoria com o banco: o trigger set_audit usa este usuário.
+    await definir_usuario_da_transacao(sessao, usuario.id)
+    return usuario
+
+
 async def usuario_atual(
     sessao: Sessao, credenciais: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)]
 ) -> Usuario:
     if credenciais is None:
         raise NaoAutenticado("Entre com seu e-mail e senha.")
-    identidade = ler_token(credenciais.credentials)
-    usuario = await sessao.get(Usuario, identidade[0]) if identidade else None
-    if usuario is None or not usuario.ativo or usuario.versao_sessao != identidade[1]:
+    usuario = await _usuario_do_token(sessao, credenciais.credentials)
+    if usuario is None:
         raise NaoAutenticado("Sua sessão expirou. Entre de novo no Hub.")
-    # Contrato de auditoria com o banco: o trigger set_audit usa este usuário.
-    await definir_usuario_da_transacao(sessao, usuario.id)
     return usuario
+
+
+async def usuario_opcional(
+    sessao: Sessao, credenciais: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)]
+) -> Usuario | None:
+    """Usuário autenticado, ou None se não há token ou ele é inválido (rotas públicas com modo autenticado)."""
+    if credenciais is None:
+        return None
+    return await _usuario_do_token(sessao, credenciais.credentials)
 
 
 async def empresa_atual(
@@ -64,5 +80,6 @@ async def administrador(
 
 
 UsuarioLogado = Annotated[Usuario, Depends(usuario_atual)]
+UsuarioOpcional = Annotated[Usuario | None, Depends(usuario_opcional)]
 Administrador = Annotated[Usuario, Depends(administrador)]
 EmpresaAtual = Annotated[Empresa, Depends(empresa_atual)]
