@@ -52,6 +52,16 @@ function campoFocado(valor: string, cursor: number): HTMLInputElement {
   return campo;
 }
 
+/** Simula digitação real, tecla a tecla: insere cada caractere na posição do cursor e dispara `input`, como o navegador faz. */
+function digitar(campo: HTMLInputElement, texto: string): void {
+  for (const char of texto) {
+    const pos = campo.selectionStart ?? campo.value.length;
+    campo.value = campo.value.slice(0, pos) + char + campo.value.slice(pos);
+    campo.setSelectionRange(pos + 1, pos + 1);
+    campo.dispatchEvent(new Event("input"));
+  }
+}
+
 describe("ligarMascaraDeMoeda", () => {
   it("mascara enquanto digita", () => {
     const campo = campoFocado("", 0);
@@ -60,5 +70,29 @@ describe("ligarMascaraDeMoeda", () => {
     campo.value = "150000";
     campo.dispatchEvent(new Event("input"));
     expect(campo.value).toBe("1.500,00");
+  });
+
+  it("digitar tecla a tecla, do início ao fim, dá o mesmo resultado que atribuir o valor de uma vez", () => {
+    const campo = campoFocado("", 0);
+    ligarMascaraDeMoeda(campo);
+
+    digitar(campo, "13220");
+    expect(campo.value).toBe("132,20");
+  });
+
+  it("digitar tecla a tecla um valor menor que 3 dígitos (padding do centavo)", () => {
+    const campo = campoFocado("", 0);
+    ligarMascaraDeMoeda(campo);
+
+    digitar(campo, "50");
+    expect(campo.value).toBe("0,50");
+  });
+
+  it("cursor sempre termina no fim do campo após cada tecla", () => {
+    const campo = campoFocado("", 0);
+    ligarMascaraDeMoeda(campo);
+
+    digitar(campo, "132");
+    expect(campo.selectionStart).toBe(campo.value.length);
   });
 });
