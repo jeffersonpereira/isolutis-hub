@@ -172,7 +172,15 @@ async function selecionarEmpresa(): Promise<EmpresaAcesso> {
   return ativa;
 }
 
+/** Mostra "Dev" na barra superior fora de produção: dev server local (Vite) ou preview com VITE_AMBIENTE=desenvolvimento. */
+function mostrarSeloDeAmbiente(): void {
+  const dev = import.meta.env.DEV || import.meta.env.VITE_AMBIENTE === "desenvolvimento";
+  const selo = document.getElementById("seloAmbiente");
+  if (selo) selo.hidden = !dev;
+}
+
 async function principal(): Promise<void> {
+  mostrarSeloDeAmbiente();
   // /login/2fa só faz sentido logo após a senha; aberta direto ou recarregada, volta ao login.
   if (location.pathname === ROTA_2FA && !tokenSegundoFator.existe()) {
     history.replaceState(null, "", sessaoToken.obter() ? "/" : "/login");

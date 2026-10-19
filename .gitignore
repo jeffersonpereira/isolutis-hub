@@ -20,3 +20,4 @@ playwright-report/
 
 # Capturas da varredura visual (geradas localmente)
 e2e/visual/saida-varredura/
+.vercel
