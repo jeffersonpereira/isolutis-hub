@@ -5,7 +5,7 @@
  */
 
 import { numero } from "@/core/numero";
-import { reaplicarMascara } from "./mascara";
+import { reaplicarMascaraAoFim } from "./mascara";
 
 /** Agrupa milhar com "." e fixa duas casas decimais com ",": "150000" (dígitos) -> "1.500,00". */
 function formatarCentavos(digitos: string): string {
@@ -32,5 +32,5 @@ export function paraCampoMoeda(n: number | string | null | undefined): string {
 
 /** Liga a máscara monetária a um campo: mascara enquanto digita, preservando a posição do cursor. */
 export function ligarMascaraDeMoeda(campo: HTMLInputElement): void {
-  campo.addEventListener("input", () => reaplicarMascara(campo, mascararMoeda));
+  campo.addEventListener("input", () => reaplicarMascaraAoFim(campo, mascararMoeda));
 }
