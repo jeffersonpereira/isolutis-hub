@@ -1,19 +1,23 @@
-"""Geração dos documentos HTML para o cliente (orçamento e plano de entrega do projeto).
-
-São templates Jinja2 com autoescape: nenhum dado do usuário entra no HTML sem escape.
-O arquivo baixado é autocontido (logo embutida) e vira PDF pelo "Imprimir → Salvar como PDF" do navegador.
+"""Geração dos documentos para o cliente: orçamento (PDF, ReportLab) e plano de
+entrega do projeto (HTML, Jinja2 — pensado para "Imprimir → Salvar como PDF" do navegador).
 """
 
 import base64
+import io
 import re
-from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 from functools import lru_cache
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.units import mm
+from reportlab.pdfgen.canvas import Canvas
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
+from app.documents.reportlab_base import MARGEM, NAVY, SOFT, TEXTO, TEXTO_SUAVE, Identidade, brl, cabecalho_fiscal, esc
 from app.domain.datas import hoje
 from app.models import Orcamento, Parceiro, Projeto
 from app.schemas.usuario import MembroEquipe
@@ -26,15 +30,26 @@ STATUS_PROJETO = {
 }  # fmt: skip
 STATUS_ETAPA = {"a_fazer": "A fazer", "andamento": "Em andamento", "concluida": "Concluída"}
 
+PADRAO = Identidade(nome="iSolutis", subtitulo="Soluções e Inovações Tecnológicas")
+
+_ESTILO_CLIENTE_NOME = ParagraphStyle(
+    "cliente_nome", fontName="Helvetica-Bold", fontSize=13, textColor=NAVY, leading=16
+)
+_ESTILO_CLIENTE_INFO = ParagraphStyle(
+    "cliente_info", fontName="Helvetica", fontSize=9.5, textColor=TEXTO_SUAVE, leading=13
+)
+_ESTILO_TOTAL = ParagraphStyle(
+    "total", fontName="Helvetica-Bold", fontSize=13, textColor=NAVY, alignment=2, leading=17
+)
+_ESTILO_TOTAL_LINHA = ParagraphStyle(
+    "total_linha", fontName="Helvetica", fontSize=10, textColor=TEXTO, alignment=2, leading=14
+)
+_ESTILO_OBS = ParagraphStyle("obs", fontName="Helvetica", fontSize=9.5, textColor=TEXTO, leading=14)
+
 
 def slug(texto: str) -> str:
     """Nome seguro para arquivo: tudo que não é letra/número vira hífen."""
     return "".join(c if c.isalnum() else "-" for c in texto)
-
-
-def _brl(v: Decimal | float | None) -> str:
-    texto = f"{Decimal(v or 0):,.2f}"  # 1,234.50
-    return "R$ " + texto.replace(",", "X").replace(".", ",").replace("X", ".")
 
 
 def _qtd(v: Decimal) -> str:
@@ -50,12 +65,14 @@ def formatar_documento(v: str) -> str:
     return v
 
 
+def _data_br(d: date | None) -> str:
+    return d.strftime("%d/%m/%Y") if d else "—"
+
+
 @lru_cache
 def _ambiente() -> Environment:
     env = Environment(loader=FileSystemLoader(PASTA / "templates"), autoescape=select_autoescape(["html"]))
-    env.filters.update(
-        brl=_brl, qtd=_qtd, cnpj=formatar_documento, data_br=lambda d: d.strftime("%d/%m/%Y") if d else "—"
-    )
+    env.filters.update(data_br=lambda d: d.strftime("%d/%m/%Y") if d else "—")
     return env
 
 
@@ -69,38 +86,98 @@ def _css(nome: str) -> str:
     return (PASTA / "templates" / nome).read_text(encoding="utf-8")
 
 
-@dataclass(frozen=True)
-class Identidade:
-    """Quem emite o documento: dados do cadastro da empresa e a logomarca dela (data URL), se houver."""
+class _CanvasOrcamento(Canvas):
+    """Rodapé discreto repetido em cada página, identificando o orçamento (número e cliente)."""
 
-    nome: str
-    subtitulo: str | None = None
-    documento: str | None = None
-    contato: str | None = None
-    endereco: str | None = None
-    logo: str | None = None
+    def __init__(self, *args: object, identificacao: str, **kwargs: object) -> None:
+        super().__init__(*args, **kwargs)  # type: ignore[arg-type]
+        self._identificacao = identificacao
 
-    @property
-    def rodape(self) -> str:
-        return " · ".join(p for p in (self.nome, self.subtitulo, self.documento, self.contato) if p)
+    def showPage(self) -> None:
+        self.setFont("Helvetica", 7.5)
+        self.setFillColor(TEXTO_SUAVE)
+        self.drawString(MARGEM, MARGEM - 8, self._identificacao)
+        super().showPage()
 
 
-PADRAO = Identidade(nome="iSolutis", subtitulo="Soluções e Inovações Tecnológicas")
+def _tabela_itens(orc: Orcamento) -> Table:
+    # Células de Table com string pura são desenhadas como texto literal (sem parser de XML
+    # do Paragraph), então não precisam (e não devem) passar por `esc()` — ver cabecalho_fiscal
+    # e os Paragraph de cliente/observações abaixo, onde o escape é obrigatório.
+    linhas = [["Descrição", "Qtd", "Valor unitário", "Total"]]
+    for item in orc.itens:
+        descricao = f"{item.descricao} (mensal)" if item.mensal else item.descricao
+        total = f"{brl(item.subtotal)}/mês" if item.mensal else brl(item.subtotal)
+        linhas.append([descricao, _qtd(item.qtd), brl(item.preco_unitario), total])
 
-
-def orcamento_html(orc: Orcamento, cliente: Parceiro, empresa: Identidade = PADRAO) -> str:
-    return (
-        _ambiente()
-        .get_template("orcamento.html")
-        .render(o=orc, c=cliente, e=empresa, css=_css("_orcamento.css"), logo=empresa.logo or _imagem("logo.png"))
-    )
+    tabela = Table(linhas, repeatRows=1, colWidths=None)
+    tabela.setStyle(
+        TableStyle([
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, 0), 8.5),
+            ("TEXTCOLOR", (0, 0), (-1, 0), TEXTO_SUAVE),
+            ("BACKGROUND", (0, 0), (-1, 0), SOFT),
+            ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
+            ("FONTSIZE", (0, 1), (-1, -1), 9.5),
+            ("TEXTCOLOR", (0, 1), (-1, -1), TEXTO),
+            ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+            ("ALIGN", (0, 0), (0, -1), "LEFT"),
+            ("LINEBELOW", (0, 0), (-1, -1), 0.5, SOFT),
+            ("TOPPADDING", (0, 0), (-1, -1), 6),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ])
+    )  # fmt: skip
+    return tabela
 
 
 def orcamento_pdf(orc: Orcamento, cliente: Parceiro, empresa: Identidade = PADRAO) -> bytes:
-    from weasyprint import HTML
+    """Gera o PDF do orçamento com ReportLab (sem dependência nativa de sistema)."""
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, pagesize=A4,
+        leftMargin=MARGEM, rightMargin=MARGEM, topMargin=MARGEM, bottomMargin=MARGEM + 4 * mm,
+    )  # fmt: skip
 
-    html_content = orcamento_html(orc, cliente, empresa)
-    return HTML(string=html_content).write_pdf()  # type: ignore[no-any-return]
+    subtitulo = f"{_data_br(orc.data)} · Válido até {_data_br(orc.valido_ate)}"
+    story: list = [cabecalho_fiscal(empresa, f"Orçamento Nº {orc.numero}", subtitulo), Spacer(1, 16)]
+
+    story.append(Paragraph(esc(cliente.nome), _ESTILO_CLIENTE_NOME))
+    if cliente.contato:
+        linha = f"A/C {esc(cliente.contato)}" + (f" · {esc(cliente.cargo)}" if cliente.cargo else "")
+        story.append(Paragraph(linha, _ESTILO_CLIENTE_INFO))
+    if cliente.cpf_cnpj:
+        rotulo = "CPF" if cliente.tipo_pessoa == "PF" else "CNPJ"
+        story.append(Paragraph(f"{rotulo} {esc(formatar_documento(cliente.cpf_cnpj))}", _ESTILO_CLIENTE_INFO))
+    story.append(Spacer(1, 12))
+
+    story.append(_tabela_itens(orc))
+    story.append(Spacer(1, 10))
+
+    if orc.desconto:
+        story.append(Paragraph(f"Desconto: −{brl(orc.desconto)}", _ESTILO_TOTAL_LINHA))
+    story.append(Paragraph(f"Valor do projeto: {brl(orc.total_projeto)}", _ESTILO_TOTAL))
+    if orc.total_mensal:
+        story.append(Paragraph(f"Manutenção mensal: {brl(orc.total_mensal)}/mês", _ESTILO_TOTAL_LINHA))
+
+    if orc.obs:
+        story.append(Spacer(1, 16))
+        tabela_obs = Table([[Paragraph(esc(orc.obs).replace("\n", "<br/>"), _ESTILO_OBS)]], colWidths=[None])
+        tabela_obs.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), SOFT),
+            ("LINEBEFORE", (0, 0), (0, 0), 3, NAVY),
+            ("TOPPADDING", (0, 0), (-1, -1), 10),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+            ("LEFTPADDING", (0, 0), (-1, -1), 14),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 14),
+        ]))  # fmt: skip
+        story.append(tabela_obs)
+
+    identificacao = f"Orçamento Nº {orc.numero} · {cliente.nome}"
+    doc.build(
+        story,
+        canvasmaker=lambda *args, **kwargs: _CanvasOrcamento(*args, identificacao=identificacao, **kwargs),
+    )
+    return buffer.getvalue()
 
 
 def _linhas(texto: str | None) -> list[str]:

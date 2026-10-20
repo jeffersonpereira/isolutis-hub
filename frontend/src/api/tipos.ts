@@ -117,7 +117,7 @@ export interface FluxoItem {
   nome_mes: string;
   entradas: number;
   saidas: number;
-  saldo: number;
+  saldo_mes: number;
   saldo_acumulado: number;
 }
 

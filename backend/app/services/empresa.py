@@ -8,7 +8,8 @@ from datetime import UTC, datetime
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.documents.render import Identidade, formatar_documento
+from app.documents.render import formatar_documento
+from app.documents.reportlab_base import Identidade
 from app.errors import RegraDeNegocio
 from app.financeiro.regras import cnpj_valido, cpf_valido
 from app.models import Empresa, Municipio

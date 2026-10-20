@@ -32,7 +32,7 @@ async def dre(
     if formato == "pdf":
         emissor = await svc_empresa.identidade(sessao, empresa)
         try:
-            pdf_bytes = relatorio_pdf(dados, "dre", emissor.nome, ano, emissor.logo, emissor.rodape)
+            pdf_bytes = relatorio_pdf(dados, "dre", emissor, ano)
         except Exception as exc:
             raise ErroApp(
                 "Não foi possível gerar o PDF. Tente novamente.",
@@ -48,8 +48,9 @@ async def dre(
 
     if formato == "xlsx":
         fluxo = await calcular_fluxo_caixa(sessao, empresa.id, ano)
+        emissor = await svc_empresa.identidade(sessao, empresa)
         try:
-            xlsx_bytes = relatorio_xlsx(dados, fluxo, empresa.nome, ano)
+            xlsx_bytes = relatorio_xlsx(dados, fluxo, emissor, ano)
         except Exception as exc:
             raise ErroApp(
                 "Não foi possível gerar a planilha. Tente novamente.",
@@ -80,7 +81,7 @@ async def fluxo_caixa(
     if formato == "pdf":
         emissor = await svc_empresa.identidade(sessao, empresa)
         try:
-            pdf_bytes = relatorio_pdf(dados, "fluxo_caixa", emissor.nome, ano, emissor.logo, emissor.rodape)
+            pdf_bytes = relatorio_pdf(dados, "fluxo_caixa", emissor, ano)
         except Exception as exc:
             raise ErroApp(
                 "Não foi possível gerar o PDF. Tente novamente.",
@@ -96,8 +97,9 @@ async def fluxo_caixa(
 
     if formato == "xlsx":
         dre_dados = await calcular_dre(sessao, empresa.id, ano)
+        emissor = await svc_empresa.identidade(sessao, empresa)
         try:
-            xlsx_bytes = relatorio_xlsx(dre_dados, dados, empresa.nome, ano)
+            xlsx_bytes = relatorio_xlsx(dre_dados, dados, emissor, ano)
         except Exception as exc:
             raise ErroApp(
                 "Não foi possível gerar a planilha. Tente novamente.",
