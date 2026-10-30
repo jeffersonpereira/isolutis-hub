@@ -49,8 +49,6 @@ export const ui = {
   tarefaConcluidasTodas: false,
   buscaFin: "",
   buscaPlano: "",
-  finTipo: "todos",
-  finStatus: "todos",
 };
 
 /** Estado da conexão com os dados. */

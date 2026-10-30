@@ -33,7 +33,7 @@ async def _criar(api: AsyncClient, caminho: str, corpo: dict, esperado: int = 20
 
 
 async def _titulos(api: AsyncClient, rec_id: str) -> list[dict]:
-    todos = (await api.get(f"{F}/titulos")).json()
+    todos = (await api.get(f"{F}/titulos", params={"tamanho": 100})).json()["itens"]
     return sorted((t for t in todos if t["recorrencia_id"] == rec_id), key=lambda t: t["data_vencimento"])
 
 

@@ -95,6 +95,7 @@ def test_lista_de_excecoes_so_tem_rotas_que_existem():
         ("GET", "/financeiro/recorrencias", "financeiro"),
         ("GET", "/relatorios/dre", "financeiro"),
         ("GET", "/financeiro/titulos", "financeiro"),
+        ("GET", "/financeiro/titulos/exportar", "financeiro"),
         ("GET", "/financeiro/instituicoes", "base"),
         ("GET", "/parceiros", "financeiro"),
         ("GET", "/parceiros/papeis", "base"),

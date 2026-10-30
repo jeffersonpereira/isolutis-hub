@@ -1068,6 +1068,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/financeiro/titulos/exportar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Exportar Titulos
+         * @description CSV de todos os títulos do filtro (sem paginação), pronto para planilhas em português.
+         */
+        get: operations["exportar_titulos_api_v1_financeiro_titulos_exportar_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/financeiro/titulos/{id_}": {
         parameters: {
             query?: never;
@@ -2807,6 +2827,14 @@ export interface components {
             /** Itens */
             itens: components["schemas"]["ItemLeitura"][];
         };
+        /** PaginaTitulos */
+        PaginaTitulos: {
+            /** Itens */
+            itens: components["schemas"]["TituloLeitura"][];
+            /** Total */
+            total: number;
+            totais: components["schemas"]["TotaisTitulos"];
+        };
         /**
          * Painel
          * @description Campos de `financeiro` e `comercial` só vêm quando o papel tem a permissão; o front omite o que não vier.
@@ -3888,6 +3916,16 @@ export interface components {
              */
             token_type: string;
             usuario: components["schemas"]["UsuarioLeitura"];
+        };
+        /**
+         * TotaisTitulos
+         * @description Valores devidos em aberto do filtro completo (não só da página).
+         */
+        TotaisTitulos: {
+            /** A Receber */
+            a_receber: number;
+            /** A Pagar */
+            a_pagar: number;
         };
         /** TransferenciaEntrada */
         TransferenciaEntrada: {
@@ -6810,11 +6848,29 @@ export interface operations {
     listar_titulos_api_v1_financeiro_titulos_get: {
         parameters: {
             query?: {
+                ordem?: "vencimento" | "valor" | "parceiro";
+                sentido?: "asc" | "desc";
+                pagina?: number;
+                tamanho?: number;
                 tipo?: ("P" | "R") | null;
                 status?: ("A" | "Q" | "C") | null;
-                de?: string | null;
-                ate?: string | null;
                 busca?: string | null;
+                parceiro_id?: string | null;
+                plano_conta_id?: string | null;
+                conta_bancaria_id?: string | null;
+                /** @description Vencimento a partir de */
+                de?: string | null;
+                /** @description Vencimento até */
+                ate?: string | null;
+                /** @description Pagamento a partir de */
+                pago_de?: string | null;
+                /** @description Pagamento até */
+                pago_ate?: string | null;
+                /** @description Valor devido mínimo */
+                valor_min?: number | string | null;
+                /** @description Valor devido máximo */
+                valor_max?: number | string | null;
+                recorrente?: boolean | null;
             };
             header?: {
                 "X-Empresa-ID"?: string | null;
@@ -6830,7 +6886,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TituloLeitura"][];
+                    "application/json": components["schemas"]["PaginaTitulos"];
                 };
             };
             /** @description Validation Error */
@@ -6867,6 +6923,57 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["TituloLeitura"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    exportar_titulos_api_v1_financeiro_titulos_exportar_get: {
+        parameters: {
+            query?: {
+                ordem?: "vencimento" | "valor" | "parceiro";
+                sentido?: "asc" | "desc";
+                tipo?: ("P" | "R") | null;
+                status?: ("A" | "Q" | "C") | null;
+                busca?: string | null;
+                parceiro_id?: string | null;
+                plano_conta_id?: string | null;
+                conta_bancaria_id?: string | null;
+                /** @description Vencimento a partir de */
+                de?: string | null;
+                /** @description Vencimento até */
+                ate?: string | null;
+                /** @description Pagamento a partir de */
+                pago_de?: string | null;
+                /** @description Pagamento até */
+                pago_ate?: string | null;
+                /** @description Valor devido mínimo */
+                valor_min?: number | string | null;
+                /** @description Valor devido máximo */
+                valor_max?: number | string | null;
+                recorrente?: boolean | null;
+            };
+            header?: {
+                "X-Empresa-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
