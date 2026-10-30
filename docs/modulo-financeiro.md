@@ -17,7 +17,7 @@ dependência `administrador` por `usuario_atual` em `app/financeiro/rotas.py` e 
 | Plano de Contas | TreeView (expandir/recolher); Nova conta (filha da selecionada, ou de 1º nível sem seleção), Editar e Excluir atuam na conta selecionada. O código vem sugerido; natureza e nível são herdados do pai. | US01, RN01 |
 | Conta Bancária | Lista, modal de cadastro, editar/excluir na linha. Instituição financeira + nome + saldo inicial. | US02, RN02 |
 | Parceiro de Negócio | Hub de cadastro: papéis (cliente, fornecedor, funcionário), filtro por papel, busca por nome/CPF/CNPJ, PF/PJ, documento validado, UF → município. | US04 |
-| Títulos Financeiros | Lista com filtros (tipo, situação), modal de lançamento (valor, desconto, multa, juros, quitação). Ao escolher a conta do plano só aparecem **analíticas** do tipo certo. | US03, RN03, RN04 |
+| Títulos Financeiros | Lista com filtros no servidor (tipo, situação, atalhos "Atrasados" e "Vence nos próximos 7 dias", busca por parceiro e uma gaveta de filtros avançados: parceiro, conta do plano, conta bancária, vencimento, pagamento, faixa de valor e origem), ordenação por vencimento, parceiro ou valor, paginação (25, 50 ou 100) com totais em aberto do filtro inteiro, estado na URL (`/fin-titulos?status=A&pag=2`), exportação CSV (`GET /financeiro/titulos/exportar`) e modal de lançamento (valor, desconto, multa, juros, quitação). Ao escolher a conta do plano só aparecem **analíticas** do tipo certo. | US03, RN03, RN04 |
 | Fluxo de Caixa | Mês a mês: entradas e saídas realizadas (quitados) e previstas (abertos), saldo do mês e acumulado. Não estava nas tasks; é a US05. | US05 |
 
 Os "modais" usam a gaveta lateral do sistema (o mesmo componente de todos os formulários) para manter a identidade visual.

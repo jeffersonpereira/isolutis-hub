@@ -11,6 +11,7 @@ export type Parceiro = S["ParceiroLeitura"];
 export type ParceiroEntrada = S["ParceiroEntrada"];
 export type Papel = S["PapelLeitura"];
 export type Titulo = S["TituloLeitura"];
+export type PaginaTitulos = S["PaginaTitulos"];
 export type TituloEntrada = S["TituloEntrada"];
 export type Municipio = S["MunicipioLeitura"];
 export type Instituicao = S["InstituicaoLeitura"];
@@ -45,7 +46,8 @@ export const apiFinanceiro = {
     excluir: (id: string) => http.delete(`/parceiros/${id}`),
   },
   titulos: {
-    listar: (filtros: { tipo?: string; status?: string } = {}) => http.get<Titulo[]>(`${B}/titulos`, filtros),
+    listar: (consulta: Record<string, string | number | undefined> = {}) => http.get<PaginaTitulos>(`${B}/titulos`, consulta),
+    exportar: (consulta: Record<string, string | undefined> = {}) => http.baixar(`${B}/titulos/exportar`, consulta),
     criar: (d: TituloEntrada) => http.post<Titulo>(`${B}/titulos`, d),
     atualizar: (id: string, d: TituloEntrada) => http.put<Titulo>(`${B}/titulos/${id}`, d),
     excluir: (id: string) => http.delete(`${B}/titulos/${id}`),

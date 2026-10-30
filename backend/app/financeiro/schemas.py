@@ -128,6 +128,19 @@ class TituloLeitura(BaseModel):
     recorrencia_id: UUID | None = None
 
 
+class TotaisTitulos(Leitura):
+    """Valores devidos em aberto do filtro completo (não só da página)."""
+
+    a_receber: Valor
+    a_pagar: Valor
+
+
+class PaginaTitulos(Leitura):
+    itens: list[TituloLeitura]
+    total: int
+    totais: TotaisTitulos
+
+
 # ----------------------------------------------------------------------------- recorrência de títulos
 Frequencia = Literal["semanal", "quinzenal", "mensal", "bimestral", "trimestral", "semestral", "anual"]
 Termino = Literal["data", "quantidade", "sem_fim"]

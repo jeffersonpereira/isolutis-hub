@@ -2,54 +2,152 @@ import { $, $$ } from "@/core/dom";
 import { brl, dataBR, hoje } from "@/core/formato";
 import { html, type Safe } from "@/core/html";
 import { numero } from "@/core/numero";
-import { ui } from "@/state/estado";
-import { registrarVista, render } from "@/state/nucleo";
+import { gravarConsulta } from "@/state/consulta-url";
+import { recarregarVista, registrarVista, render } from "@/state/nucleo";
 import { registrarAcao } from "@/ui/acoes";
 import { area, campo, fv, inp, inpMoeda, sel } from "@/ui/campos";
+import { chipsDeFiltro as chipsDeFiltroUi } from "@/ui/chips-filtro";
 import { combobox, comboboxDe, type OpcaoCombobox } from "@/ui/combobox";
+import { estadoDeErro } from "@/ui/componentes";
+import { paginacao } from "@/ui/paginacao";
 import { tentar } from "@/ui/erros";
 import { abrirGaveta } from "@/ui/gaveta";
 import { espaco } from "@/ui/formularios";
 import { gravar } from "@/ui/gravacao";
 import { avisar } from "@/ui/toast";
-import { apiFinanceiro, type ContaBancaria, type Parceiro, type PlanoConta, type Titulo, type TituloEntrada } from "./api";
+import { apiFinanceiro, type ContaBancaria, type PaginaTitulos, type Parceiro, type PlanoConta, type Titulo, type TituloEntrada } from "./api";
 import { acoesDaLinha, confirmarExclusao, contasDoPlanoParaTitulo, GRUPO, parceirosParaTitulo } from "./comum";
 import { opcaoDaConta, prepararCadastroDeConta } from "./contas-bancarias";
+import {
+  aplicarAtalho, atalhoAtivo, chipsDeFiltro, contarAvancados, FILTROS_AVANCADOS, filtrosDaApi, lerConsultaTitulos, limparChaves, PADROES_TITULOS, TAMANHOS_DE_PAGINA, ultimaPagina, valorParaConsulta,
+  type Atalho, type ConsultaTitulos, type NomesDeApoio,
+} from "./titulos-consulta";
 import { opcaoDoParceiro, prepararCadastroDeParceiro } from "../parceiros/cadastro-rapido";
 
 const STATUS: Record<string, readonly [string, string]> = { A: ["Aberto", "info"], Q: ["Quitado", "ok"], C: ["Cancelado", ""] };
 const TIPO: Record<string, string> = { P: "A pagar", R: "A receber" };
 
-const tela: { titulos: Titulo[] | null } = { titulos: null };
+interface Apoio {
+  parceiros: Parceiro[];
+  plano: PlanoConta[];
+  contas: ContaBancaria[];
+}
+const tela: { pagina: PaginaTitulos | null; consulta: ConsultaTitulos; apoio: Apoio | null; falhou: boolean } = {
+  pagina: null,
+  consulta: { ...PADROES_TITULOS },
+  apoio: null,
+  falhou: false,
+};
+/** Só a resposta da última consulta vale (uma busca digitada depressa não pode ser sobrescrita por outra mais lenta). */
+let consultaEmCurso = 0;
 
-async function carregar(): Promise<void> {
-  tela.titulos = await apiFinanceiro.titulos.listar();
+const nomeDe = <T extends { id: string }>(lista: readonly T[] | undefined, id: string, rotulo: (x: T) => string): string => {
+  const x = lista?.find((i) => i.id === id);
+  return x ? rotulo(x) : "…";
+};
+const NOMES: NomesDeApoio = {
+  parceiro: (id) => nomeDe(tela.apoio?.parceiros, id, (p) => p.nome),
+  plano: (id) => nomeDe(tela.apoio?.plano, id, (c) => `${c.codigo} ${c.nome}`),
+  conta: (id) => nomeDe(tela.apoio?.contas, id, (c) => c.nome),
+};
+
+/** Listas de apoio (parceiros, plano e contas) para a gaveta e para os nomes dos chips; buscadas na hora, sem cache. */
+const buscarApoio = async (): Promise<Apoio> => {
+  const [parceiros, plano, contas] = await Promise.all([apiFinanceiro.parceiros.listar(), apiFinanceiro.plano.listar(), apiFinanceiro.contas.listar()]);
+  return { parceiros, plano, contas };
+};
+
+/** Busca a página da consulta atual; se ela ficou além do fim (exclusão, filtro mais estreito), recua para a última. */
+async function buscarPagina(): Promise<void> {
+  const minha = ++consultaEmCurso;
+  const pedir = (c: ConsultaTitulos): Promise<PaginaTitulos> => apiFinanceiro.titulos.listar({ ...filtrosDaApi(c), pagina: Number(c.pag), tamanho: Number(c.tam) });
+  const c = tela.consulta;
+  let pagina = await pedir(c);
+  const ultima = ultimaPagina(pagina.total, Number(c.tam));
+  let consulta = c;
+  if (Number(c.pag) > ultima) {
+    consulta = { ...c, pag: String(ultima) };
+    pagina = await pedir(consulta);
+  }
+  if (minha !== consultaEmCurso) return;
+  if (consulta !== c) {
+    tela.consulta = consulta;
+    gravarConsulta(PADROES_TITULOS, consulta, "replace");
+  }
+  tela.pagina = pagina;
+  tela.falhou = false;
 }
 
+/** Ao abrir a tela (e quando o servidor avisa de mudanças): o estado vem da URL. */
+async function carregar(): Promise<void> {
+  tela.consulta = lerConsultaTitulos(location.search);
+  const c = tela.consulta;
+  const precisaDeNomes = !tela.apoio && !!(c.parceiro || c.plano || c.conta);
+  try {
+    await Promise.all([buscarPagina(), precisaDeNomes ? buscarApoio().then((a) => void (tela.apoio = a)) : undefined]);
+  } catch (e) {
+    tela.falhou = true;
+    throw e;
+  }
+}
+
+/** Troca a consulta, grava na URL (`push` só ao mudar de página) e busca de novo. */
+async function aplicar(nova: ConsultaTitulos, modo: "push" | "replace" = "replace"): Promise<void> {
+  tela.consulta = nova;
+  gravarConsulta(PADROES_TITULOS, nova, modo);
+  render();
+  await tentar(async () => {
+    await buscarPagina();
+    if (!tela.apoio && (nova.parceiro || nova.plano || nova.conta)) tela.apoio = await buscarApoio();
+  });
+  render();
+}
+
+const mudar = (campos: Partial<ConsultaTitulos>, modo: "push" | "replace" = "replace"): Promise<void> => aplicar({ ...tela.consulta, pag: "1", ...campos }, modo);
+
 function vista(): Safe {
-  if (!tela.titulos) return html`<div class="head"><div><h1>Títulos financeiros</h1></div></div><p class="sub">Carregando…</p>`;
+  const c = tela.consulta;
+  const cabeca = (descricao: Safe | string): Safe => html`<div class="head"><div><h1>Títulos financeiros</h1><p>${descricao}</p></div>
+    <div class="tools"><button class="btn" data-act="novaRecorrencia">Nova recorrência</button><button class="btn primary" data-act="novoTitulo">Novo título</button></div></div>`;
+  if (!tela.pagina) {
+    return tela.falhou
+      ? html`${cabeca("Contas a pagar e a receber")}${estadoDeErro({ mensagem: "Não foi possível carregar os títulos.", acaoRepetir: "finRecarregar" })}`
+      : html`<div class="head"><div><h1>Títulos financeiros</h1></div></div><p class="sub">Carregando…</p>`;
+  }
+  const { itens, total, totais } = tela.pagina;
   const h = hoje();
-  const lista = tela.titulos.filter((t) => (ui.finTipo === "todos" || t.tipo_conta === ui.finTipo) && (ui.finStatus === "todos" || t.status === ui.finStatus));
+  const chips = chipsDeFiltro(c, NOMES);
+  const filtrado = chips.length > 0 || c.tipo !== "todos" || c.status !== "todos";
+  const nAvancados = contarAvancados(c);
+  const atalho = atalhoAtivo(c, h);
   const seg = (acao: string, atual: string, opcoes: Array<[string, string]>): Safe =>
     html`<div class="seg" role="group">${opcoes.map(([k, r]) => html`<button data-act="${acao}" data-valor="${k}" aria-pressed="${atual === k}">${r}</button>`)}</div>`;
-  const abertos = tela.titulos.filter((t) => t.status === "A");
-  const aPagar = abertos.filter((t) => t.tipo_conta === "P").reduce((s, t) => s + t.valor_devido, 0);
-  const aReceber = abertos.filter((t) => t.tipo_conta === "R").reduce((s, t) => s + t.valor_devido, 0);
-  return html`<div class="head"><div><h1>Títulos financeiros</h1><p>Contas a pagar e a receber · em aberto: <b class="num">${brl(aReceber)}</b> a receber, <b class="num">${brl(aPagar)}</b> a pagar</p></div>
-    <div class="tools"><button class="btn" data-act="novaRecorrencia">Nova recorrência</button><button class="btn primary" data-act="novoTitulo">Novo título</button></div></div>
-  <div class="fin-filtros">${seg("filtroFinTipo", ui.finTipo, [["todos", "Todos"], ["R", "A receber"], ["P", "A pagar"]])}${seg("filtroFinStatus", ui.finStatus, [["todos", "Todos"], ["A", "Abertos"], ["Q", "Quitados"], ["C", "Cancelados"]])}</div>
+  const ordenavel = (chave: string, rotulo: string, classe = ""): Safe => {
+    const ativa = c.ordem === chave;
+    return html`<th class="${classe}" aria-sort="${ativa ? (c.sentido === "asc" ? "ascending" : "descending") : "none"}"><button type="button" class="th-ordem" data-act="finOrdenar" data-valor="${chave}">${rotulo}<span aria-hidden="true">${ativa ? (c.sentido === "asc" ? " ▲" : " ▼") : ""}</span></button></th>`;
+  };
+  const resumo = html`${filtrado ? "No filtro" : "Em aberto"}: <b class="num">${brl(totais.a_receber)}</b> a receber, <b class="num">${brl(totais.a_pagar)}</b> a pagar em aberto`;
+  return html`${cabeca(html`Contas a pagar e a receber · ${resumo}`)}
+  <div class="fin-filtros">${seg("filtroFinTipo", c.tipo, [["todos", "Todos"], ["R", "A receber"], ["P", "A pagar"]])}${seg("filtroFinStatus", c.status, [["todos", "Todos"], ["A", "Abertos"], ["Q", "Quitados"], ["C", "Cancelados"]])}
+    <button type="button" class="chip" data-act="finAtalho" data-valor="atrasados" aria-pressed="${atalho === "atrasados"}">Atrasados</button>
+    <button type="button" class="chip" data-act="finAtalho" data-valor="semana" aria-pressed="${atalho === "semana"}">Vence nos próximos 7 dias</button>
+    <input class="search" type="search" data-fin-busca aria-label="Buscar por parceiro" placeholder="Buscar por parceiro" value="${c.q}">
+    <button type="button" class="btn" data-act="finFiltros" aria-haspopup="dialog">${nAvancados ? `Filtros (${nAvancados})` : "Filtros"}</button>
+    <button type="button" class="btn" data-act="finExportar"${total ? "" : " disabled"}>Exportar CSV</button></div>
+  ${chipsDeFiltroUi({ rotulos: chips.map((x) => x.rotulo), acaoRemover: "finRemoverChip", acaoLimpar: "finLimparChips" })}
   ${
-    tela.titulos.length
-      ? html`<div class="tbl-wrap"><table style="min-width:860px"><thead><tr><th>Vencimento</th><th>Tipo</th><th>Parceiro</th><th>Conta do plano</th><th>Conta bancária</th><th class="r">Valor devido</th><th>Situação</th><th></th></tr></thead><tbody>
-      ${lista.map((t) => {
+    total || filtrado
+      ? html`<div class="tbl-wrap"><table style="min-width:860px"><thead><tr>${ordenavel("vencimento", "Vencimento")}<th>Tipo</th>${ordenavel("parceiro", "Parceiro")}<th>Conta do plano</th><th>Conta bancária</th>${ordenavel("valor", "Valor devido", "r")}<th>Situação</th><th></th></tr></thead><tbody>
+      ${itens.map((t) => {
         const [rot, cls] = STATUS[t.status] ?? ["", ""];
         const atrasado = t.status === "A" && t.data_vencimento < h;
         return html`<tr><td class="num">${dataBR(t.data_vencimento)}${atrasado ? html`<div class="sub" style="color:var(--bad-texto)">atrasado</div>` : ""}</td><td><span class="pill ${t.tipo_conta === "R" ? "ok" : "bad"}">${TIPO[t.tipo_conta]}</span></td>
         <td><b>${t.parceiro_nome}</b>${t.recorrencia_id ? html` <a class="pill info" href="/fin-recorrencias" data-go="fin-recorrencias" title="Título gerado por uma recorrência">Recorrente</a>` : ""}</td><td><span class="num sub">${t.plano_conta_codigo}</span> ${t.plano_conta_nome}</td><td>${t.conta_bancaria_nome}</td>
         <td class="r num">${brl(t.valor_devido)}${t.status === "Q" && t.valor_quitacao !== t.valor_devido ? html`<div class="sub">pago ${brl(t.valor_quitacao)}</div>` : ""}</td><td><span class="pill ${cls}">${rot}</span>${t.data_pagamento ? html`<div class="sub num">${dataBR(t.data_pagamento)}</div>` : ""}</td><td class="r">${acoesDaLinha("titulo", t.id)}</td></tr>`;
       })}
-      ${!lista.length ? html`<tr><td colspan="8" class="sub">Nenhum título com esses filtros.</td></tr>` : ""}
-    </tbody></table></div>`
+      ${!itens.length ? html`<tr><td colspan="8" class="sub">Nenhum título com esses filtros.</td></tr>` : ""}
+    </tbody></table></div>
+    ${paginacao({ pagina: Number(c.pag), tamanho: Number(c.tam), total, tamanhos: TAMANHOS_DE_PAGINA, acaoPagina: "finPagina", acaoTamanho: "finTamanho" })}`
       : html`<div class="empty"><b>Nenhum título lançado</b>Antes de lançar, cadastre o plano de contas, uma conta bancária e o parceiro.<br><button class="btn primary" data-act="novoTitulo">Lançar o primeiro título</button></div>`
   }`;
 }
@@ -154,7 +252,7 @@ async function formTitulo(t?: Titulo): Promise<void> {
   });
 }
 
-const porId = (id?: string): Titulo | undefined => tela.titulos?.find((t) => t.id === id);
+const porId = (id?: string): Titulo | undefined => tela.pagina?.itens.find((t) => t.id === id);
 
 registrarAcao("novoTitulo", () => void formTitulo());
 registrarAcao("tituloEditar", (alvo) => {
@@ -165,11 +263,89 @@ registrarAcao("tituloExcluir", (alvo) => {
   const t = porId(alvo.dataset.id);
   if (t) confirmarExclusao({ titulo: "Excluir título", mensagem: `Excluir o título de ${t.parceiro_nome} com vencimento em ${dataBR(t.data_vencimento)} (${brl(t.valor_devido)})?`, sucesso: "Título excluído", operacao: () => apiFinanceiro.titulos.excluir(t.id) });
 });
-registrarAcao("filtroFinTipo", (alvo) => {
-  ui.finTipo = alvo.dataset.valor ?? "todos";
-  render();
+registrarAcao("filtroFinTipo", (alvo) => void mudar({ tipo: alvo.dataset.valor ?? "todos" }));
+registrarAcao("filtroFinStatus", (alvo) => void mudar({ status: alvo.dataset.valor ?? "todos" }));
+registrarAcao("finAtalho", (alvo) => {
+  const atalho = alvo.dataset.valor as Atalho;
+  // clicar no atalho já ativo o desliga (volta a Situação e ao vencimento do padrão)
+  if (atalhoAtivo(tela.consulta, hoje()) === atalho) return void aplicar(limparChaves({ ...tela.consulta, status: "todos" }, ["venc_de", "venc_ate"]));
+  void aplicar(aplicarAtalho(tela.consulta, atalho, hoje()));
 });
-registrarAcao("filtroFinStatus", (alvo) => {
-  ui.finStatus = alvo.dataset.valor ?? "todos";
-  render();
+registrarAcao("finOrdenar", (alvo) => {
+  const ordem = alvo.dataset.valor ?? "vencimento";
+  void mudar({ ordem, sentido: tela.consulta.ordem === ordem && tela.consulta.sentido === "asc" ? "desc" : "asc" });
 });
+registrarAcao("finPagina", (alvo) => {
+  const pagina = Number(alvo.dataset.valor);
+  if (pagina >= 1) void aplicar({ ...tela.consulta, pag: String(pagina) }, "push");
+});
+registrarAcao("finTamanho", (alvo) => void mudar({ tam: (alvo as HTMLSelectElement).value }));
+registrarAcao("finRemoverChip", (alvo) => {
+  const chip = chipsDeFiltro(tela.consulta, NOMES)[Number(alvo.dataset.i)];
+  if (chip) void aplicar(limparChaves(tela.consulta, chip.chaves));
+});
+registrarAcao("finLimparChips", () => void aplicar(limparChaves(tela.consulta, chipsDeFiltro(tela.consulta, NOMES).flatMap((c) => c.chaves))));
+registrarAcao("finExportar", () => void tentar(() => apiFinanceiro.titulos.exportar(filtrosDaApi(tela.consulta))));
+registrarAcao("finRecarregar", () => void recarregarVista());
+registrarAcao("finFiltros", () => void abrirFiltros());
+
+/** Busca por parceiro: espera a pessoa parar de digitar, consulta o servidor e devolve o foco ao campo (a tela é refeita). */
+let esperaDaBusca: ReturnType<typeof setTimeout> | undefined;
+document.addEventListener("input", (e) => {
+  const campo = e.target as HTMLInputElement;
+  if (!campo.matches?.("[data-fin-busca]")) return;
+  clearTimeout(esperaDaBusca);
+  esperaDaBusca = setTimeout(async () => {
+    const digitado = campo.value.trim();
+    if (digitado === tela.consulta.q) return;
+    const tinhaFoco = document.activeElement === campo;
+    await mudar({ q: digitado });
+    const novo = $<HTMLInputElement>("[data-fin-busca]");
+    if (!novo || !tinhaFoco) return;
+    novo.focus();
+    novo.setSelectionRange(novo.value.length, novo.value.length);
+  }, 300);
+});
+
+/** Gaveta dos filtros avançados: preenche com a consulta atual e, ao aplicar, volta à primeira página. */
+async function abrirFiltros(): Promise<void> {
+  const apoio = await tentar(buscarApoio);
+  if (!apoio) return;
+  tela.apoio = apoio;
+  const c = tela.consulta;
+  const nomeDoPai = new Map(apoio.plano.map((x) => [x.id, `${x.codigo} ${x.nome}`]));
+  const analiticas: OpcaoCombobox[] = apoio.plano
+    .filter((x) => x.tipo_conta === "A")
+    .map((x) => ({ id: x.id, codigo: x.codigo, rotulo: x.nome, grupo: x.plano_pai_id ? nomeDoPai.get(x.plano_pai_id) : undefined }));
+  abrirGaveta({
+    titulo: "Filtros avançados",
+    corpo: html`<div class="fields">
+      <div class="field full"><label for="f-parceiro">Parceiro</label>${combobox({ nome: "parceiro", rotulo: "Parceiro", opcoes: apoio.parceiros.map(opcaoDoParceiro), valor: c.parceiro, vazio: "Todos os parceiros" })}</div>
+      <div class="field full"><label for="f-plano">Conta do plano de contas</label>${combobox({ nome: "plano", rotulo: "Conta do plano de contas", opcoes: analiticas, valor: c.plano, vazio: "Todas as contas" })}</div>
+      <div class="field full"><label for="f-conta">Conta bancária</label>${combobox({ nome: "conta", rotulo: "Conta bancária", opcoes: apoio.contas.map(opcaoDaConta), valor: c.conta, vazio: "Todas as contas" })}</div>
+      ${campo("Vencimento a partir de", inp("venc_de", c.venc_de, 'type="date"'))}${campo("Vencimento até", inp("venc_ate", c.venc_ate, 'type="date"'))}
+      ${campo("Pagamento a partir de", inp("pago_de", c.pago_de, 'type="date"'))}${campo("Pagamento até", inp("pago_ate", c.pago_ate, 'type="date"'))}
+      ${campo("Valor devido mínimo (R$)", inpMoeda("vmin", c.vmin))}${campo("Valor devido máximo (R$)", inpMoeda("vmax", c.vmax))}
+      ${campo("Origem", sel("origem", [["todas", "Todos"], ["recorrentes", "Só recorrentes"], ["avulsos", "Só avulsos"]], c.origem), true)}
+    </div>`,
+    rodape: html`<button class="btn primary" data-aplicar>Aplicar</button><button class="btn" data-limpar>Limpar</button>${espaco}`,
+    montar: (f, fechar, L) => {
+      $("[data-aplicar]", L)?.addEventListener("click", () => {
+        const novo = {
+          ...c, pag: "1", parceiro: fv(f, "parceiro"), plano: fv(f, "plano"), conta: fv(f, "conta"),
+          venc_de: fv(f, "venc_de"), venc_ate: fv(f, "venc_ate"), pago_de: fv(f, "pago_de"), pago_ate: fv(f, "pago_ate"),
+          vmin: valorParaConsulta(fv(f, "vmin")), vmax: valorParaConsulta(fv(f, "vmax")), origem: fv(f, "origem") || "todas",
+        };
+        if (novo.venc_de && novo.venc_ate && novo.venc_de > novo.venc_ate) return void avisar("O vencimento inicial não pode ser depois do final.");
+        if (novo.pago_de && novo.pago_ate && novo.pago_de > novo.pago_ate) return void avisar("O pagamento inicial não pode ser depois do final.");
+        if (novo.vmin && novo.vmax && Number(novo.vmin) > Number(novo.vmax)) return void avisar("O valor mínimo não pode ser maior que o máximo.");
+        fechar();
+        void aplicar(novo);
+      });
+      $("[data-limpar]", L)?.addEventListener("click", () => {
+        fechar();
+        void aplicar(limparChaves(c, FILTROS_AVANCADOS));
+      });
+    },
+  });
+}

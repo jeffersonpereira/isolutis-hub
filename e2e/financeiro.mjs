@@ -145,6 +145,16 @@ await page.waitForTimeout(400);
 if (!(await page.textContent("#view")).includes("Quitado")) throw new Error("não quitou");
 passo("título lançado, valor devido calculado e quitado");
 
+// filtros na URL, recarga e exportação em CSV
+await page.click('[data-act="filtroFinStatus"][data-valor="Q"]'); await page.waitForTimeout(500);
+if (!page.url().includes("status=Q")) throw new Error("filtro não foi para a URL: " + page.url());
+if (!(await page.textContent("#view")).includes(`GT ${sufixo}`)) throw new Error("filtro por quitados não listou o título");
+await page.reload(); await page.waitForSelector('[data-act="filtroFinStatus"][aria-pressed="true"][data-valor="Q"]', { timeout: 5000 });
+const [csv] = await Promise.all([page.waitForEvent("download"), page.click('[data-act="finExportar"]')]);
+if (csv.suggestedFilename() !== "titulos.csv") throw new Error("nome do CSV: " + csv.suggestedFilename());
+await page.click('[data-act="filtroFinStatus"][data-valor="todos"]'); await page.waitForTimeout(400);
+passo("filtro na URL (sobrevive à recarga) e exportação CSV");
+
 // fluxo de caixa
 await page.click('nav button[data-go="fin-fluxo"]'); await page.waitForTimeout(700);
 const fluxo = await visao();
