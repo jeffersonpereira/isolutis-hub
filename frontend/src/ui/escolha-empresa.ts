@@ -20,7 +20,13 @@ function montarRaiz(): HTMLElement {
 const topo = `<div class="lg-topo"><img src="/aime-horizontal-reverso.svg" alt="AIME Tech" width="200" height="56"><span>Hub Comercial</span></div>`;
 
 /** Resolve com a empresa escolhida e remove a tela. `sugerida` (a última usada) vem pré-selecionada. */
-export function escolherEmpresa(empresas: readonly EmpresaAcesso[], sugerida: string | null, aoSair: () => void): Promise<EmpresaAcesso> {
+export function escolherEmpresa(
+  empresas: readonly EmpresaAcesso[],
+  sugerida: string | null,
+  aoSair: () => void,
+  /** Só para o operador da plataforma: abre a área da plataforma em vez de uma empresa. */
+  aoPlataforma?: () => void,
+): Promise<EmpresaAcesso> {
   const raiz = montarRaiz();
   return new Promise((resolve) => {
     const cartoes = empresas
@@ -38,6 +44,7 @@ export function escolherEmpresa(empresas: readonly EmpresaAcesso[], sugerida: st
         <h1 id="empTitulo">Em qual empresa quer trabalhar?</h1>
         <p class="sub" style="margin:0 0 8px">Você pode trocar de empresa a qualquer momento pelo menu do seu usuário.</p>
         <div class="emp-lista" role="group" aria-label="Empresas">${cartoes}</div>
+        ${aoPlataforma ? '<button class="lg-link" type="button" id="empPlataforma">Área da plataforma</button>' : ""}
         <button class="lg-link" type="button" id="empSair">Sair</button>
       </div></div>`;
     const botoes = [...raiz.querySelectorAll<HTMLButtonElement>(".emp-card")];
@@ -58,6 +65,7 @@ export function escolherEmpresa(empresas: readonly EmpresaAcesso[], sugerida: st
       botoes[(i + (e.key === "ArrowDown" ? 1 : -1) + botoes.length) % botoes.length]?.focus();
     });
     raiz.querySelector("#empSair")?.addEventListener("click", aoSair);
+    if (aoPlataforma) raiz.querySelector("#empPlataforma")?.addEventListener("click", aoPlataforma);
     setTimeout(() => (botoes.find((b) => b.classList.contains("ultima")) ?? botoes[0])?.focus(), 50);
   });
 }

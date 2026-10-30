@@ -73,6 +73,12 @@ async def criar_conta(dados: PlanoContaEntrada, sessao: Sessao):
     return next(c for c in await svc.listar_plano(sessao, empresa) if c["id"] == conta.id)
 
 
+@router.post("/plano-contas/importar-padrao", response_model=list[PlanoContaLeitura], status_code=201)
+async def importar_plano_padrao(sessao: Sessao):
+    """Cria o plano padrão numa empresa sem contas (409 se já houver alguma)."""
+    return await svc.importar_plano_padrao(sessao, await _empresa(sessao))
+
+
 @router.put("/plano-contas/{id_}", response_model=PlanoContaLeitura)
 async def atualizar_conta(id_: UUID, dados: PlanoContaEntrada, sessao: Sessao):
     empresa = await _empresa(sessao)

@@ -9,6 +9,7 @@ import { rotuloDoPapel } from "@/domain/papeis";
 import { acoesRapidas, aoRenderizar, ir } from "@/state/nucleo";
 import { despachar } from "@/ui/acoes";
 import { icone } from "@/ui/icones";
+import { ROTA_PLATAFORMA } from "@/ui/plataforma";
 import { cabecalhoDoUsuario, menuSuspenso } from "@/ui/menu-suspenso";
 import { definirTema, iniciarTema, lerPreferencia, type PreferenciaTema } from "@/ui/tema";
 
@@ -91,6 +92,7 @@ export function iniciarBarraSuperior(deps: DependenciasDaBarra): void {
       itens: () => [
         { rotulo: "Minha conta", icone: "conta", aoEscolher: () => void ir("conta") },
         { rotulo: "Trocar de empresa", icone: "empresa", aoEscolher: deps.aoTrocarEmpresa },
+        ...(eu.operador ? [{ rotulo: "Área da plataforma", icone: "empresa", aoEscolher: () => location.assign(ROTA_PLATAFORMA) }] : []),
         { rotulo: "Trocar senha", icone: "chave", aoEscolher: deps.aoTrocarSenha },
         { rotulo: "Sair", icone: "sair", separador: true, aoEscolher: deps.aoSair },
       ],

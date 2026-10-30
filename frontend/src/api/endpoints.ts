@@ -28,6 +28,18 @@ export const api = {
       desativar: (codigo: string) => http.delete(`/auth/2fa?codigo=${encodeURIComponent(codigo)}`),
     },
   },
+  plataforma: {
+    /** Qualquer usuário autenticado pergunta se é operador (decide se a área da plataforma aparece). */
+    acesso: () => http.get<{ operador: boolean }>("/plataforma/acesso"),
+    empresas: (busca?: string) => http.get<T.EmpresaPlataforma[]>("/plataforma/empresas", busca ? { busca } : undefined),
+    criarEmpresa: (d: T.EmpresaNova) => http.post<T.EmpresaPlataforma>("/plataforma/empresas", d),
+    empresa: (id: string) => http.get<T.EmpresaDetalhe>(`/plataforma/empresas/${id}`),
+    definirStatus: (id: string, status: "ativa" | "suspensa") => http.patch<T.EmpresaPlataforma>(`/plataforma/empresas/${id}/status`, { status }),
+    convidar: (id: string, d: T.ConviteEntrada) => http.post<void>(`/plataforma/empresas/${id}/convites`, d),
+    cancelarConvite: (id: string, conviteId: number) => http.delete(`/plataforma/empresas/${id}/convites/${conviteId}`),
+    definirMembro: (id: string, usuarioId: string, d: { papel: T.Papel; ativo: boolean }) =>
+      http.patch<void>(`/plataforma/empresas/${id}/membros/${usuarioId}`, d),
+  },
   onboarding: {
     status: () => http.get<T.OnboardingStatus>("/onboarding/status"),
     salvarEmpresa: (nome: string, segmento: string) => http.patch<void>("/onboarding/empresa", { nome, segmento }),

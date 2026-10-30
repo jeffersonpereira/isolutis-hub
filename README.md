@@ -29,6 +29,17 @@ make web                            # terminal 2: http://localhost:5173
 
 Sem Docker: crie o banco (`createdb hub_dev`), ajuste `HUB_DATABASE_URL` no `.env` e rode `alembic upgrade head` em `backend/`.
 
+## Área da plataforma (operador)
+
+Empresas são criadas só pelo operador (a AIME Tech), pela página `/plataforma`, onde ele também vê quem são os membros de
+cada empresa, convida, troca papéis, desativa e suspende empresas. Essa área não mostra dados de negócio.
+
+```bash
+cd backend && python -m app.scripts.criar_admin --email voce@aimetech.com.br --nome "Seu Nome" --operador   # primeiro operador
+```
+
+Requer `HUB_PLATAFORMA_DATABASE_URL` (papel `hub_plataforma`; ver [`docs/MULTI_TENANCY.md`](docs/MULTI_TENANCY.md)).
+
 ## Testes
 
 ```bash

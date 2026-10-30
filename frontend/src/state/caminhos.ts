@@ -6,7 +6,7 @@
  *   /<tela>/novo      → formulário em página de um novo registro
  *   /<tela>/<id>      → formulário em página de um registro existente
  *
- * `/login`, `/login/2fa`, `/convite/<token>`, `/assets` e `/api` são reservados: não passam pelo roteador de telas.
+ * `/login`, `/login/2fa`, `/convite/<token>`, `/plataforma`, `/assets` e `/api` são reservados: não passam pelo roteador de telas.
  */
 export type RotaResolvida =
   | { tipo: "raiz" }
@@ -16,7 +16,7 @@ export type RotaResolvida =
   | { tipo: "reservada" }
   | { tipo: "desconhecida" };
 
-const RESERVADAS = ["login", "convite", "assets", "api"];
+const RESERVADAS = ["login", "convite", "plataforma", "assets", "api"];
 
 /** Endereços de telas que mudaram de lugar ou deixaram de existir: abrem a tela que as substituiu. */
 const TELAS_SUBSTITUIDAS: Record<string, string> = { despesas: "fin-titulos", investimentos: "fin-titulos", "fin-parceiros": "fornecedores" };

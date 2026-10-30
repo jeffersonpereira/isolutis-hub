@@ -36,7 +36,7 @@ describe("resolverCaminho", () => {
   });
 
   it("rotas reservadas não passam pelo roteador de telas", () => {
-    for (const r of ["/login", "/login/2fa", "/convite/xyz", "/assets/app.js", "/api/v1/clientes"]) {
+    for (const r of ["/login", "/login/2fa", "/convite/xyz", "/plataforma", "/assets/app.js", "/api/v1/clientes"]) {
       expect(resolverCaminho(r, telas)).toEqual({ tipo: "reservada" });
     }
   });

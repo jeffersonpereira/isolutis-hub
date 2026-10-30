@@ -1,0 +1,15 @@
+/* Área da plataforma (operador): página própria, fora do Hub e sem empresa ativa */
+.plat{position:fixed;inset:0;z-index:var(--z-login);background:var(--canvas);color:var(--ink);overflow-y:auto}
+.plat-topo{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:12px 24px;background:var(--surface);border-bottom:1px solid var(--line)}
+.plat-topo b{font:600 var(--text-lg, 1.1rem) var(--f-display);margin-right:10px}
+.plat-topo span{color:var(--muted);font-size:var(--text-sm, .9rem)}
+.plat-corpo{max-width:1100px;margin:0 auto;padding:24px 16px 64px}
+.plat-corpo section{margin-top:32px}
+.plat-corpo h2{font-size:1rem;margin:0 0 12px}
+.plat-busca{display:flex;gap:8px;margin-bottom:16px}
+.plat-busca input{flex:1 1 auto;max-width:420px}
+.plat-form{display:flex;flex-direction:column;gap:12px;max-width:480px}
+.plat-form-linha{max-width:none;flex-direction:row;flex-wrap:wrap;align-items:flex-end}
+.plat-form-linha .field{flex:1 1 200px}
+.plat tr[data-plat="abrir"]{cursor:pointer}
+.plat tr[data-plat="abrir"]:hover,.plat tr[data-plat="abrir"]:focus-visible{background:var(--sunk)}

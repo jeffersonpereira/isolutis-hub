@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
+from app.errors import ErroApp
 from app.realtime import agendar_publicacao
 
 # Tabela -> recurso que a interface precisa recarregar quando a tabela muda.
@@ -62,6 +63,26 @@ SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 async def get_session() -> AsyncIterator[AsyncSession]:
     async with SessionLocal() as sessao:
         yield sessao
+
+
+_sessao_plataforma: async_sessionmaker[AsyncSession] | None = None
+
+
+async def get_session_plataforma() -> AsyncIterator[AsyncSession | None]:
+    """Sessão do papel hub_plataforma (sem acesso às tabelas de negócio); None quando a credencial não está configurada."""
+    global _sessao_plataforma
+    url = get_settings().plataforma_database_url
+    if not url:
+        yield None
+        return
+    if _sessao_plataforma is None:
+        _sessao_plataforma = async_sessionmaker(criar_engine(url), expire_on_commit=False)
+    async with _sessao_plataforma() as sessao:
+        yield sessao
+
+
+def plataforma_indisponivel() -> ErroApp:
+    return ErroApp("A área da plataforma não está configurada neste ambiente.", codigo="plataforma_indisponivel", status=503)
 
 
 async def definir_usuario_da_transacao(sessao: AsyncSession, usuario_id: UUID) -> None:
