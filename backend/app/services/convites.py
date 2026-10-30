@@ -189,13 +189,13 @@ def enviar_email_convite(settings: object, convite: Convite, nome_convidado: str
 
     link = f"{base_url}/convite/{convite.token}"
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = "Você foi convidado para o iSolutis Hub"
+    msg["Subject"] = "Você foi convidado para o AIME Tech Hub"
     msg["From"] = smtp_from
     msg["To"] = convite.email
 
     html_body = f"""
     <p>Olá {nome_convidado},</p>
-    <p>Você foi convidado para acessar o iSolutis Hub.</p>
+    <p>Você foi convidado para acessar o AIME Tech Hub.</p>
     <p><a href="{link}">Clique aqui para aceitar o convite</a></p>
     <p>Este link expira em 72 horas.</p>
     """

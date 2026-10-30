@@ -116,7 +116,7 @@ async def modelo_do_negocio(sessao: AsyncSession, negocio_id: UUID) -> dict:
 
 
 def etapas_padrao(inicio: date | None, entrega: date | None) -> list[dict]:
-    """Roteiro padrão da iSolutis distribuído entre o início e a entrega (7 dias por etapa se não houver entrega)."""
+    """Roteiro padrão da AIME Tech distribuído entre o início e a entrega (7 dias por etapa se não houver entrega)."""
     inicio = inicio or hoje()
     total = max(len(ETAPAS_PADRAO), (entrega - inicio).days) if entrega else len(ETAPAS_PADRAO) * 7
     soma = sum(e.peso for e in ETAPAS_PADRAO)

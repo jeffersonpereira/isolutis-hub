@@ -98,7 +98,7 @@ function vista(): Safe {
   const escrever = podeEscrever();
   const comercial = temPermissao("comercial");
   return html`<div class="head"><div><h1>${eu.nome ? "Olá, " + primeiroNome(eu.nome) : "Painel"}</h1><p>Painel · ${mesNome} de ${p.ano}</p></div><div class="tools">${comercial ? botaoNovo("novoNegocio", "Novo negócio") : ""}</div></div>
-  ${p.banco_vazio ? html`<div class="empty" style="margin-bottom:16px"><b>O Hub Comercial está pronto para receber os primeiros registros</b>Comece pelos produtos que a iSolutis vende, depois cadastre clientes e abra negócios no funil. O painel se preenche sozinho.<br>${escrever && comercial ? html`<button class="btn primary" data-go="produtos">Cadastrar produtos</button> <button class="btn" data-act="novoCliente">Cadastrar cliente</button>` : ""}</div>` : ""}
+  ${p.banco_vazio ? html`<div class="empty" style="margin-bottom:16px"><b>O Hub Comercial está pronto para receber os primeiros registros</b>Comece pelos produtos que a AIME Tech vende, depois cadastre clientes e abra negócios no funil. O painel se preenche sozinho.<br>${escrever && comercial ? html`<button class="btn primary" data-go="produtos">Cadastrar produtos</button> <button class="btn" data-act="novoCliente">Cadastrar cliente</button>` : ""}</div>` : ""}
   ${avisoSemEquipes()}
   ${vistaAlertas(p.alertas)}
   ${blocoFinanceiro(p, mesNome, h)}

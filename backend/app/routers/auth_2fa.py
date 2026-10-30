@@ -93,7 +93,7 @@ async def setup_2fa(usuario: UsuarioLogado, sessao: Sessao) -> SetupTotpSaida:
 
     backup_codes = gerar_backup_codes(8)
     qr = gerar_qr_code(segredo, usuario.email)
-    uri = pyotp.TOTP(segredo).provisioning_uri(name=usuario.email, issuer_name="iSolutis Hub")
+    uri = pyotp.TOTP(segredo).provisioning_uri(name=usuario.email, issuer_name="AIME Tech Hub")
 
     return SetupTotpSaida(qr_code=qr, provisioning_uri=uri, backup_codes=backup_codes)
 

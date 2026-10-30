@@ -33,7 +33,7 @@ async def exportar(sessao: Sessao, ano: int = Query(..., ge=2000, le=2100)) -> R
     return Response(
         csv,
         media_type="text/csv; charset=utf-8",
-        headers={"Content-Disposition": f"attachment; filename*=UTF-8''faturamento-isolutis-{ano}.csv"},
+        headers={"Content-Disposition": f"attachment; filename*=UTF-8''faturamento-aime-{ano}.csv"},
     )
 
 

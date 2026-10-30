@@ -85,7 +85,7 @@ class Identidade:
         return " · ".join(p for p in (self.nome, self.subtitulo, self.documento, self.contato) if p)
 
 
-PADRAO = Identidade(nome="iSolutis", subtitulo="Soluções e Inovações Tecnológicas")
+PADRAO = Identidade(nome="AIME Tech", subtitulo="Transformando o Futuro")
 
 
 def orcamento_html(orc: Orcamento, cliente: Parceiro, empresa: Identidade = PADRAO) -> str:

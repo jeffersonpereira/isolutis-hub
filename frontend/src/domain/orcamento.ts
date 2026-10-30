@@ -42,7 +42,7 @@ export function textoWhatsapp(o: DadosMensagem, contato: { nome?: string | null;
         `• ${i.descricao || "Item"}${numero(i.qtd) > 1 ? ` (${String(numero(i.qtd)).replace(".", ",")}×)` : ""}: ${brl((numero(i.qtd) || 1) * numero(i.preco_unitario))}${i.mensal ? "/mês" : ""}`,
     );
   return [
-    `Olá${nome ? ", " + nome : ""}! Segue o orçamento${o.numero ? " Nº " + o.numero : ""} da iSolutis${contato?.nome ? " para " + contato.nome : ""}:`,
+    `Olá${nome ? ", " + nome : ""}! Segue o orçamento${o.numero ? " Nº " + o.numero : ""} da AIME Tech${contato?.nome ? " para " + contato.nome : ""}:`,
     "",
     ...itens,
     "",

@@ -1,4 +1,4 @@
-"""Regras de projeto: progresso e roteiro padrão de etapas da iSolutis."""
+"""Regras de projeto: progresso e roteiro padrão de etapas da AIME Tech."""
 
 from collections.abc import Iterable
 from dataclasses import dataclass

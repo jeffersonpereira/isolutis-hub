@@ -101,7 +101,7 @@ export function iniciarBarraSuperior(deps: DependenciasDaBarra): void {
   aoRenderizar((nome) => {
     const t = $id("tituloTela");
     if (t) t.textContent = nome;
-    document.title = `${nome} · Hub Comercial iSolutis`;
+    document.title = `${nome} · AIME Tech Hub`;
     if (novo) novo.hidden = acoesRapidas().length === 0;
   });
 }

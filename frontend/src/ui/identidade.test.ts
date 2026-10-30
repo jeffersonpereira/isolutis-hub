@@ -20,7 +20,7 @@ const PNG = "data:image/png;base64,iVBORw0KGgo=";
 beforeEach(() => {
   localStorage.clear();
   document.head.innerHTML = "";
-  document.body.innerHTML = `<span id="logoSide"><img src="/logo-horizontal.png" alt="iSolutis"><img class="marca-min" src="/logo.png" alt="iSolutis"></span>`;
+  document.body.innerHTML = `<span id="logoSide"><img src="/aime-horizontal-reverso.svg" alt="AIME Tech"><img class="marca-min" src="/aime-simbolo-reverso.svg" alt="AIME Tech"></span>`;
 });
 
 describe("cores", () => {
@@ -84,8 +84,8 @@ describe("aplicarLogo", () => {
     expect(pequena?.getAttribute("src")).toBe(PNG);
     expect(document.getElementById("logoSide")?.classList.contains("logo-propria")).toBe(true);
     aplicarLogo(null);
-    expect(grande?.getAttribute("src")).toBe("/logo-horizontal.png");
-    expect(pequena?.getAttribute("src")).toBe("/logo.png");
+    expect(grande?.getAttribute("src")).toBe("/aime-horizontal-reverso.svg");
+    expect(pequena?.getAttribute("src")).toBe("/aime-simbolo-reverso.svg");
     expect(document.getElementById("logoSide")?.classList.contains("logo-propria")).toBe(false);
   });
 });

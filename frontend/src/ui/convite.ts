@@ -15,7 +15,7 @@ function montarTela(): HTMLElement {
   raiz.innerHTML = `
     <div class="lg-box">
       <div class="lg-topo">
-        <img src="/logo-horizontal.png" alt="iSolutis" width="200" height="77">
+        <img src="/aime-horizontal-reverso.svg" alt="AIME Tech" width="200" height="56">
         <span>Hub Comercial</span>
       </div>
       <div id="cvConteudo"></div>

@@ -78,7 +78,7 @@ def criar_app() -> FastAPI:
     cfg = get_settings()
     cfg.validar_para_producao()
     app = FastAPI(
-        title="Hub Comercial iSolutis — API",
+        title="AIME Tech Hub — API",
         version="2.0.0",
         docs_url="/api/docs" if cfg.ambiente != "producao" else None,
         openapi_url="/api/openapi.json" if cfg.ambiente != "producao" else None,

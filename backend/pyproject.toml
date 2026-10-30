@@ -1,7 +1,7 @@
 [project]
 name = "isolutis-hub-backend"
 version = "2.0.0"
-description = "API do Hub Comercial iSolutis (FastAPI + PostgreSQL)"
+description = "API do AIME Tech Hub (FastAPI + PostgreSQL)"
 requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.115",
