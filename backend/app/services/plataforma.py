@@ -105,7 +105,8 @@ async def definir_status(sessao: AsyncSession, empresa_id: UUID, status: str) ->
     return await obter_empresa(sessao, empresa_id)
 
 
-async def convidar(sessao: AsyncSession, empresa_id: UUID, dados: ConviteEntrada) -> None:
+async def convidar(sessao: AsyncSession, empresa_id: UUID, dados: ConviteEntrada) -> bool:
+    """Adiciona o membro à empresa. E-mail de conta já existente entra direto (sem convite); devolve se foi direto."""
     email = str(dados.email).lower()
     linhas = await _chamar(
         sessao,
@@ -113,7 +114,11 @@ async def convidar(sessao: AsyncSession, empresa_id: UUID, dados: ConviteEntrada
         id=empresa_id, email=email, papel=dados.papel,
     )
     await sessao.commit()
-    _enviar_convite(email, linhas[0]["token"], dados.nome)
+    resultado = linhas[0]
+    if resultado["usuario_id"] is not None:
+        return True
+    _enviar_convite(email, resultado["token"], dados.nome)
+    return False
 
 
 async def cancelar_convite(sessao: AsyncSession, empresa_id: UUID, convite_id: int) -> None:

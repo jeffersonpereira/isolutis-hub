@@ -11,6 +11,7 @@ from app.schemas.plataforma import (
     EmpresaDetalhe,
     EmpresaNova,
     EmpresaPlataforma,
+    MembroAdicionado,
     MembroAtualizar,
     StatusEntrada,
 )
@@ -45,10 +46,10 @@ async def definir_status(empresa_id: UUID, dados: StatusEntrada, sessao: SessaoO
     return EmpresaPlataforma.model_validate(await svc.definir_status(sessao, empresa_id, dados.status))
 
 
-@router.post("/empresas/{empresa_id}/convites", status_code=204)
-async def convidar(empresa_id: UUID, dados: ConviteEntrada, sessao: SessaoOperador) -> Response:
-    await svc.convidar(sessao, empresa_id, dados)
-    return Response(status_code=204)
+@router.post("/empresas/{empresa_id}/convites", response_model=MembroAdicionado)
+async def convidar(empresa_id: UUID, dados: ConviteEntrada, sessao: SessaoOperador) -> MembroAdicionado:
+    direto = await svc.convidar(sessao, empresa_id, dados)
+    return MembroAdicionado(direto=direto)
 
 
 @router.delete("/empresas/{empresa_id}/convites/{convite_id}", status_code=204)

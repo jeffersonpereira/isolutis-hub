@@ -55,6 +55,12 @@ class MembroAtualizar(Entrada):
     ativo: bool
 
 
+class MembroAdicionado(Leitura):
+    """Resultado de adicionar um membro: `direto` indica se a conta já existia (sem convite, sem e-mail)."""
+
+    direto: bool
+
+
 class EmpresaDetalhe(Leitura):
     empresa: EmpresaPlataforma
     membros: list[MembroPlataforma]

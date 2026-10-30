@@ -98,6 +98,10 @@ export interface EmpresaDetalhe {
   membros: MembroPlataforma[];
   convites: ConvitePlataforma[];
 }
+/** `direto`: o e-mail já era de uma conta existente, então entrou direto (sem convite nem e-mail). */
+export interface MembroAdicionado {
+  direto: boolean;
+}
 
 export interface ConviteEntrada {
   nome: string;
@@ -156,7 +160,7 @@ export interface FluxoItem {
   nome_mes: string;
   entradas: number;
   saidas: number;
-  saldo: number;
+  saldo_mes: number;
   saldo_acumulado: number;
 }
 

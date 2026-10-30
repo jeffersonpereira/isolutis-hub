@@ -144,8 +144,8 @@ function vistaFluxo(): Safe {
               <td>${row.nome_mes}</td>
               <td class="r num">${brl(row.entradas)}</td>
               <td class="r num">${brl(row.saidas)}</td>
-              <td class="r num" style="color:${row.saldo >= 0 ? "var(--ok)" : "var(--bad)"}">
-                ${brl(row.saldo)}
+              <td class="r num" style="color:${row.saldo_mes >= 0 ? "var(--ok)" : "var(--bad)"}">
+                ${brl(row.saldo_mes)}
               </td>
               <td class="r num" style="color:${row.saldo_acumulado >= 0 ? "var(--ok)" : "var(--bad)"}">
                 ${brl(row.saldo_acumulado)}

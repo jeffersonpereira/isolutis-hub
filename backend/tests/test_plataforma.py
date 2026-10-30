@@ -169,7 +169,7 @@ async def test_admin_da_empresa_nao_reativa_a_propria_empresa(plataforma: AsyncC
 async def test_detalhe_traz_membros_e_convites(plataforma: AsyncClient, operador: Usuario, admin: Usuario):
     await entrar(plataforma, operador)
     r = await plataforma.post(f"{P}/empresas/{admin.empresa_id}/convites", json={"nome": "Caio", "email": "caio@x.com", "papel": "financeiro"})
-    assert r.status_code == 204
+    assert r.status_code == 200 and r.json() == {"direto": False}
     d = (await plataforma.get(f"{P}/empresas/{admin.empresa_id}")).json()
     assert [(m["email"], m["papel"], m["ativo"]) for m in d["membros"]] == [("admin@isolutis.com.br", "admin", True)]
     assert [(c["email"], c["papel"]) for c in d["convites"]] == [("caio@x.com", "financeiro")]
@@ -189,6 +189,25 @@ async def test_convidar_quem_ja_e_membro_e_recusado(plataforma: AsyncClient, ope
     await entrar(plataforma, operador)
     r = await plataforma.post(f"{P}/empresas/{admin.empresa_id}/convites", json={"nome": "Ana", "email": admin.email, "papel": "membro"})
     assert r.status_code == 422 and "já é membro" in r.json()["erro"]["mensagem"]
+
+
+async def test_convidar_conta_existente_entra_direto_sem_convite(
+    plataforma: AsyncClient, operador: Usuario, admin: Usuario, sessao: AsyncSession
+):
+    """E-mail que já é de outra conta (ex.: contador de outro cliente) ganha acesso na hora, sem passar por convite."""
+    outra = Usuario(email="rita@contabilidade.com.br", nome="Rita Contadora", senha_hash=gerar_hash(SENHA))
+    sessao.add(outra)
+    await sessao.commit()
+    await entrar(plataforma, operador)
+    corpo = {"nome": "Rita", "email": outra.email, "papel": "financeiro"}
+    r = await plataforma.post(f"{P}/empresas/{admin.empresa_id}/convites", json=corpo)
+    assert r.status_code == 200 and r.json() == {"direto": True}
+    assert (await sessao.scalar(text("select count(*) from convites where email = :e"), {"e": outra.email})) == 0
+    membership = await sessao.get(UsuarioEmpresa, (admin.empresa_id, outra.id))
+    assert membership is not None and membership.papel == "financeiro" and membership.ativo is True
+    # a conta de Rita já existia: ela entra na própria empresa só trocando de empresa, sem redefinir senha
+    await entrar(plataforma, outra, admin.empresa_id)
+    assert (await plataforma.get("/api/v1/equipe")).status_code == 200
 
 
 async def test_trocar_papel_e_desativar_valem_na_proxima_requisicao(plataforma: AsyncClient, operador: Usuario, admin: Usuario, sessao: AsyncSession):

@@ -6,7 +6,8 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.documents.render import Identidade, orcamento_html
+from app.documents.render import orcamento_pdf
+from app.documents.reportlab_base import Identidade
 from app.models import Empresa, Municipio, Usuario, UsuarioEmpresa
 from app.security import gerar_hash
 from app.services.empresa import LOGO_MAX_BYTES, decodificar_logo
@@ -181,17 +182,25 @@ async def test_paleta_e_logo_isoladas_por_empresa(http: AsyncClient, sessao: Asy
 
 
 def test_documento_usa_a_identidade_da_empresa():
+    """Nome da empresa com `<`/`&` (caracteres de marcação do ReportLab) não pode quebrar a geração do PDF."""
+    import io
     from datetime import date
     from decimal import Decimal
     from types import SimpleNamespace
+
+    import PIL.Image
+
+    png_valido = io.BytesIO()
+    PIL.Image.new("RGB", (4, 4), "white").save(png_valido, format="PNG")
 
     orc = SimpleNamespace(
         numero="2026-001", data=date(2026, 1, 1), valido_ate=date(2026, 1, 31), itens=[], desconto=Decimal(0),
         total_projeto=Decimal(0), total_mensal=Decimal(0), obs=None,
     )  # fmt: skip
     cliente = SimpleNamespace(nome="Cliente", contato=None, cargo=None, cpf_cnpj=None, tipo_pessoa="PJ")
-    emissor = Identidade(nome="Alfa <Tech>", documento="CNPJ 11.222.333/0001-81", logo=_data_url(PNG))
-    html = orcamento_html(orc, cliente, emissor)  # type: ignore[arg-type]
-    assert _data_url(PNG) in html
-    assert "Alfa &lt;Tech&gt;" in html and "<Tech>" not in html
-    assert "CNPJ 11.222.333/0001-81" in html
+    emissor = Identidade(
+        nome="Alfa <Tech> & Cia", documento="CNPJ 11.222.333/0001-81", logo=_data_url(png_valido.getvalue())
+    )
+
+    pdf = orcamento_pdf(orc, cliente, emissor)  # type: ignore[arg-type]
+    assert pdf.startswith(b"%PDF")
