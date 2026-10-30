@@ -1,16 +1,17 @@
 import { $ } from "@/core/dom";
 import { html, raw, type Safe } from "@/core/html";
-import { registrarVista, render } from "@/state/nucleo";
+import { recarregarVista, registrarVista, render } from "@/state/nucleo";
 import { ui } from "@/state/estado";
 import { registrarAcao } from "@/ui/acoes";
 import { campo, fv, inp, sel } from "@/ui/campos";
 import { combobox } from "@/ui/combobox";
+import { confirmar } from "@/ui/confirmar";
 import { barraDeFerramentas, cabecalhoDePagina } from "@/ui/componentes";
 import { tentar } from "@/ui/erros";
 import { abrirGaveta } from "@/ui/gaveta";
 import { espaco } from "@/ui/formularios";
 import { gravar } from "@/ui/gravacao";
-import { avisar } from "@/ui/toast";
+import { avisar, toast } from "@/ui/toast";
 import { apiFinanceiro, type PlanoConta, type PlanoContaEntrada } from "./api";
 import { confirmarExclusao, GRUPO } from "./comum";
 
@@ -80,7 +81,7 @@ function vista(): Safe {
   ${
     tela.contas.length
       ? html`<div class="painel-lista"><ul class="tree" role="tree" aria-label="Plano de contas">${filhasDe(null).map(no)}</ul></div>`
-      : html`<div class="empty"><b>Plano de contas vazio</b>Comece pelas contas de primeiro nível, por exemplo 1 Receita e 2 Despesa, e vá abrindo os níveis.<br><button class="btn primary" data-act="novaConta">Criar a primeira conta</button></div>`
+      : html`<div class="empty"><b>Plano de contas vazio</b>Comece pelas contas de primeiro nível, por exemplo 1 Receita e 2 Despesa, e vá abrindo os níveis.<br><button class="btn primary" data-act="importarPlanoPadrao">Importar plano padrão</button> <button class="btn" data-act="novaConta">Criar a primeira conta</button></div>`
   }`;
 }
 
@@ -172,6 +173,25 @@ registrarAcao("alternarNo", (alvo) => {
 });
 registrarAcao("novaConta", () => {
   formConta("nova");
+});
+let importando = false;
+registrarAcao("importarPlanoPadrao", async () => {
+  if (importando) return;
+  const ok = await confirmar({
+    titulo: "Importar plano de contas padrão?",
+    texto: "Cria o plano de contas padrão, em três níveis. Depois você pode editar, incluir e excluir contas livremente.",
+    confirmar: "Importar",
+    cancelar: "Cancelar",
+  });
+  if (!ok) return;
+  importando = true;
+  try {
+    const criadas = await tentar(() => apiFinanceiro.plano.importarPadrao());
+    if (criadas) toast(`Plano padrão importado: ${criadas.length} contas`);
+    await recarregarVista(); // também no erro (ex.: outra pessoa importou antes): a tela mostra o plano existente
+  } finally {
+    importando = false;
+  }
 });
 registrarAcao("editarConta", (alvo) => {
   const id = alvo.dataset.id ?? "";

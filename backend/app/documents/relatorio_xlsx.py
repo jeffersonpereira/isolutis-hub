@@ -5,8 +5,8 @@ import io
 
 from app.documents.reportlab_base import Identidade
 
-NAVY = "1B2B4B"
-TEAL = "22C3CE"
+NAVY = "0B2D3B"
+TEAL = "4F6B8F"
 SOFT = "EEF1F6"
 WHITE = "FFFFFF"
 TEXTO_SUAVE = "56647A"

@@ -17,7 +17,7 @@ dependência `administrador` por `usuario_atual` em `app/financeiro/rotas.py` e 
 | Plano de Contas | TreeView (expandir/recolher); Nova conta (filha da selecionada, ou de 1º nível sem seleção), Editar e Excluir atuam na conta selecionada. O código vem sugerido; natureza e nível são herdados do pai. | US01, RN01 |
 | Conta Bancária | Lista, modal de cadastro, editar/excluir na linha. Instituição financeira + nome + saldo inicial. | US02, RN02 |
 | Parceiro de Negócio | Hub de cadastro: papéis (cliente, fornecedor, funcionário), filtro por papel, busca por nome/CPF/CNPJ, PF/PJ, documento validado, UF → município. | US04 |
-| Títulos Financeiros | Lista com filtros (tipo, situação), modal de lançamento (valor, desconto, multa, juros, quitação). Ao escolher a conta do plano só aparecem **analíticas** do tipo certo. | US03, RN03, RN04 |
+| Títulos Financeiros | Lista com filtros no servidor (tipo, situação, atalhos "Atrasados" e "Vence nos próximos 7 dias", busca por parceiro e uma gaveta de filtros avançados: parceiro, conta do plano, conta bancária, vencimento, pagamento, faixa de valor e origem), ordenação por vencimento, parceiro ou valor, paginação (25, 50 ou 100) com totais em aberto do filtro inteiro, estado na URL (`/fin-titulos?status=A&pag=2`), exportação CSV (`GET /financeiro/titulos/exportar`) e modal de lançamento (valor, desconto, multa, juros, quitação). Ao escolher a conta do plano só aparecem **analíticas** do tipo certo. | US03, RN03, RN04 |
 | Fluxo de Caixa | Mês a mês: entradas e saídas realizadas (quitados) e previstas (abertos), saldo do mês e acumulado. Não estava nas tasks; é a US05. | US05 |
 
 Os "modais" usam a gaveta lateral do sistema (o mesmo componente de todos os formulários) para manter a identidade visual.
@@ -35,6 +35,16 @@ Os "modais" usam a gaveta lateral do sistema (o mesmo componente de todos os for
 | RN04 a pagar → despesa; a receber → receita | filtro na tela + validação no serviço | mesmo trigger |
 | Quitação coerente (Q ⇔ data e valor pagos) | serviço normaliza | `ck_titulo_financeiro_quitacao` |
 | CPF/CNPJ | dígitos verificadores conferidos | formato (11/14 dígitos) e unicidade por empresa |
+
+### Plano de contas padrão
+
+- **Pela aplicação (empresa sem nenhuma conta):** a tela Plano de contas oferece "Importar plano padrão"
+  (`POST /financeiro/plano-contas/importar-padrao`, permissão `financeiro`). Cria as contas de
+  `app/financeiro/dados/plano_contas_padrao.csv` em três níveis, numa transação, com **ids novos** a cada importação
+  (qualquer número de empresas pode importar) e com `7.02.001` marcada como aporte de sócio. Recusa com 409 se a empresa
+  já tem alguma conta: nunca apaga nem mescla.
+- **Pelo operador (terminal):** `python -m app.scripts.carregar_plano_contas` **substitui** o plano de uma empresa
+  (apaga e recria, com os ids fixos do CSV, o que só cabe numa empresa por banco). Use só para trocar um plano existente.
 
 Exclusões protegidas: conta do plano com filhas/títulos, conta bancária e parceiro com títulos (mensagem em português; FKs `RESTRICT`).
 
@@ -87,7 +97,7 @@ deste módulo (títulos, contas bancárias, plano de contas) e pode ser feita a 
 
 ## Parceiro de negócio como hub (migração 0003)
 
-`parceiro_negocio` é o cadastro único de pessoas e empresas; o que cada uma é para a iSolutis vem de **papéis**
+`parceiro_negocio` é o cadastro único de pessoas e empresas; o que cada uma é para a AIME Tech vem de **papéis**
 (`papel_parceiro`: cliente, fornecedor, funcionário — extensível por INSERT — e `parceiro_papel`, N:N). A tabela `clientes`
 foi **removida**: seus registros foram copiados com o **mesmo id** para `parceiro_negocio` (papel `cliente`) e as FKs
 `cliente_id` de negócios, orçamentos, lançamentos de receita, projetos e tarefas passaram a apontar para o parceiro.

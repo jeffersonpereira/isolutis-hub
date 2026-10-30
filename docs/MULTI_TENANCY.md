@@ -25,6 +25,24 @@ O serviço `app` usa `hub_runtime`, que não é proprietário das tabelas nem te
 
 Para uma instalação existente ou banco gerenciado, um DBA deve provisionar `hub_runtime` (LOGIN, sem SUPERUSER, sem CREATEDB, sem CREATEROLE, sem REPLICATION e sem BYPASSRLS), conceder acesso ao banco/schema e executar a migração com uma credencial proprietária/migradora. A identidade migradora precisa poder alterar as tabelas e executar o helper RLS `app_empresa_admin` como função definidora com `row_security=off`. A migração concede privilégios de tabela/sequência e configura privilégios default para objetos futuros criados pela identidade migradora. Configure `HUB_DATABASE_URL` da API com a credencial runtime. Não use a credencial migradora na API.
 
+## Área da plataforma (operador)
+
+A migração 0017 cria a identidade do operador (`operador_plataforma`), o `empresa.status` (`ativa`/`suspensa`), a
+auditoria `auditoria_plataforma` e o papel `hub_plataforma` (sem login, quando não existe).
+
+- **Credencial.** Habilite o login do papel e informe a URL na API: `ALTER ROLE hub_plataforma LOGIN PASSWORD '...'` e
+  `HUB_PLATAFORMA_DATABASE_URL`. O papel NÃO tem privilégio em nenhuma tabela: só executa as funções `plataforma_*`
+  (`SECURITY DEFINER`), que conferem o operador, aplicam as regras (último administrador) e gravam a auditoria na mesma
+  transação. Sem a variável, as rotas `/plataforma/*` respondem 503; o resto do Hub não é afetado.
+- **Quem cria empresas.** `hub_runtime` perdeu `EXECUTE` em `criar_empresa`. O `admin` de uma empresa atualiza os dados
+  dela, mas um gatilho recusa a mudança de `status` por `hub_runtime`/`hub_plataforma`: só as funções do operador a fazem.
+- **Auditoria.** `auditoria_plataforma` só recebe inserções (nenhum papel da aplicação tem privilégio, e um gatilho recusa
+  UPDATE/DELETE até do dono). Revise periodicamente a lista de operadores: `select * from operador_plataforma`.
+- **Primeiro operador.** `python -m app.scripts.criar_admin --email ... --nome ... --operador` (credencial migradora).
+- **Suspensão.** Empresa suspensa sai da escolha de empresa e recusa requisições (`empresa_inacessivel`) na próxima
+  chamada; os dados ficam intactos. O operador não vê dados de negócio de nenhuma empresa.
+- **Reversão.** `alembic downgrade 0016` (o papel `hub_plataforma` é do cluster e não é removido).
+
 ## Migração, backup e recuperação
 
 1. Faça backup consistente do banco e confirme que a restauração foi ensaiada.

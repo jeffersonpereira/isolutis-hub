@@ -1,12 +1,14 @@
 """Rotas do módulo financeiro. Exigem a permissão `financeiro` (papéis admin e financeiro)."""
 
 from datetime import date
+from decimal import Decimal
 from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Response
 
 from app.deps import Sessao, requer_base, requer_financeiro
+from app.errors import RegraDeNegocio
 from app.financeiro import recorrencias as rec
 from app.financeiro import servicos as svc
 from app.financeiro.schemas import (
@@ -15,6 +17,7 @@ from app.financeiro.schemas import (
     FluxoDeCaixa,
     InstituicaoLeitura,
     MunicipioLeitura,
+    PaginaTitulos,
     PlanoContaEntrada,
     PlanoContaLeitura,
     ProximoCodigo,
@@ -70,6 +73,12 @@ async def criar_conta(dados: PlanoContaEntrada, sessao: Sessao):
     return next(c for c in await svc.listar_plano(sessao, empresa) if c["id"] == conta.id)
 
 
+@router.post("/plano-contas/importar-padrao", response_model=list[PlanoContaLeitura], status_code=201)
+async def importar_plano_padrao(sessao: Sessao):
+    """Cria o plano padrão numa empresa sem contas (409 se já houver alguma)."""
+    return await svc.importar_plano_padrao(sessao, await _empresa(sessao))
+
+
 @router.put("/plano-contas/{id_}", response_model=PlanoContaLeitura)
 async def atualizar_conta(id_: UUID, dados: PlanoContaEntrada, sessao: Sessao):
     empresa = await _empresa(sessao)
@@ -106,16 +115,54 @@ async def excluir_conta_bancaria(id_: UUID, sessao: Sessao) -> Response:
 
 
 # --------------------------------------------------------------------------- títulos
-@router.get("/titulos", response_model=list[TituloLeitura])
-async def listar_titulos(
-    sessao: Sessao,
+def _filtros_titulos(
     tipo: Literal["P", "R"] | None = None,
     status: Literal["A", "Q", "C"] | None = None,
-    de: date | None = None,
-    ate: date | None = None,
     busca: str | None = Query(None, max_length=100),
+    parceiro_id: UUID | None = None,
+    plano_conta_id: UUID | None = None,
+    conta_bancaria_id: UUID | None = None,
+    de: date | None = Query(None, description="Vencimento a partir de"),
+    ate: date | None = Query(None, description="Vencimento até"),
+    pago_de: date | None = Query(None, description="Pagamento a partir de"),
+    pago_ate: date | None = Query(None, description="Pagamento até"),
+    valor_min: Decimal | None = Query(None, ge=0, description="Valor devido mínimo"),
+    valor_max: Decimal | None = Query(None, ge=0, description="Valor devido máximo"),
+    recorrente: bool | None = None,
+) -> svc.FiltroTitulos:
+    for inicio, fim, nome in ((de, ate, "vencimento"), (pago_de, pago_ate, "pagamento"), (valor_min, valor_max, "valor")):
+        if inicio is not None and fim is not None and inicio > fim:
+            raise RegraDeNegocio(f"O início do filtro de {nome} não pode ser depois do fim.")
+    return svc.FiltroTitulos(tipo, status, busca, parceiro_id, plano_conta_id, conta_bancaria_id, de, ate, pago_de, pago_ate, valor_min, valor_max, recorrente)
+
+
+FiltroTitulos = Annotated[svc.FiltroTitulos, Depends(_filtros_titulos)]
+Ordem = Literal["vencimento", "valor", "parceiro"]
+Sentido = Literal["asc", "desc"]
+
+
+@router.get("/titulos", response_model=PaginaTitulos)
+async def listar_titulos(
+    sessao: Sessao,
+    filtro: FiltroTitulos,
+    ordem: Ordem = "vencimento",
+    sentido: Sentido = "asc",
+    pagina: int = Query(1, ge=1),
+    tamanho: int = Query(25),
 ):
-    return await svc.listar_titulos(sessao, await _empresa(sessao), tipo, status, de, ate, busca)
+    if tamanho not in svc.TAMANHOS_DE_PAGINA:
+        raise RegraDeNegocio(f"O tamanho da página deve ser um destes: {', '.join(map(str, svc.TAMANHOS_DE_PAGINA))}.")
+    return await svc.listar_titulos(sessao, await _empresa(sessao), filtro, ordem, sentido, pagina, tamanho)
+
+
+@router.get("/titulos/exportar", response_class=Response)
+async def exportar_titulos(sessao: Sessao, filtro: FiltroTitulos, ordem: Ordem = "vencimento", sentido: Sentido = "asc"):
+    """CSV de todos os títulos do filtro (sem paginação), pronto para planilhas em português."""
+    conteudo, truncado = await svc.exportar_titulos_csv(sessao, await _empresa(sessao), filtro, ordem, sentido)
+    cabecalhos = {"Content-Disposition": 'attachment; filename="titulos.csv"'}
+    if truncado:
+        cabecalhos["X-Exportacao-Truncada"] = "1"
+    return Response(conteudo, media_type="text/csv; charset=utf-8", headers=cabecalhos)
 
 
 @router.post("/titulos", response_model=TituloLeitura, status_code=201)

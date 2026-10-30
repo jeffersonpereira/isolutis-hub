@@ -23,11 +23,11 @@ from reportlab.lib.units import mm
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import Image, Paragraph, Spacer, Table, TableStyle
 
-NAVY = colors.HexColor("#1B2B4B")
-TEAL = colors.HexColor("#22C3CE")
+NAVY = colors.HexColor("#0B2D3B")
+TEAL = colors.HexColor("#4F6B8F")
 SOFT = colors.HexColor("#EEF1F6")
 WHITE = colors.white
-TEXTO = colors.HexColor("#16223B")
+TEXTO = colors.HexColor("#2E3338")
 TEXTO_SUAVE = colors.HexColor("#56647A")
 OK = colors.HexColor("#4A9D6F")
 BAD = colors.HexColor("#A85D52")

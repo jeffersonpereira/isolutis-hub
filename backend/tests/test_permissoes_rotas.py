@@ -36,6 +36,7 @@ PUBLICAS_OU_SEM_EMPRESA: set[tuple[str, str]] = {
     ("POST", "/auth/2fa/setup"),
     ("POST", "/auth/2fa/confirmar"),
     ("DELETE", "/auth/2fa"),
+    ("GET", "/plataforma/acesso"),  # qualquer usuário autenticado pergunta se é operador (decide o menu)
     ("GET", "/empresas"),  # lista as empresas para a escolha da empresa ativa: ainda não há X-Empresa-ID
 }
 PREFIXO = "/api/v1"
@@ -95,6 +96,7 @@ def test_lista_de_excecoes_so_tem_rotas_que_existem():
         ("GET", "/financeiro/recorrencias", "financeiro"),
         ("GET", "/relatorios/dre", "financeiro"),
         ("GET", "/financeiro/titulos", "financeiro"),
+        ("GET", "/financeiro/titulos/exportar", "financeiro"),
         ("GET", "/financeiro/instituicoes", "base"),
         ("GET", "/parceiros", "financeiro"),
         ("GET", "/parceiros/papeis", "base"),

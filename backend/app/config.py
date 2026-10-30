@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     ambiente: str = Field("desenvolvimento", description="desenvolvimento | producao | teste")
     database_url: str = "postgresql+psycopg://hub:hub@localhost:5432/hub_dev"
     migration_database_url: str | None = None
+    # Credencial do papel hub_plataforma (área do operador). Sem ela, as rotas /plataforma respondem 503.
+    plataforma_database_url: str | None = None
     secret_key: str = _CHAVE_DE_DESENVOLVIMENTO
     token_minutos: int = 60 * 12
     cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:5173"]
@@ -51,6 +53,8 @@ class Settings(BaseSettings):
             erros.append("Defina HUB_SECRET_KEY com pelo menos 32 caracteres antes de subir em produção.")
         if self.ambiente == "producao" and erros:
             raise RuntimeError(" | ".join(erros))
+        if not self.plataforma_database_url:
+            _logger.warning("HUB_PLATAFORMA_DATABASE_URL não configurado — a área da plataforma fica indisponível.")
         if not self.smtp_host:
             _logger.warning("HUB_SMTP_HOST não configurado — envio de e-mails desabilitado.")
 

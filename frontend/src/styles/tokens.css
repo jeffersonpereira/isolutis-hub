@@ -1,10 +1,12 @@
-/* Paleta iSolutis: azul-marinho (#1a2d47) e turquesa (#3b9ca8) dessaturados para reduzir fadiga visual mantendo identidade de marca. */
+/* Paleta AIME Tech: petróleo (#0B2D3B), índigo (#4F6B8F), lilás (#A7AFC7), champagne (#D9C8B1), grafite (#2E3338) e off-white (#F7F6F2).
+   Os nomes --navy/--teal vêm da paleta anterior: --navy guarda o petróleo e --teal o índigo. */
 :root{
   color-space:srgb;
-  --navy:#1a2d47; --navy-deep:#0f1b2e; --teal:#3b9ca8; --teal-mid:#0d8792; --teal-pale:#dbf3f5;
-  --bg:#ffffff; --surface:#ffffff; --sunk:#f5f7fb; --line:#e8ecf2;
-  --ink:#16223b; --muted:#56647a; --accent:#1a2d47; --accent-ink:#ffffff;
-  --bar-a:#1a2d47; --bar-b:#b5d4d8;
+  --navy:#0B2D3B; --navy-deep:#061a22; --teal:#4F6B8F; --teal-mid:#415875; --teal-pale:#e3e7ed;
+  --lilas:#A7AFC7; --champagne:#D9C8B1; --grafite:#2E3338; --offwhite:#F7F6F2;
+  --bg:#ffffff; --surface:#ffffff; --sunk:#f3f2ee; --line:#e6e4de;
+  --ink:#2E3338; --muted:#5b6269; --accent:#0B2D3B; --accent-ink:#ffffff;
+  --bar-a:#0B2D3B; --bar-b:#A7AFC7;
   --ok:#4a9d6f; --ok-bg:#e9f3ee; --warn:#b89a3d; --warn-bg:#f9f5e5; --bad:#a85d52; --bad-bg:#f9ede9; --info:#5b8dd9; --info-bg:#e8eef9; --wa:#3cc37a; --wa-ink:#ffffff;
   --f-display:"Montserrat",system-ui,sans-serif;
   --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -23,7 +25,7 @@
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
   /* Superfícies: fundo da área principal (sob os cartões) e borda de controles */
-  --canvas:#f4f6fa; --line-strong:#d6dce6;
+  --canvas:#F7F6F2; --line-strong:#d6d3ca;
   /* Espaçamento (base 4px), raios, alturas de controle e medidas da casca */
   --esp-1:4px; --esp-2:8px; --esp-3:12px; --esp-4:16px; --esp-5:20px; --esp-6:24px; --esp-7:32px; --esp-8:48px;
   --r-sm:6px; --r-md:8px; --r-lg:12px; --r-full:999px;
@@ -32,20 +34,20 @@
   /* Camadas de empilhamento (nenhum z-index literal fora daqui) */
   --z-topbar:20; --z-scrim:35; --z-sidebar:36; --z-gaveta:40; --z-modal:50; --z-selecao:55; --z-paleta:60; --z-toast:70; --z-login:80;
   /* Cores de status para TEXTO sobre fundo claro (AA, 4.5:1). As cores originais seguem em bordas, barras e pontos. */
-  --ok-texto:#397955; --warn-texto:#836d2b; --bad-texto:#a0584e; --info-texto:#466da7; --teal-texto:#0c7882;
+  --ok-texto:#397955; --warn-texto:#836d2b; --bad-texto:#a0584e; --info-texto:#466da7; --teal-texto:#4F6B8F;
   /* Barra lateral (escura nos dois temas) */
-  --side-bg:var(--navy-deep); --side-ink:#c6d0de; --side-ink-forte:#ffffff; --side-muted:#8fa1ba; --side-ativo:#24375c; --side-linha:#1f3050; --side-hover:rgba(255,255,255,.07);
+  --side-bg:var(--navy-deep); --side-ink:#c6d0de; --side-ink-forte:#ffffff; --side-muted:#8fa1ba; --side-ativo:#24353d; --side-linha:#172a31; --side-hover:rgba(255,255,255,.07);
   /* Barra de rolagem do menu lateral (a barra é sempre escura, nos dois temas) */
   --nav-scroll-track: transparent;
   --nav-scroll-thumb: rgba(198, 208, 222, 0.28);
   --nav-scroll-thumb-hover: rgba(198, 208, 222, 0.5);
 }
 :root[data-theme="dark"]{
-  --bg:#0d1520; --surface:#151e2f; --sunk:#0f1829; --line:#232f44;
-  --ink:#e8edf4; --muted:#a0afc4; --accent:#3b9ca8; --accent-ink:#0d1520; --teal-mid:#5bb8c2; --teal-pale:#123a44;
-  --bar-a:#3b9ca8; --bar-b:#3e556f;
+  --bg:#07161d; --surface:#0e2330; --sunk:#0a1b25; --line:#1c3442;
+  --ink:#e8edf4; --muted:#a0afc4; --accent:#A7AFC7; --accent-ink:#07161d; --teal-mid:#A7AFC7; --teal-pale:#1b3040;
+  --bar-a:#4F6B8F; --bar-b:#415b66;
   --ok:#6fd19f; --ok-bg:#16352a; --warn:#d9b860; --warn-bg:#3a2f14; --bad:#d98a7f; --bad-bg:#3d1c1b; --info:#9cc2f0; --info-bg:#1a2d47; --wa:#5fd1a8; --wa-ink:#07210f;
-  --nav-scroll-thumb:rgba(91,184,194,.38); --nav-scroll-thumb-hover:rgba(91,184,194,.62);
-  --canvas:#0a111b; --line-strong:#2f3d57;
+  --nav-scroll-thumb:rgba(167,175,199,.38); --nav-scroll-thumb-hover:rgba(167,175,199,.62);
+  --canvas:#051119; --line-strong:#28465a;
   --ok-texto:var(--ok); --warn-texto:var(--warn); --bad-texto:var(--bad); --info-texto:var(--info); --teal-texto:var(--teal-mid);
   color-scheme:dark}

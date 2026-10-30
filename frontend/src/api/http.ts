@@ -172,7 +172,7 @@ export const http = {
   async baixar(caminho: string, consulta?: Consulta): Promise<void> {
     const resposta = await enviar("GET", caminho, { consulta });
     const disposicao = resposta.headers.get("Content-Disposition") ?? "";
-    const nome = /filename\*=UTF-8''([^;]+)/i.exec(disposicao)?.[1];
+    const nome = /filename\*=UTF-8''([^;]+)/i.exec(disposicao)?.[1] ?? /filename="?([^";]+)"?/i.exec(disposicao)?.[1];
     const blob = await resposta.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");

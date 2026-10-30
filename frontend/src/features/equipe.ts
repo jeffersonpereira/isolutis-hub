@@ -128,7 +128,7 @@ function formUsuario(u?: Usuario): void {
           $("#emailSenha", L)!.textContent = ok.email;
           $("#valSenha", L)!.textContent = senha;
           $("#copiarAcesso", L)?.addEventListener("click", async () => {
-            const texto = `Hub Comercial iSolutis\nEndereço: ${endereco}\nE-mail: ${ok.email}\nSenha: ${senha}\nVocê pode trocar a senha depois, em "Trocar senha".`;
+            const texto = `AIME Tech Hub\nEndereço: ${endereco}\nE-mail: ${ok.email}\nSenha: ${senha}\nVocê pode trocar a senha depois, em "Trocar senha".`;
             try {
               await navigator.clipboard.writeText(texto);
               toast("Copiado");

@@ -16,10 +16,10 @@ export interface Identidade {
 }
 
 /** Paleta padrão do Hub (a mesma de `tokens.css`). */
-export const PALETA_PADRAO: Paleta = { primaria: "#1a2d47", destaque: "#3b9ca8" };
+export const PALETA_PADRAO: Paleta = { primaria: "#0B2D3B", destaque: "#4F6B8F" };
 
 export const PALETAS_SUGERIDAS: ReadonlyArray<{ nome: string; paleta: Paleta }> = [
-  { nome: "iSolutis (padrão)", paleta: PALETA_PADRAO },
+  { nome: "AIME Tech (padrão)", paleta: PALETA_PADRAO },
   { nome: "Oceano", paleta: { primaria: "#0b2e5c", destaque: "#1e88e5" } },
   { nome: "Floresta", paleta: { primaria: "#1b4332", destaque: "#40916c" } },
   { nome: "Vinho", paleta: { primaria: "#4a1526", destaque: "#c0485e" } },
@@ -138,8 +138,8 @@ export function aplicarPaleta(p: Paleta | null, doc: Document = document): void 
   estilo.textContent = cssDaPaleta(p);
 }
 
-const LOGO_PADRAO = "/logo-horizontal.png";
-const MARCA_PADRAO = "/logo.png";
+const LOGO_PADRAO = "/aime-horizontal-reverso.svg";
+const MARCA_PADRAO = "/aime-simbolo-reverso.svg";
 
 /** Troca a logo acima do menu (e o ícone do menu recolhido) pela da empresa; null volta à logo padrão. */
 export function aplicarLogo(logo: string | null, nomeEmpresa = "", doc: Document = document): void {
@@ -149,11 +149,11 @@ export function aplicarLogo(logo: string | null, nomeEmpresa = "", doc: Document
   caixa.classList.toggle("logo-propria", !!logo);
   if (grande) {
     grande.src = logo ?? LOGO_PADRAO;
-    grande.alt = logo ? nomeEmpresa || "Logomarca da empresa" : "iSolutis";
+    grande.alt = logo ? nomeEmpresa || "Logomarca da empresa" : "AIME Tech";
   }
   if (pequena) {
     pequena.src = logo ?? MARCA_PADRAO;
-    pequena.alt = grande?.alt ?? "iSolutis";
+    pequena.alt = grande?.alt ?? "AIME Tech";
   }
 }
 

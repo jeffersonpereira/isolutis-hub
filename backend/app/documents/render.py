@@ -30,7 +30,7 @@ STATUS_PROJETO = {
 }  # fmt: skip
 STATUS_ETAPA = {"a_fazer": "A fazer", "andamento": "Em andamento", "concluida": "Concluída"}
 
-PADRAO = Identidade(nome="iSolutis", subtitulo="Soluções e Inovações Tecnológicas")
+PADRAO = Identidade(nome="AIME Tech", subtitulo="Transformando o Futuro")
 
 _ESTILO_CLIENTE_NOME = ParagraphStyle(
     "cliente_nome", fontName="Helvetica-Bold", fontSize=13, textColor=NAVY, leading=16

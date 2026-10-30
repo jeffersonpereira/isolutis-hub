@@ -26,6 +26,24 @@
 .tree-row:focus-visible .tree-actions{display:flex}
 @media (prefers-forced-colors:active){.tree-actions{display:flex}}
 .fin-filtros{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.fin-filtros .search{width:220px}
+.chips-filtro{display:flex;gap:var(--esp-2);flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.chip-filtro{display:inline-flex;align-items:center;gap:6px;height:var(--controle-sm);padding:0 var(--esp-3);border:1px solid var(--teal);border-radius:var(--r-full);background:var(--teal-pale);color:var(--teal-texto);font:inherit;font-size:var(--text-sm);cursor:pointer}
+.chip-filtro:hover{border-color:var(--teal-mid)}
+.chip-filtro:focus-visible{outline:2px solid var(--teal-mid);outline-offset:2px}
+.th-ordem{all:unset;cursor:pointer;text-transform:inherit;letter-spacing:inherit;font-weight:inherit;color:inherit}
+.th-ordem:hover{color:var(--ink)}
+.th-ordem:focus-visible{outline:2px solid var(--teal-mid);outline-offset:2px;border-radius:2px}
+.pag{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--esp-3);margin-top:var(--esp-3);font-size:var(--text-sm);color:var(--muted)}
+.pag-nav{display:inline-flex;gap:4px;align-items:center}
+.pag-btn{min-width:var(--controle-sm);height:var(--controle-sm);padding:0 var(--esp-2);border:1px solid var(--line-strong);border-radius:var(--r-md);background:var(--surface);color:var(--ink);font:inherit;cursor:pointer}
+.pag-btn:hover:not([disabled]){border-color:var(--muted)}
+.pag-btn[aria-current="page"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.pag-btn[disabled]{opacity:.45;cursor:not-allowed}
+.pag-btn:focus-visible{outline:2px solid var(--teal-mid);outline-offset:2px}
+.pag-gap{padding:0 4px}
+.pag-tam{display:inline-flex;gap:var(--esp-2);align-items:center}
+.pag-tam select{height:var(--controle-sm);border:1px solid var(--line-strong);border-radius:var(--r-md);background:var(--surface);color:var(--ink);font:inherit}
 .fluxo td.ent{color:var(--ok-texto)}.fluxo td.sai{color:var(--bad-texto)}
 
 @media (max-width:860px){

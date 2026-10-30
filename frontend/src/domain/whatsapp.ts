@@ -18,7 +18,7 @@ export const urlWa = (telefone: string | null | undefined, texto?: string): stri
 
 export const textoContato = (contato?: string | null): string => {
   const nome = primeiroNome(contato);
-  return `Olá${nome ? ", " + nome : ""}! Aqui é da iSolutis.`;
+  return `Olá${nome ? ", " + nome : ""}! Aqui é da AIME Tech.`;
 };
 
 /** Botão do WhatsApp (link quando há número; versão desabilitada quando falta). */

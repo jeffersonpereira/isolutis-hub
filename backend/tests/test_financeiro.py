@@ -343,11 +343,14 @@ async def test_titulo_filtros_e_exclusao_com_bloqueios(
             valor_titulo=300,
         ),
     )
-    assert [t["id"] for t in (await api.get(f"{F}/titulos")).json()] == [a["id"], b["id"]]  # por vencimento
-    assert [t["id"] for t in (await api.get(f"{F}/titulos", params={"tipo": "P"})).json()] == [b["id"]]
-    assert [t["id"] for t in (await api.get(f"{F}/titulos", params={"de": f"{ANO}-02-01"})).json()] == [b["id"]]
-    assert (await api.get(f"{F}/titulos", params={"status": "Q"})).json() == []
-    assert len((await api.get(f"{F}/titulos", params={"busca": "alfa"})).json()) == 2
+    async def ids(**params) -> list[str]:  # noqa: ANN003
+        return [t["id"] for t in (await api.get(f"{F}/titulos", params=params)).json()["itens"]]
+
+    assert await ids() == [a["id"], b["id"]]  # por vencimento
+    assert await ids(tipo="P") == [b["id"]]
+    assert await ids(de=f"{ANO}-02-01") == [b["id"]]
+    assert await ids(status="Q") == []
+    assert len(await ids(busca="alfa")) == 2
     # com título lançado, conta bancária / parceiro / conta do plano não podem ser excluídos nem mudar de natureza
     assert (await api.delete(f"{F}/contas-bancarias/{conta_bancaria['id']}")).status_code == 422
     assert (await api.delete(f"{P}/{parceiro['id']}")).status_code == 422
@@ -534,3 +537,123 @@ async def test_aporte_no_fluxo_de_caixa_fica_separado_das_entradas(api: AsyncCli
     mar = f["meses"][2]
     assert (mar["aportes_realizados"], mar["entradas_realizadas"], mar["saldo_do_mes"]) == (5000, 0, 5000)
     assert (f["total_aportes"], f["total_entradas"]) == (5000, 0)  # entra no caixa, não na receita operacional
+
+
+# ============================================================================ listagem: filtros, ordem, páginas, totais e CSV
+async def _lote(api: AsyncClient, plano: dict, conta: dict, parceiro: dict) -> dict[str, dict]:
+    """Três títulos: dois a receber (um quitado) e um a pagar com encargos."""
+    r1 = await _criar(api, "/titulos", _titulo(plano, conta, parceiro, valor_titulo=1000))
+    r2 = await _criar(
+        api, "/titulos", _titulo(plano, conta, parceiro, data_vencimento=f"{ANO}-02-10", valor_titulo=500, status="Q", data_pagamento=f"{ANO}-02-12")
+    )
+    p1 = await _criar(
+        api,
+        "/titulos",
+        _titulo(
+            plano, conta, parceiro, tipo_conta="P", plano_conta_id=plano["salario"]["id"], data_vencimento=f"{ANO}-03-10",
+            valor_titulo=300, valor_desconto=20, valor_multa=10, valor_juros=5.5, anotacao="=SOMA(A1)",
+        ),
+    )  # fmt: skip
+    return {"r1": r1, "r2": r2, "p1": p1}
+
+
+async def test_titulos_filtros_avancados(api: AsyncClient, plano: dict, conta_bancaria: dict, parceiro: dict):
+    t = await _lote(api, plano, conta_bancaria, parceiro)
+
+    async def ids(**params) -> list[str]:  # noqa: ANN003
+        r = await api.get(f"{F}/titulos", params=params)
+        assert r.status_code == 200, r.text
+        return [x["id"] for x in r.json()["itens"]]
+
+    assert await ids(parceiro_id=parceiro["id"]) == [t["r1"]["id"], t["r2"]["id"], t["p1"]["id"]]  # por vencimento
+    assert await ids(plano_conta_id=plano["salario"]["id"]) == [t["p1"]["id"]]
+    assert await ids(conta_bancaria_id=conta_bancaria["id"]) and not await ids(conta_bancaria_id=parceiro["id"])
+    assert await ids(de=f"{ANO}-02-01", ate=f"{ANO}-02-28") == [t["r2"]["id"]]
+    assert await ids(pago_de=f"{ANO}-02-01") == [t["r2"]["id"]]
+    assert await ids(pago_ate=f"{ANO}-01-01") == []
+    assert await ids(valor_min=400, valor_max=600) == [t["r2"]["id"]]  # valor devido, não valor do título
+    assert await ids(valor_max=300) == [t["p1"]["id"]]  # 300 - 20 + 10 + 5,50 = 295,50
+    assert await ids(recorrente="true") == []
+    assert await ids(recorrente="false") == [t["r1"]["id"], t["r2"]["id"], t["p1"]["id"]]
+    assert await ids(tipo="R", status="A") == [t["r1"]["id"]]  # filtros se combinam (E)
+    for invalido in ({"de": f"{ANO}-03-01", "ate": f"{ANO}-01-01"}, {"valor_min": 10, "valor_max": 1}, {"tamanho": 7}, {"pagina": 0}):
+        assert (await api.get(f"{F}/titulos", params=invalido)).status_code == 422
+
+
+async def test_valor_devido_do_sql_confere_com_a_regra(
+    api: AsyncClient, sessao: AsyncSession, plano: dict, conta_bancaria: dict, parceiro: dict
+):
+    from sqlalchemy import select
+
+    from app.financeiro import regras
+    from app.financeiro.models import TituloFinanceiro
+    from app.financeiro.servicos import _VALOR_DEVIDO
+
+    await _lote(api, plano, conta_bancaria, parceiro)
+    for t in (await sessao.scalars(select(TituloFinanceiro))).all():
+        esperado = regras.valor_devido(t.valor_titulo, t.valor_desconto, t.valor_multa, t.valor_juros)
+        assert await sessao.scalar(select(_VALOR_DEVIDO).where(TituloFinanceiro.id == t.id)) == esperado
+
+
+async def test_titulos_paginacao_ordem_e_totais(api: AsyncClient, plano: dict, conta_bancaria: dict, parceiro: dict):
+    await _lote(api, plano, conta_bancaria, parceiro)
+    for i in range(27):  # mesmo vencimento: a ordem entre eles precisa ser estável entre páginas
+        await _criar(api, "/titulos", _titulo(plano, conta_bancaria, parceiro, data_vencimento=f"{ANO}-06-01", valor_titulo=10 + i))
+    p1 = (await api.get(f"{F}/titulos")).json()
+    assert (len(p1["itens"]), p1["total"]) == (25, 30)
+    p2 = (await api.get(f"{F}/titulos", params={"pagina": 2})).json()
+    assert len(p2["itens"]) == 5 and p2["total"] == 30
+    ids = [t["id"] for t in p1["itens"] + p2["itens"]]
+    assert len(set(ids)) == 30  # nenhum repetido nem faltando
+    # totais em aberto são do filtro inteiro e não mudam com a página
+    assert p1["totais"] == p2["totais"]
+    assert p1["totais"]["a_pagar"] == 295.5
+    assert p1["totais"]["a_receber"] == 1000 + sum(10 + i for i in range(27))
+    # página além do fim: lista vazia, total preservado
+    vazia = (await api.get(f"{F}/titulos", params={"pagina": 9})).json()
+    assert vazia["itens"] == [] and vazia["total"] == 30
+    assert [t["valor_devido"] for t in (await api.get(f"{F}/titulos", params={"ordem": "valor", "sentido": "desc", "tamanho": 50})).json()["itens"]][:2] == [1000, 500]
+    # os totais acompanham o filtro
+    so_pagar = (await api.get(f"{F}/titulos", params={"tipo": "P"})).json()
+    assert so_pagar["total"] == 1 and so_pagar["totais"] == {"a_receber": 0, "a_pagar": 295.5}
+
+
+async def test_titulos_ordenacao_por_parceiro(api: AsyncClient, plano: dict, conta_bancaria: dict, parceiro: dict, ref: dict):
+    outro = await _criar_parceiro(api, {"nome": "Zeta Ltda", "tipo_pessoa": "PJ", "cpf_cnpj": "45723174000110", "municipio_id": ref["municipio"], "papeis": ["cliente"]})
+    a = await _criar(api, "/titulos", _titulo(plano, conta_bancaria, parceiro))
+    z = await _criar(api, "/titulos", _titulo(plano, conta_bancaria, outro, data_vencimento=f"{ANO}-01-01"))
+    nomes = lambda r: [t["id"] for t in r.json()["itens"]]  # noqa: E731
+    assert nomes(await api.get(f"{F}/titulos", params={"ordem": "parceiro"})) == [a["id"], z["id"]]
+    assert nomes(await api.get(f"{F}/titulos", params={"ordem": "parceiro", "sentido": "desc"})) == [z["id"], a["id"]]
+
+
+async def test_titulos_exportar_csv(api: AsyncClient, plano: dict, conta_bancaria: dict, parceiro: dict):
+    await _lote(api, plano, conta_bancaria, parceiro)
+    r = await api.get(f"{F}/titulos/exportar", params={"status": "A"})
+    assert r.status_code == 200 and r.headers["content-type"].startswith("text/csv")
+    assert "titulos.csv" in r.headers["content-disposition"] and "x-exportacao-truncada" not in r.headers
+    assert r.content.startswith(b"\xef\xbb\xbf")  # BOM para o Excel
+    linhas = r.content.decode("utf-8-sig").splitlines()
+    assert linhas[0].startswith("Vencimento;Tipo;Parceiro;") and len(linhas) == 3  # cabeçalho + 2 abertos, sem paginação
+    assert f"20/01/{ANO};A receber;" in linhas[1] and ";1000,00;" in linhas[1]
+    assert ";295,50;Aberto;" in linhas[2] and ";'=SOMA(A1)" in linhas[2]  # fórmula neutralizada
+
+
+async def test_titulos_exportar_ignora_pagina_e_respeita_ordem(api: AsyncClient, plano: dict, conta_bancaria: dict, parceiro: dict):
+    await _lote(api, plano, conta_bancaria, parceiro)
+    r = await api.get(f"{F}/titulos/exportar", params={"ordem": "valor", "sentido": "desc", "pagina": 2, "tamanho": 25})
+    linhas = r.content.decode("utf-8-sig").splitlines()
+    assert len(linhas) == 4 and ";1000,00;" in linhas[1]
+
+
+async def test_titulos_de_outra_empresa_nao_entram(api: AsyncClient, sessao: AsyncSession, plano: dict, conta_bancaria: dict, parceiro: dict):
+    from app.financeiro import servicos as svc
+
+    await _lote(api, plano, conta_bancaria, parceiro)
+    outra = Empresa(nome="Outra Empresa")
+    sessao.add(outra)
+    await sessao.flush()
+    pagina = await svc.listar_titulos(sessao, outra, svc.FiltroTitulos(), "vencimento", "asc", 1, 25)
+    assert pagina["itens"] == [] and pagina["total"] == 0 and pagina["totais"] == {"a_receber": 0, "a_pagar": 0}
+    csv_outra, _ = await svc.exportar_titulos_csv(sessao, outra, svc.FiltroTitulos(), "vencimento", "asc")
+    assert len(csv_outra.decode("utf-8-sig").splitlines()) == 1  # só o cabeçalho

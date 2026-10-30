@@ -1,17 +1,20 @@
 """Casos de uso do módulo financeiro. Cada operação confirma a transação uma única vez."""
 
+import csv
+import io
+from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
-from uuid import UUID
+from uuid import UUID, uuid4
 
-from sqlalchemy import Select, extract, func, select
+from sqlalchemy import Select, extract, func, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from app.domain.datas import hoje
 from app.domain.dinheiro import ZERO
-from app.errors import NaoEncontrado, RegraDeNegocio
+from app.errors import Conflito, NaoEncontrado, RegraDeNegocio
 from app.financeiro import regras
 from app.financeiro.models import (
     ContaBancaria,
@@ -19,6 +22,7 @@ from app.financeiro.models import (
     PlanoConta,
     TituloFinanceiro,
 )
+from app.financeiro.plano_padrao import CODIGO_APORTE_SOCIO, ler_plano_padrao
 from app.financeiro.schemas import (
     ContaBancariaEntrada,
     PlanoContaEntrada,
@@ -160,6 +164,37 @@ async def excluir_conta(sessao: AsyncSession, empresa: Empresa, id_: UUID) -> No
     await confirmar(sessao)
 
 
+async def importar_plano_padrao(sessao: AsyncSession, empresa: Empresa) -> list[dict]:
+    """Cria o plano de contas padrão numa empresa que ainda não tem nenhuma conta; nunca apaga nem mescla.
+
+    Ids novos a cada importação. O bloqueio por empresa serializa importações simultâneas: a segunda enxerga o plano
+    criado pela primeira e recebe conflito (a unicidade de código é a rede de segurança).
+    """
+    await sessao.execute(text("select pg_advisory_xact_lock(hashtextextended(:chave, 0))"), {"chave": f"plano-contas:{empresa.id}"})
+    existentes = await sessao.scalar(select(func.count()).select_from(PlanoConta).where(PlanoConta.empresa_id == empresa.id))
+    if existentes:
+        raise Conflito("Esta empresa já tem plano de contas. O plano padrão só pode ser importado quando não há nenhuma conta.")
+    ids: dict[str, UUID] = {}
+    try:
+        contas = ler_plano_padrao()
+        for nivel in sorted({c.nivel for c in contas}):  # pais antes das filhas; nível e natureza também vêm do gatilho
+            for c in (c for c in contas if c.nivel == nivel):
+                ids[c.chave] = uuid4()
+                sessao.add(PlanoConta(
+                    id=ids[c.chave], empresa_id=empresa.id, plano_pai_id=ids[c.pai] if c.pai else None, codigo=c.codigo,
+                    nome=c.nome, tipo_conta=c.tipo_conta, natureza=c.natureza, nivel=c.nivel,
+                    aporte_socio=c.codigo == CODIGO_APORTE_SOCIO,
+                ))  # fmt: skip
+            await sessao.flush()
+        await confirmar(sessao)
+    except IntegrityError as e:
+        await sessao.rollback()
+        if "uq_plano_contas" in str(e.orig):
+            raise Conflito("Esta empresa já tem plano de contas. O plano padrão só pode ser importado quando não há nenhuma conta.") from e
+        raise
+    return await listar_plano(sessao, empresa)
+
+
 async def _confirmar_plano(sessao: AsyncSession) -> None:
     try:
         await confirmar(sessao)
@@ -261,29 +296,134 @@ def _consulta_titulos(empresa: Empresa) -> Select:
     )  # fmt: skip
 
 
+# Valor devido em SQL: espelha `regras.valor_devido` (um teste compara as duas).
+_VALOR_DEVIDO = (
+    TituloFinanceiro.valor_titulo - TituloFinanceiro.valor_desconto + TituloFinanceiro.valor_multa + TituloFinanceiro.valor_juros
+)
+_NOME_DO_PARCEIRO = select(func.lower(Parceiro.nome)).where(Parceiro.id == TituloFinanceiro.parceiro_id).scalar_subquery()
+TAMANHOS_DE_PAGINA = (25, 50, 100)
+LIMITE_DA_EXPORTACAO = 10_000
+
+
+@dataclass(frozen=True)
+class FiltroTitulos:
+    """Filtros da lista de títulos; `de`/`ate` valem para o vencimento. Campos vazios não filtram."""
+
+    tipo: str | None = None
+    status: str | None = None
+    busca: str | None = None
+    parceiro_id: UUID | None = None
+    plano_conta_id: UUID | None = None
+    conta_bancaria_id: UUID | None = None
+    de: date | None = None
+    ate: date | None = None
+    pago_de: date | None = None
+    pago_ate: date | None = None
+    valor_min: Decimal | None = None
+    valor_max: Decimal | None = None
+    recorrente: bool | None = None
+
+
+def _filtrar_titulos(consulta: Select, empresa: Empresa, f: FiltroTitulos) -> Select:
+    """Aplica empresa e filtros a qualquer consulta sobre `TituloFinanceiro` (listagem, contagem, totais e CSV)."""
+    T = TituloFinanceiro
+    consulta = consulta.where(T.empresa_id == empresa.id)
+    if f.tipo:
+        consulta = consulta.where(T.tipo_conta == f.tipo)
+    if f.status:
+        consulta = consulta.where(T.status == f.status)
+    if f.parceiro_id:
+        consulta = consulta.where(T.parceiro_id == f.parceiro_id)
+    if f.plano_conta_id:
+        consulta = consulta.where(T.plano_conta_id == f.plano_conta_id)
+    if f.conta_bancaria_id:
+        consulta = consulta.where(T.conta_bancaria_id == f.conta_bancaria_id)
+    if f.de:
+        consulta = consulta.where(T.data_vencimento >= f.de)
+    if f.ate:
+        consulta = consulta.where(T.data_vencimento <= f.ate)
+    if f.pago_de:
+        consulta = consulta.where(T.data_pagamento >= f.pago_de)
+    if f.pago_ate:
+        consulta = consulta.where(T.data_pagamento <= f.pago_ate)
+    if f.valor_min is not None:
+        consulta = consulta.where(f.valor_min <= _VALOR_DEVIDO)
+    if f.valor_max is not None:
+        consulta = consulta.where(f.valor_max >= _VALOR_DEVIDO)
+    if f.recorrente is not None:
+        consulta = consulta.where(T.recorrencia_id.is_not(None) if f.recorrente else T.recorrencia_id.is_(None))
+    if f.busca and f.busca.strip():
+        consulta = consulta.where(T.parceiro_id.in_(select(Parceiro.id).where(Parceiro.nome.ilike(f"%{f.busca.strip()}%"))))
+    return consulta
+
+
+def _ordenar_titulos(consulta: Select, ordem: str, sentido: str) -> Select:
+    chave = {"vencimento": TituloFinanceiro.data_vencimento, "valor": _VALOR_DEVIDO, "parceiro": _NOME_DO_PARCEIRO}[ordem]
+    chave = chave.desc() if sentido == "desc" else chave.asc()
+    # o desempate mantém a ordem estável entre páginas
+    return consulta.order_by(chave, TituloFinanceiro.data_vencimento, TituloFinanceiro.created_at, TituloFinanceiro.id)
+
+
 async def listar_titulos(
-    sessao: AsyncSession,
-    empresa: Empresa,
-    tipo: str | None,
-    status: str | None,
-    de: date | None,
-    ate: date | None,
-    busca: str | None,
-) -> list[dict]:
-    consulta = _consulta_titulos(empresa).order_by(TituloFinanceiro.data_vencimento, TituloFinanceiro.created_at, TituloFinanceiro.id)
-    if tipo:
-        consulta = consulta.where(TituloFinanceiro.tipo_conta == tipo)
-    if status:
-        consulta = consulta.where(TituloFinanceiro.status == status)
-    if de:
-        consulta = consulta.where(TituloFinanceiro.data_vencimento >= de)
-    if ate:
-        consulta = consulta.where(TituloFinanceiro.data_vencimento <= ate)
-    if busca:
-        consulta = consulta.join(Parceiro, Parceiro.id == TituloFinanceiro.parceiro_id).where(
-            Parceiro.nome.ilike(f"%{busca.strip()}%")
-        )
-    return [_linha_titulo(t) for t in (await sessao.scalars(consulta)).unique().all()]
+    sessao: AsyncSession, empresa: Empresa, f: FiltroTitulos, ordem: str, sentido: str, pagina: int, tamanho: int
+) -> dict:
+    """Uma página de títulos, o total do filtro e os totais em aberto a receber e a pagar do filtro inteiro."""
+    consulta = _ordenar_titulos(_filtrar_titulos(_consulta_titulos(empresa), empresa, f), ordem, sentido)
+    consulta = consulta.limit(tamanho).offset((pagina - 1) * tamanho)
+    itens = [_linha_titulo(t) for t in (await sessao.scalars(consulta)).unique().all()]
+    total = await sessao.scalar(_filtrar_titulos(select(func.count()).select_from(TituloFinanceiro), empresa, f))
+    somas = await sessao.execute(
+        _filtrar_titulos(
+            select(TituloFinanceiro.tipo_conta, func.coalesce(func.sum(_VALOR_DEVIDO), ZERO)).where(TituloFinanceiro.status == "A"),
+            empresa,
+            f,
+        ).group_by(TituloFinanceiro.tipo_conta)
+    )
+    por_tipo = {tipo: valor for tipo, valor in somas.all()}
+    return {"itens": itens, "total": total or 0, "totais": {"a_receber": por_tipo.get("R", ZERO), "a_pagar": por_tipo.get("P", ZERO)}}
+
+
+_SITUACAO = {"A": "Aberto", "Q": "Quitado", "C": "Cancelado"}
+_TIPO = {"P": "A pagar", "R": "A receber"}
+CABECALHO_CSV = (
+    "Vencimento", "Tipo", "Parceiro", "Conta do plano", "Conta bancária", "Valor do título", "Desconto", "Multa", "Juros",
+    "Valor devido", "Situação", "Data de pagamento", "Valor pago", "Anotação",
+)  # fmt: skip
+
+
+def _texto_csv(valor: str | None) -> str:
+    """Neutraliza campo que uma planilha interpretaria como fórmula."""
+    valor = valor or ""
+    return "'" + valor if valor[:1] in ("=", "+", "-", "@", "\t", "\r") else valor
+
+
+def _numero_csv(valor: Decimal) -> str:
+    return f"{valor:.2f}".replace(".", ",")
+
+
+def _data_csv(d: date | None) -> str:
+    return d.strftime("%d/%m/%Y") if d else ""
+
+
+async def exportar_titulos_csv(sessao: AsyncSession, empresa: Empresa, f: FiltroTitulos, ordem: str, sentido: str) -> tuple[bytes, bool]:
+    """CSV do filtro inteiro, sem paginação, para planilhas em português (UTF-8 com BOM, `;`, vírgula decimal).
+
+    Devolve também se o limite de linhas cortou o resultado."""
+    consulta = _ordenar_titulos(_filtrar_titulos(_consulta_titulos(empresa), empresa, f), ordem, sentido).limit(LIMITE_DA_EXPORTACAO + 1)
+    titulos = [_linha_titulo(t) for t in (await sessao.scalars(consulta)).unique().all()]
+    truncado = len(titulos) > LIMITE_DA_EXPORTACAO
+    saida = io.StringIO()
+    escritor = csv.writer(saida, delimiter=";", lineterminator="\r\n")
+    escritor.writerow(CABECALHO_CSV)
+    for t in titulos[:LIMITE_DA_EXPORTACAO]:
+        escritor.writerow([
+            _data_csv(t["data_vencimento"]), _TIPO[t["tipo_conta"]], _texto_csv(t["parceiro_nome"]),
+            _texto_csv(f"{t['plano_conta_codigo']} {t['plano_conta_nome']}"), _texto_csv(t["conta_bancaria_nome"]),
+            _numero_csv(t["valor_titulo"]), _numero_csv(t["valor_desconto"]), _numero_csv(t["valor_multa"]),
+            _numero_csv(t["valor_juros"]), _numero_csv(t["valor_devido"]), _SITUACAO[t["status"]],
+            _data_csv(t["data_pagamento"]), _numero_csv(t["valor_quitacao"]), _texto_csv(t["anotacao"]),
+        ])  # fmt: skip
+    return ("\ufeff" + saida.getvalue()).encode("utf-8"), truncado
 
 
 async def _titulo_completo(sessao: AsyncSession, empresa: Empresa, id_: UUID) -> dict:

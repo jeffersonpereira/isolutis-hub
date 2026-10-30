@@ -48,7 +48,7 @@ async def enviar_alertas_vencimentos(db: AsyncSession) -> None:
                 continue
 
             html = _render_template_vencimentos(items)
-            _enviar_email_simples(admin.email, "Lançamentos vencendo hoje — iSolutis Hub", html)
+            _enviar_email_simples(admin.email, "Lançamentos vencendo hoje — AIME Tech Hub", html)
 
             agora = datetime.now(UTC)
             for l in items:
@@ -84,7 +84,7 @@ async def enviar_alertas_orcamentos(db: AsyncSession) -> None:
                 continue
 
             html = _render_template_orcamentos(items)
-            _enviar_email_simples(admin.email, "Orçamentos aguardando resposta — iSolutis Hub", html)
+            _enviar_email_simples(admin.email, "Orçamentos aguardando resposta — AIME Tech Hub", html)
 
             agora = datetime.now(UTC)
             for o in items:
@@ -166,7 +166,7 @@ def _render_template_vencimentos(lancamentos: list[LancamentoReceita]) -> str:
     return (
         "<h2 style='color:#111'>Lançamentos vencendo hoje</h2>"
         f"<ul style='padding-left:20px'>{itens_html}</ul>"
-        "<p style='color:#666;font-size:13px'>Acesse o iSolutis Hub para marcar como recebidos.</p>"
+        "<p style='color:#666;font-size:13px'>Acesse o AIME Tech Hub para marcar como recebidos.</p>"
     )
 
 
@@ -197,5 +197,5 @@ def _render_template_orcamentos(orcamentos: list[Orcamento]) -> str:
     return (
         "<h2 style='color:#111'>Orçamentos aguardando resposta</h2>"
         f"<ul style='padding-left:20px'>{itens_html}</ul>"
-        "<p style='color:#666;font-size:13px'>Acesse o iSolutis Hub para acompanhar o status.</p>"
+        "<p style='color:#666;font-size:13px'>Acesse o AIME Tech Hub para acompanhar o status.</p>"
     )

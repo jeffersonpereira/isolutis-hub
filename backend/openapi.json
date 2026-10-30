@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Hub Comercial iSolutis — API",
+    "title": "AIME Tech Hub — API",
     "version": "2.0.0"
   },
   "paths": {
@@ -5385,6 +5385,56 @@
         ],
         "parameters": [
           {
+            "name": "ordem",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "vencimento",
+                "valor",
+                "parceiro"
+              ],
+              "type": "string",
+              "default": "vencimento",
+              "title": "Ordem"
+            }
+          },
+          {
+            "name": "sentido",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string",
+              "default": "asc",
+              "title": "Sentido"
+            }
+          },
+          {
+            "name": "pagina",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Pagina"
+            }
+          },
+          {
+            "name": "tamanho",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 25,
+              "title": "Tamanho"
+            }
+          },
+          {
             "name": "tipo",
             "in": "query",
             "required": false,
@@ -5426,6 +5476,74 @@
             }
           },
           {
+            "name": "busca",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Busca"
+            }
+          },
+          {
+            "name": "parceiro_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Parceiro Id"
+            }
+          },
+          {
+            "name": "plano_conta_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Plano Conta Id"
+            }
+          },
+          {
+            "name": "conta_bancaria_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Conta Bancaria Id"
+            }
+          },
+          {
             "name": "de",
             "in": "query",
             "required": false,
@@ -5439,8 +5557,10 @@
                   "type": "null"
                 }
               ],
+              "description": "Vencimento a partir de",
               "title": "De"
-            }
+            },
+            "description": "Vencimento a partir de"
           },
           {
             "name": "ate",
@@ -5456,24 +5576,107 @@
                   "type": "null"
                 }
               ],
+              "description": "Vencimento até",
               "title": "Ate"
-            }
+            },
+            "description": "Vencimento até"
           },
           {
-            "name": "busca",
+            "name": "pago_de",
             "in": "query",
             "required": false,
             "schema": {
               "anyOf": [
                 {
                   "type": "string",
-                  "maxLength": 100
+                  "format": "date"
                 },
                 {
                   "type": "null"
                 }
               ],
-              "title": "Busca"
+              "description": "Pagamento a partir de",
+              "title": "Pago De"
+            },
+            "description": "Pagamento a partir de"
+          },
+          {
+            "name": "pago_ate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Pagamento até",
+              "title": "Pago Ate"
+            },
+            "description": "Pagamento até"
+          },
+          {
+            "name": "valor_min",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0.0
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Valor devido mínimo",
+              "title": "Valor Min"
+            },
+            "description": "Valor devido mínimo"
+          },
+          {
+            "name": "valor_max",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0.0
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Valor devido máximo",
+              "title": "Valor Max"
+            },
+            "description": "Valor devido máximo"
+          },
+          {
+            "name": "recorrente",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Recorrente"
             }
           },
           {
@@ -5500,11 +5703,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TituloLeitura"
-                  },
-                  "title": "Response Listar Titulos Api V1 Financeiro Titulos Get"
+                  "$ref": "#/components/schemas/PaginaTitulos"
                 }
               }
             }
@@ -5571,6 +5770,329 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/financeiro/titulos/exportar": {
+      "get": {
+        "tags": [
+          "Financeiro"
+        ],
+        "summary": "Exportar Titulos",
+        "description": "CSV de todos os títulos do filtro (sem paginação), pronto para planilhas em português.",
+        "operationId": "exportar_titulos_api_v1_financeiro_titulos_exportar_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ordem",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "vencimento",
+                "valor",
+                "parceiro"
+              ],
+              "type": "string",
+              "default": "vencimento",
+              "title": "Ordem"
+            }
+          },
+          {
+            "name": "sentido",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string",
+              "default": "asc",
+              "title": "Sentido"
+            }
+          },
+          {
+            "name": "tipo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "P",
+                    "R"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tipo"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "A",
+                    "Q",
+                    "C"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "busca",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Busca"
+            }
+          },
+          {
+            "name": "parceiro_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Parceiro Id"
+            }
+          },
+          {
+            "name": "plano_conta_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Plano Conta Id"
+            }
+          },
+          {
+            "name": "conta_bancaria_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Conta Bancaria Id"
+            }
+          },
+          {
+            "name": "de",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Vencimento a partir de",
+              "title": "De"
+            },
+            "description": "Vencimento a partir de"
+          },
+          {
+            "name": "ate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Vencimento até",
+              "title": "Ate"
+            },
+            "description": "Vencimento até"
+          },
+          {
+            "name": "pago_de",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Pagamento a partir de",
+              "title": "Pago De"
+            },
+            "description": "Pagamento a partir de"
+          },
+          {
+            "name": "pago_ate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Pagamento até",
+              "title": "Pago Ate"
+            },
+            "description": "Pagamento até"
+          },
+          {
+            "name": "valor_min",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0.0
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Valor devido mínimo",
+              "title": "Valor Min"
+            },
+            "description": "Valor devido mínimo"
+          },
+          {
+            "name": "valor_max",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0.0
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Valor devido máximo",
+              "title": "Valor Max"
+            },
+            "description": "Valor devido máximo"
+          },
+          {
+            "name": "recorrente",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Recorrente"
+            }
+          },
+          {
+            "name": "X-Empresa-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Empresa-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
           },
           "422": {
             "description": "Validation Error",
@@ -8628,8 +9150,7 @@
                 "type": "number"
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,11}|(?=[\\d.]{1,14}0*$)\\d{0,11}\\.\\d{0,2}0*$)"
+                "type": "string"
               }
             ],
             "title": "Saldo Inicial",
@@ -10010,8 +10531,7 @@
                 "exclusiveMinimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,9}|(?=[\\d.]{1,13}0*$)\\d{0,9}\\.\\d{0,3}0*$)"
+                "type": "string"
               }
             ],
             "title": "Qtd",
@@ -10024,8 +10544,7 @@
                 "minimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,12}|(?=[\\d.]{1,15}0*$)\\d{0,12}\\.\\d{0,2}0*$)"
+                "type": "string"
               }
             ],
             "title": "Preco Unitario",
@@ -10126,8 +10645,7 @@
                 "minimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,12}|(?=[\\d.]{1,15}0*$)\\d{0,12}\\.\\d{0,2}0*$)"
+                "type": "string"
               }
             ],
             "title": "Valor"
@@ -10205,8 +10723,7 @@
                 "minimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,12}|(?=[\\d.]{1,15}0*$)\\d{0,12}\\.\\d{0,2}0*$)"
+                "type": "string"
               }
             ],
             "title": "Valor"
@@ -10826,8 +11343,7 @@
                 "minimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,12}|(?=[\\d.]{1,15}0*$)\\d{0,12}\\.\\d{0,2}0*$)"
+                "type": "string"
               }
             ],
             "title": "Valor",
@@ -10840,8 +11356,7 @@
                 "minimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,12}|(?=[\\d.]{1,15}0*$)\\d{0,12}\\.\\d{0,2}0*$)"
+                "type": "string"
               }
             ],
             "title": "Mensal",
@@ -10972,8 +11487,7 @@
                 "minimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,12}|(?=[\\d.]{1,15}0*$)\\d{0,12}\\.\\d{0,2}0*$)"
+                "type": "string"
               }
             ],
             "title": "Valor",
@@ -10986,8 +11500,7 @@
                 "minimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,12}|(?=[\\d.]{1,15}0*$)\\d{0,12}\\.\\d{0,2}0*$)"
+                "type": "string"
               }
             ],
             "title": "Mensal",
@@ -11342,8 +11855,7 @@
                 "minimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,12}|(?=[\\d.]{1,15}0*$)\\d{0,12}\\.\\d{0,2}0*$)"
+                "type": "string"
               }
             ],
             "title": "Desconto",
@@ -11434,8 +11946,7 @@
                 "minimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,12}|(?=[\\d.]{1,15}0*$)\\d{0,12}\\.\\d{0,2}0*$)"
+                "type": "string"
               }
             ],
             "title": "Desconto",
@@ -11650,6 +12161,31 @@
           "itens"
         ],
         "title": "OrcamentoLeitura"
+      },
+      "PaginaTitulos": {
+        "properties": {
+          "itens": {
+            "items": {
+              "$ref": "#/components/schemas/TituloLeitura"
+            },
+            "type": "array",
+            "title": "Itens"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "totais": {
+            "$ref": "#/components/schemas/TotaisTitulos"
+          }
+        },
+        "type": "object",
+        "required": [
+          "itens",
+          "total",
+          "totais"
+        ],
+        "title": "PaginaTitulos"
       },
       "Painel": {
         "properties": {
@@ -12074,8 +12610,7 @@
                 "exclusiveMinimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,3}|(?=[\\d.]{1,6}0*$)\\d{0,3}\\.\\d{0,2}0*$)"
+                "type": "string"
               },
               {
                 "type": "null"
@@ -12277,8 +12812,7 @@
                 "exclusiveMinimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,3}|(?=[\\d.]{1,6}0*$)\\d{0,3}\\.\\d{0,2}0*$)"
+                "type": "string"
               },
               {
                 "type": "null"
@@ -12730,8 +13264,7 @@
                 "minimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,12}|(?=[\\d.]{1,15}0*$)\\d{0,12}\\.\\d{0,2}0*$)"
+                "type": "string"
               }
             ],
             "title": "Valor"
@@ -12766,8 +13299,7 @@
                 "minimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,12}|(?=[\\d.]{1,15}0*$)\\d{0,12}\\.\\d{0,2}0*$)"
+                "type": "string"
               }
             ],
             "title": "Valor"
@@ -12853,8 +13385,7 @@
                 "minimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,12}|(?=[\\d.]{1,15}0*$)\\d{0,12}\\.\\d{0,2}0*$)"
+                "type": "string"
               }
             ],
             "title": "Preco",
@@ -12924,8 +13455,7 @@
                 "minimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,12}|(?=[\\d.]{1,15}0*$)\\d{0,12}\\.\\d{0,2}0*$)"
+                "type": "string"
               }
             ],
             "title": "Preco",
@@ -12972,8 +13502,7 @@
                 "minimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                "type": "string"
               }
             ],
             "title": "Preco"
@@ -13757,8 +14286,7 @@
                 "exclusiveMinimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,11}|(?=[\\d.]{1,14}0*$)\\d{0,11}\\.\\d{0,2}0*$)"
+                "type": "string"
               }
             ],
             "title": "Valor Titulo"
@@ -13846,8 +14374,7 @@
                 "exclusiveMinimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,11}|(?=[\\d.]{1,14}0*$)\\d{0,11}\\.\\d{0,2}0*$)"
+                "type": "string"
               }
             ],
             "title": "Valor Titulo"
@@ -14661,8 +15188,7 @@
                 "exclusiveMinimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,11}|(?=[\\d.]{1,14}0*$)\\d{0,11}\\.\\d{0,2}0*$)"
+                "type": "string"
               }
             ],
             "title": "Valor Titulo"
@@ -14674,8 +15200,7 @@
                 "minimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,11}|(?=[\\d.]{1,14}0*$)\\d{0,11}\\.\\d{0,2}0*$)"
+                "type": "string"
               }
             ],
             "title": "Valor Desconto",
@@ -14688,8 +15213,7 @@
                 "minimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,11}|(?=[\\d.]{1,14}0*$)\\d{0,11}\\.\\d{0,2}0*$)"
+                "type": "string"
               }
             ],
             "title": "Valor Multa",
@@ -14702,8 +15226,7 @@
                 "minimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,11}|(?=[\\d.]{1,14}0*$)\\d{0,11}\\.\\d{0,2}0*$)"
+                "type": "string"
               }
             ],
             "title": "Valor Juros",
@@ -14738,8 +15261,7 @@
                 "minimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,11}|(?=[\\d.]{1,14}0*$)\\d{0,11}\\.\\d{0,2}0*$)"
+                "type": "string"
               },
               {
                 "type": "null"
@@ -14941,6 +15463,25 @@
           "usuario"
         ],
         "title": "TokenSaida"
+      },
+      "TotaisTitulos": {
+        "properties": {
+          "a_receber": {
+            "type": "number",
+            "title": "A Receber"
+          },
+          "a_pagar": {
+            "type": "number",
+            "title": "A Pagar"
+          }
+        },
+        "type": "object",
+        "required": [
+          "a_receber",
+          "a_pagar"
+        ],
+        "title": "TotaisTitulos",
+        "description": "Valores devidos em aberto do filtro completo (não só da página)."
       },
       "TransferenciaEntrada": {
         "properties": {

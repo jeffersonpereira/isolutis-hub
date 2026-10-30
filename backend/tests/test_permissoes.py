@@ -63,6 +63,7 @@ ACESSO = [
     ("/financeiro/recorrencias", {"admin", "financeiro"}),
     ("/relatorios/dre", {"admin", "financeiro"}),
     ("/financeiro/titulos", {"admin", "financeiro"}),
+    ("/financeiro/titulos/exportar", {"admin", "financeiro"}),
     ("/parceiros", {"admin", "financeiro"}),
     ("/usuarios", {"admin"}),
     ("/convites", {"admin"}),

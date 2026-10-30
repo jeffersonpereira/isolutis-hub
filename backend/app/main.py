@@ -27,6 +27,7 @@ from app.routers import (
     orcamentos,
     painel,
     parceiros,
+    plataforma,
     produtos,
     projetos,
     tarefas,
@@ -78,7 +79,7 @@ def criar_app() -> FastAPI:
     cfg = get_settings()
     cfg.validar_para_producao()
     app = FastAPI(
-        title="Hub Comercial iSolutis — API",
+        title="AIME Tech Hub — API",
         version="2.0.0",
         docs_url="/api/docs" if cfg.ambiente != "producao" else None,
         openapi_url="/api/openapi.json" if cfg.ambiente != "producao" else None,
@@ -119,6 +120,8 @@ def criar_app() -> FastAPI:
     # Hub de parceiros (`financeiro`); os papéis disponíveis qualquer papel consulta (`base`).
     api.include_router(parceiros.router, dependencies=[Depends(idempotencia)])
     api.include_router(parceiros.router_papeis)
+    # Área da plataforma: só o operador (sessao_operador confere no banco; papel hub_plataforma, sem dados de negócio).
+    api.include_router(plataforma.router)
     # Onboarding: configuração inicial da empresa (`administracao`; o status é `base`).
     api.include_router(router_onboarding.router, tags=["onboarding"])
     # Módulos opcionais da Onda 2 (registrados somente quando os arquivos existirem).

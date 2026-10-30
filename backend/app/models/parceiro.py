@@ -27,6 +27,8 @@ class Empresa(Base):
     updated_at: Mapped[datetime | None]
     onboarding_concluido: Mapped[bool] = mapped_column(default=False, server_default="false")
     segmento: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    # ativa | suspensa; só a área da plataforma altera (gatilho no banco). Suspensa recusa o acesso, sem apagar dados.
+    status: Mapped[str] = mapped_column(String(10), default="ativa", server_default="ativa")
     # Cadastro completo (todos opcionais; `nome` segue como nome de exibição no Hub)
     tipo_inscricao: Mapped[str | None]
     inscricao: Mapped[str | None]

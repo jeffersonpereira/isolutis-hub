@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from app.db import SessionLocal, definir_empresa_da_transacao, definir_usuario_da_transacao
-from app.models import Usuario, UsuarioEmpresa
+from app.models import Empresa, Usuario, UsuarioEmpresa
 from app.realtime import sala
 from app.security import ler_token
 
@@ -37,6 +37,9 @@ async def tempo_real(ws: WebSocket) -> None:
             membership = await sessao.get(UsuarioEmpresa, (empresa_id, usuario.id))
             if membership and membership.ativo:
                 await definir_empresa_da_transacao(sessao, empresa_id)
+                empresa = await sessao.get(Empresa, empresa_id)
+                if empresa is None or empresa.status != "ativa":  # suspensa pelo operador
+                    membership = None
     if usuario is None or not ativo or identidade is None or versao != identidade[1] or not membership or not membership.ativo:
         await ws.close(code=CODIGO_NAO_AUTORIZADO)
         return

@@ -23,6 +23,7 @@ import { montarSprite } from "@/ui/icones";
 import { observarGaveta } from "@/ui/gaveta";
 import { esconderLogin, pedirLogin, trocarSenha } from "@/ui/login";
 import { detectarOnboarding, iniciarWizardOnboarding } from "@/ui/onboarding";
+import { abrirAreaPlataforma, ROTA_PLATAFORMA } from "@/ui/plataforma";
 import { ROTA_2FA, tokenSegundoFator } from "@/ui/segundo-fator";
 
 // As funcionalidades se registram ao serem importadas; a ordem define a ordem do menu.
@@ -157,10 +158,15 @@ async function selecionarEmpresa(): Promise<EmpresaAcesso> {
   const decisao = decidirEmpresa(empresas, sessaoToken.empresa(), sessaoToken.ultimaEmpresa());
   if (decisao.tipo === "nenhuma") {
     sessaoToken.esquecerEmpresaDaAba();
+    if (eu.operador) {
+      // Operador sem empresa própria: o trabalho dele é na área da plataforma.
+      location.replace(ROTA_PLATAFORMA);
+      return new Promise<EmpresaAcesso>(() => {});
+    }
     telaSemAcesso(sair);
     return new Promise<EmpresaAcesso>(() => {}); // a aplicação não segue
   }
-  const ativa = decisao.tipo === "seguir" ? decisao.empresa : await escolherEmpresa(empresas, decisao.sugerida, sair);
+  const ativa = decisao.tipo === "seguir" ? decisao.empresa : await escolherEmpresa(empresas, decisao.sugerida, sair, eu.operador ? () => location.assign(ROTA_PLATAFORMA) : undefined);
   sessaoToken.definirEmpresa(ativa.id);
   acesso.empresaId = ativa.id;
   acesso.empresaNome = ativa.nome;
@@ -224,6 +230,14 @@ async function principal(): Promise<void> {
 
   // Convite de quem já tinha conta: conclui o aceite agora que o login (e o 2FA) aconteceu.
   await concluirConvitePendente();
+
+  // Operador da plataforma: a área dele vive em /plataforma, fora de qualquer empresa.
+  eu.operador = await api.plataforma.acesso().then((r) => r.operador === true, () => false);
+  if (eu.operador && location.pathname === ROTA_PLATAFORMA) {
+    esconderLogin();
+    abrirAreaPlataforma({ aoSair: sair, aoVoltarAoHub: () => location.assign("/") });
+    return;
+  }
 
   let empresaAtiva: EmpresaAcesso;
   try {

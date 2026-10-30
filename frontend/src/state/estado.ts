@@ -1,7 +1,8 @@
 import type { Cliente, ClienteReferencia, MembroEquipe, MeuEscopo, Negocio, Orcamento, Papel, Permissao, PessoaReferencia, Produto, Projeto, ProjetoReferencia, Tarefa } from "@/api/tipos";
 
 /** Pessoa logada. */
-export const eu = { id: "", nome: "", email: "" };
+/** `operador`: pessoa da AIME Tech com acesso à área da plataforma (fora de qualquer empresa). */
+export const eu = { id: "", nome: "", email: "", operador: false };
 
 /** Empresa ativa desta aba e o que o papel do usuário permite nela (vem do servidor; o front decide só por `permissoes`). */
 export const acesso: { empresaId: string; empresaNome: string; papel: Papel | ""; permissoes: readonly Permissao[] } = {
@@ -49,8 +50,6 @@ export const ui = {
   tarefaConcluidasTodas: false,
   buscaFin: "",
   buscaPlano: "",
-  finTipo: "todos",
-  finStatus: "todos",
 };
 
 /** Estado da conexão com os dados. */
