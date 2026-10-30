@@ -60,6 +60,45 @@ export interface Convite {
   usado_em: string | null;
 }
 
+/** Área da plataforma (operador): empresas, membros e convites. Nada de dados de negócio. */
+export interface EmpresaPlataforma {
+  id: string;
+  nome: string;
+  inscricao: string | null;
+  status: "ativa" | "suspensa";
+  membros_ativos: number;
+  criado_em: string;
+}
+export interface EmpresaNova {
+  nome: string;
+  inscricao?: string | null;
+  admin_nome: string;
+  admin_email: string;
+}
+export interface MembroPlataforma {
+  usuario_id: string;
+  nome: string;
+  email: string;
+  papel: Papel;
+  /** Vínculo com a empresa. */
+  ativo: boolean;
+  /** Conta do usuário. */
+  usuario_ativo: boolean;
+  ultimo_acesso: string | null;
+}
+export interface ConvitePlataforma {
+  id: number;
+  email: string;
+  papel: Papel;
+  criado_em: string;
+  expira_em: string;
+}
+export interface EmpresaDetalhe {
+  empresa: EmpresaPlataforma;
+  membros: MembroPlataforma[];
+  convites: ConvitePlataforma[];
+}
+
 export interface ConviteEntrada {
   nome: string;
   email: string;

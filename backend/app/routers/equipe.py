@@ -22,7 +22,7 @@ async def empresas_do_usuario(sessao: Sessao, usuario: UsuarioLogado) -> list[di
     linhas = await sessao.execute(
         select(Empresa.id, Empresa.nome, UsuarioEmpresa.papel)
         .join(UsuarioEmpresa, UsuarioEmpresa.empresa_id == Empresa.id)
-        .where(UsuarioEmpresa.usuario_id == usuario.id, UsuarioEmpresa.ativo)
+        .where(UsuarioEmpresa.usuario_id == usuario.id, UsuarioEmpresa.ativo, Empresa.status == "ativa")
         .order_by(Empresa.nome)
     )
     return [
