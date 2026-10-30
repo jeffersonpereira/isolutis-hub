@@ -149,12 +149,12 @@ export function abrirAreaPlataforma(opcoes: OpcoesPlataforma): void {
       <section><h2>Membros</h2>
         <div class="tbl-wrap"><table><thead><tr><th>Nome</th><th>E-mail</th><th>Papel</th><th>Acesso</th><th>Último acesso</th><th></th></tr></thead><tbody>${ordenados.map(linhaMembro)}</tbody></table></div></section>
       ${convites.length > 0 ? html`<section><h2>Convites pendentes</h2><div class="tbl-wrap"><table><thead><tr><th>E-mail</th><th>Papel</th><th>Enviado em</th><th>Expira em</th><th></th></tr></thead><tbody>${convites.map(linhaConvite)}</tbody></table></div></section>` : ""}
-      <section><h2>Convidar membro</h2>
+      <section><h2>Adicionar membro</h2><p class="sub">E-mail de uma conta já existente entra direto, sem convite. E-mail novo recebe um convite por e-mail para definir a senha.</p>
         <form class="plat-form plat-form-linha" data-plat-form="convidar">
           <div class="field"><label for="c-nome">Nome</label><input id="c-nome" name="nome" maxlength="200" required></div>
           <div class="field"><label for="c-email">E-mail</label><input id="c-email" name="email" type="email" required></div>
           <div class="field"><label for="c-papel">Papel</label><select id="c-papel" name="papel">${opcoesPapel("membro")}</select></div>
-          <div><button class="btn primary" type="submit">Enviar convite</button></div>
+          <div><button class="btn primary" type="submit">Adicionar</button></div>
         </form></section>`;
   }
 
@@ -223,7 +223,8 @@ export function abrirAreaPlataforma(opcoes: OpcoesPlataforma): void {
         const c = detalhe?.convites.find((x) => x.id === Number(alvo.dataset.convite));
         if (!c) return;
         const nome = c.email.split("@")[0] ?? c.email;
-        if ((await tentar(() => api.plataforma.convidar(id, { nome, email: c.email, papel: c.papel }))) !== null) toast(`Convite reenviado para ${c.email}`);
+        const resultado = await tentar(() => api.plataforma.convidar(id, { nome, email: c.email, papel: c.papel }));
+        if (resultado) toast(resultado.direto ? `${c.email} já tinha conta: acesso liberado na hora, sem convite` : `Convite reenviado para ${c.email}`);
         return void abrirDetalhe(id);
       }
       case "cancelar-convite":
@@ -251,8 +252,9 @@ export function abrirAreaPlataforma(opcoes: OpcoesPlataforma): void {
       case "convidar": {
         const id = idAberto();
         const email = campo("email").toLowerCase();
-        if ((await tentar(() => api.plataforma.convidar(id, { nome: campo("nome"), email, papel: campo("papel") as Papel }))) === null) return;
-        toast(`Convite enviado para ${email}`);
+        const resultado = await tentar(() => api.plataforma.convidar(id, { nome: campo("nome"), email, papel: campo("papel") as Papel }));
+        if (!resultado) return;
+        toast(resultado.direto ? `${email} já tinha conta: acesso liberado na hora, sem convite` : `Convite enviado para ${email}`);
         return void abrirDetalhe(id);
       }
     }

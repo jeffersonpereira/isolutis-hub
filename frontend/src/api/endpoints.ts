@@ -35,7 +35,7 @@ export const api = {
     criarEmpresa: (d: T.EmpresaNova) => http.post<T.EmpresaPlataforma>("/plataforma/empresas", d),
     empresa: (id: string) => http.get<T.EmpresaDetalhe>(`/plataforma/empresas/${id}`),
     definirStatus: (id: string, status: "ativa" | "suspensa") => http.patch<T.EmpresaPlataforma>(`/plataforma/empresas/${id}/status`, { status }),
-    convidar: (id: string, d: T.ConviteEntrada) => http.post<void>(`/plataforma/empresas/${id}/convites`, d),
+    convidar: (id: string, d: T.ConviteEntrada) => http.post<T.MembroAdicionado>(`/plataforma/empresas/${id}/convites`, d),
     cancelarConvite: (id: string, conviteId: number) => http.delete(`/plataforma/empresas/${id}/convites/${conviteId}`),
     definirMembro: (id: string, usuarioId: string, d: { papel: T.Papel; ativo: boolean }) =>
       http.patch<void>(`/plataforma/empresas/${id}/membros/${usuarioId}`, d),
