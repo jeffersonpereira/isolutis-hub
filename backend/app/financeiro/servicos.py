@@ -5,16 +5,16 @@ import io
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
-from uuid import UUID
+from uuid import UUID, uuid4
 
-from sqlalchemy import Select, extract, func, select
+from sqlalchemy import Select, extract, func, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from app.domain.datas import hoje
 from app.domain.dinheiro import ZERO
-from app.errors import NaoEncontrado, RegraDeNegocio
+from app.errors import Conflito, NaoEncontrado, RegraDeNegocio
 from app.financeiro import regras
 from app.financeiro.models import (
     ContaBancaria,
@@ -22,6 +22,7 @@ from app.financeiro.models import (
     PlanoConta,
     TituloFinanceiro,
 )
+from app.financeiro.plano_padrao import CODIGO_APORTE_SOCIO, ler_plano_padrao
 from app.financeiro.schemas import (
     ContaBancariaEntrada,
     PlanoContaEntrada,
@@ -161,6 +162,37 @@ async def excluir_conta(sessao: AsyncSession, empresa: Empresa, id_: UUID) -> No
         raise RegraDeNegocio("Há títulos lançados nesta conta. Exclua ou mude esses títulos antes.")
     await sessao.delete(conta)
     await confirmar(sessao)
+
+
+async def importar_plano_padrao(sessao: AsyncSession, empresa: Empresa) -> list[dict]:
+    """Cria o plano de contas padrão numa empresa que ainda não tem nenhuma conta; nunca apaga nem mescla.
+
+    Ids novos a cada importação. O bloqueio por empresa serializa importações simultâneas: a segunda enxerga o plano
+    criado pela primeira e recebe conflito (a unicidade de código é a rede de segurança).
+    """
+    await sessao.execute(text("select pg_advisory_xact_lock(hashtextextended(:chave, 0))"), {"chave": f"plano-contas:{empresa.id}"})
+    existentes = await sessao.scalar(select(func.count()).select_from(PlanoConta).where(PlanoConta.empresa_id == empresa.id))
+    if existentes:
+        raise Conflito("Esta empresa já tem plano de contas. O plano padrão só pode ser importado quando não há nenhuma conta.")
+    ids: dict[str, UUID] = {}
+    try:
+        contas = ler_plano_padrao()
+        for nivel in sorted({c.nivel for c in contas}):  # pais antes das filhas; nível e natureza também vêm do gatilho
+            for c in (c for c in contas if c.nivel == nivel):
+                ids[c.chave] = uuid4()
+                sessao.add(PlanoConta(
+                    id=ids[c.chave], empresa_id=empresa.id, plano_pai_id=ids[c.pai] if c.pai else None, codigo=c.codigo,
+                    nome=c.nome, tipo_conta=c.tipo_conta, natureza=c.natureza, nivel=c.nivel,
+                    aporte_socio=c.codigo == CODIGO_APORTE_SOCIO,
+                ))  # fmt: skip
+            await sessao.flush()
+        await confirmar(sessao)
+    except IntegrityError as e:
+        await sessao.rollback()
+        if "uq_plano_contas" in str(e.orig):
+            raise Conflito("Esta empresa já tem plano de contas. O plano padrão só pode ser importado quando não há nenhuma conta.") from e
+        raise
+    return await listar_plano(sessao, empresa)
 
 
 async def _confirmar_plano(sessao: AsyncSession) -> None:

@@ -36,6 +36,16 @@ Os "modais" usam a gaveta lateral do sistema (o mesmo componente de todos os for
 | Quitação coerente (Q ⇔ data e valor pagos) | serviço normaliza | `ck_titulo_financeiro_quitacao` |
 | CPF/CNPJ | dígitos verificadores conferidos | formato (11/14 dígitos) e unicidade por empresa |
 
+### Plano de contas padrão
+
+- **Pela aplicação (empresa sem nenhuma conta):** a tela Plano de contas oferece "Importar plano padrão"
+  (`POST /financeiro/plano-contas/importar-padrao`, permissão `financeiro`). Cria as contas de
+  `app/financeiro/dados/plano_contas_padrao.csv` em três níveis, numa transação, com **ids novos** a cada importação
+  (qualquer número de empresas pode importar) e com `7.02.001` marcada como aporte de sócio. Recusa com 409 se a empresa
+  já tem alguma conta: nunca apaga nem mescla.
+- **Pelo operador (terminal):** `python -m app.scripts.carregar_plano_contas` **substitui** o plano de uma empresa
+  (apaga e recria, com os ids fixos do CSV, o que só cabe numa empresa por banco). Use só para trocar um plano existente.
+
 Exclusões protegidas: conta do plano com filhas/títulos, conta bancária e parceiro com títulos (mensagem em português; FKs `RESTRICT`).
 
 ## Dados de referência (tasks 02 e 03)

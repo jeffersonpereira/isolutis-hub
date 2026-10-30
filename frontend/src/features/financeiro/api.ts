@@ -31,6 +31,8 @@ export const apiFinanceiro = {
     criar: (d: PlanoContaEntrada) => http.post<PlanoConta>(`${B}/plano-contas`, d),
     atualizar: (id: string, d: PlanoContaEntrada) => http.put<PlanoConta>(`${B}/plano-contas/${id}`, d),
     excluir: (id: string) => http.delete(`${B}/plano-contas/${id}`),
+    /** Só com o plano vazio (409 se a empresa já tem contas). */
+    importarPadrao: () => http.post<PlanoConta[]>(`${B}/plano-contas/importar-padrao`),
   },
   contas: {
     listar: () => http.get<ContaBancaria[]>(`${B}/contas-bancarias`),
