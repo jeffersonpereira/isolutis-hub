@@ -34,7 +34,7 @@ describe("whatsapp", () => {
       { numero: "2026-001", data: "2026-01-10", validade: 15, desconto: 1000, obs: "À vista", itens },
       { nome: "Alfa", contato: "Maria Souza" },
     );
-    expect(t).toContain("Olá, Maria! Segue o orçamento Nº 2026-001 da iSolutis para Alfa:");
+    expect(t).toContain("Olá, Maria! Segue o orçamento Nº 2026-001 da AIME Tech para Alfa:");
     expect(t).toContain("• Treino (2×)");
     expect(t).toContain("Válido até 25/01/2026.");
     expect(t).toContain("/mês*");

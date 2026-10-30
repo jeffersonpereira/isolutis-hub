@@ -30,7 +30,7 @@ def descriptografar_segredo(segredo_cifrado: str) -> str:
     return _fernet().decrypt(segredo_cifrado.encode()).decode()
 
 
-def gerar_qr_code(segredo: str, email: str, empresa: str = "iSolutis Hub") -> str:
+def gerar_qr_code(segredo: str, email: str, empresa: str = "AIME Tech Hub") -> str:
     """Retorna o QR code como data URI PNG base64."""
     uri = pyotp.TOTP(segredo).provisioning_uri(name=email, issuer_name=empresa)
     img = qrcode.make(uri)

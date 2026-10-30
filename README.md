@@ -1,6 +1,6 @@
-# Hub Comercial iSolutis
+# AIME Tech Hub
 
-Sistema comercial interno da iSolutis: clientes, negócios e funil, orçamentos, projetos com plano de entrega,
+Sistema comercial interno da AIME Tech: clientes, negócios e funil, orçamentos, projetos com plano de entrega,
 faturamento, despesas e investimentos, produtos, tarefas da equipe e gestão de usuários.
 
 | Camada | Tecnologia | Pasta |

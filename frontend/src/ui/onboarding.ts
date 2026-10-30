@@ -308,7 +308,7 @@ function montarWizard(): HTMLElement {
   el.innerHTML = `
     <div class="lg-box" style="max-width:600px;width:100%">
       <div class="lg-topo">
-        <img src="/logo-horizontal.png" alt="iSolutis" width="200" height="77">
+        <img src="/aime-horizontal-reverso.svg" alt="AIME Tech" width="200" height="56">
         <span>Hub Comercial</span>
       </div>
       <div class="ob-corpo"></div>

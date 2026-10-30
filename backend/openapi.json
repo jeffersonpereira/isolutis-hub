@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Hub Comercial iSolutis — API",
+    "title": "AIME Tech Hub — API",
     "version": "2.0.0"
   },
   "paths": {

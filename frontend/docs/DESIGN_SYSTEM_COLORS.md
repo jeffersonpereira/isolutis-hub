@@ -2,11 +2,11 @@
 
 ## Visão Geral
 
-A paleta de cores da iSolutis Hub usa **CSS custom properties (tokens)** definidas em `frontend/src/styles/tokens.css`. Todas as cores devem usar essas variáveis, não valores hard-coded.
+A paleta de cores do AIME Tech Hub usa **CSS custom properties (tokens)** definidas em `frontend/src/styles/tokens.css`. Todas as cores devem usar essas variáveis, não valores hard-coded.
 
 A paleta foi redesenhada para:
 - ✅ Reduzir fadiga visual com cores dessaturadas
-- ✅ Manter identidade de marca (azul-marinho #1a2d47 + turquesa #3b9ca8)
+- ✅ Manter a identidade da AIME Tech (petróleo #0B2D3B, índigo #4F6B8F, lilás #A7AFC7, champagne #D9C8B1, grafite #2E3338 e off-white #F7F6F2)
 - ✅ Garantir contraste WCAG AA (≥ 4.5:1)
 - ✅ Suportar light mode e dark mode perfeitamente
 
@@ -22,11 +22,14 @@ Usadas em headers, buttons primários, accents principais.
 
 | Token | Light | Dark | Uso |
 |-------|-------|------|-----|
-| `--navy` | #1a2d47 | — | Cor principal (headers, accents) |
-| `--navy-deep` | #0f1b2e | — | Versão mais escura do navy |
-| `--teal` | #3b9ca8 | — | Accent secundário (turquesa dessaturado) |
-| `--gold` | #0d8792 | — | Accent terciário (complementar) |
-| `--gold-soft` | #dbf3f5 | — | Versão clara do gold |
+| `--navy` | #0B2D3B | — | Cor principal (petróleo: headers, botões, menu) |
+| `--navy-deep` | #061a22 | — | Petróleo mais escuro (fundo do menu lateral) |
+| `--teal` | #4F6B8F | — | Destaque (índigo) |
+| `--teal-mid` | #415875 | #A7AFC7 | Destaque em links e foco |
+| `--teal-pale` | #e3e7ed | #1b3040 | Fundo suave do destaque |
+| `--lilas` / `--champagne` / `--grafite` / `--offwhite` | #A7AFC7 / #D9C8B1 / #2E3338 / #F7F6F2 | — | Demais cores da marca |
+
+> Os nomes `--navy` e `--teal` vêm da paleta anterior; hoje guardam o petróleo e o índigo.
 
 **Exemplo de uso:**
 ```css
@@ -42,19 +45,19 @@ Formam uma progressão visual clara: background → surface → sunk → line.
 
 | Token | Light | Dark | Uso |
 |-------|-------|------|-----|
-| `--bg` | #f5f7fb | #0d1520 | Fundo principal da página |
-| `--surface` | #ffffff | #151e2f | Superfícies de conteúdo (cards, panels) |
-| `--sunk` | #e8ecf2 | #0f1829 | Superfícies deprimidas (table headers) |
-| `--line` | #dce4f0 | #232f44 | Borders e divisores |
+| `--bg` | #ffffff | #07161d | Fundo principal da página |
+| `--surface` | #ffffff | #0e2330 | Superfícies de conteúdo (cards, panels) |
+| `--sunk` | #f3f2ee | #0a1b25 | Superfícies deprimidas (table headers) |
+| `--line` | #e6e4de | #1c3442 | Borders e divisores |
 
 **Progressão Visual:**
 ```
 Light Mode:
-bg (#f5f7fb) → surface (#ffffff) → sunk (#e8ecf2) → line (#dce4f0)
+bg (#ffffff) → surface (#ffffff) → sunk (#f3f2ee) → line (#e6e4de)
 (mais claro)  (fundo do content)  (headers)         (borders)
 
 Dark Mode:
-bg (#0d1520) → surface (#151e2f) → sunk (#0f1829) → line (#232f44)
+bg (#07161d) → surface (#0e2330) → sunk (#0a1b25) → line (#1c3442)
 (fundo)      (cards)              (deprimido)      (borders)
 ```
 
@@ -104,10 +107,10 @@ Indicam estados de dados (OK, Warn, Bad, Info). Cada cor tem um background claro
 
 | Token | Light | Dark | Uso |
 |-------|-------|------|-----|
-| `--ink` | #16223b | — | Texto principal (escuro) |
-| `--muted` | #56647a | #a0afc4 | Texto secundário/disabled |
-| `--accent` | #1a2d47 | #3b9ca8 | Accent ativo (varia por modo) |
-| `--accent-ink` | #ffffff | #0d1520 | Cor de texto sobre accent |
+| `--ink` | #2E3338 | — | Texto principal (escuro) |
+| `--muted` | #5b6269 | #a0afc4 | Texto secundário/disabled |
+| `--accent` | #0B2D3B | #A7AFC7 | Accent ativo (varia por modo) |
+| `--accent-ink` | #ffffff | #07161d | Cor de texto sobre accent |
 | `--wa` | #3cc37a | #5fd1a8 | Status "online" (WhatsApp) |
 | `--wa-ink` | #ffffff | #07210f | Texto sobre WA |
 
@@ -126,8 +129,8 @@ button:hover {
 
 | Token | Light | Dark | Uso |
 |-------|-------|------|-----|
-| `--bar-a` | #1a2d47 | #3b9ca8 | Cor primária da barra |
-| `--bar-b` | #b5d4d8 | #3e556f | Cor secundária (gradiente) |
+| `--bar-a` | #0B2D3B | #4F6B8F | Cor primária da barra |
+| `--bar-b` | #A7AFC7 | #415b66 | Cor secundária (gradiente) |
 
 ---
 
@@ -214,24 +217,24 @@ A aplicação suporta ambos os modos com transição automática.
 ```css
 /* Light mode: padrão */
 :root {
-  --navy: #1a2d47;
-  --teal: #3b9ca8;
+  --navy: #0B2D3B;
+  --teal: #4F6B8F;
   /* ... */
 }
 
 /* Dark mode: via @media query */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0d1520;
-    --accent: #3b9ca8;
+    --bg: #07161d;
+    --accent: #A7AFC7;
     /* ... */
   }
 }
 
 /* Dark mode: via atributo data-theme */
 :root[data-theme="dark"] {
-  --bg: #0d1520;
-  --accent: #3b9ca8;
+  --bg: #07161d;
+  --accent: #A7AFC7;
   /* ... */
 }
 ```
@@ -252,10 +255,11 @@ Toda combinação de texto e fundo deve manter **razão de contraste ≥ 4.5:1**
 
 | Texto | Fundo | Contraste | Status |
 |-------|-------|-----------|--------|
-| `--ink` (#16223b) | `--bg` (#f5f7fb) | 9.2:1 | ✅ Excelente |
-| `--ink` (#16223b) | `--surface` (#ffffff) | 10.1:1 | ✅ Excelente |
-| `--muted` (#56647a) | `--bg` (#f5f7fb) | 6.1:1 | ✅ Bom |
-| `--accent-ink` (#ffffff) | `--accent` (#1a2d47) | 8.4:1 | ✅ Excelente |
+| `--ink` (#2E3338) | `--canvas` (#F7F6F2) | 11.8:1 | ✅ Excelente |
+| `--ink` (#2E3338) | `--surface` (#ffffff) | 12.8:1 | ✅ Excelente |
+| `--muted` (#5b6269) | `--canvas` (#F7F6F2) | 5.7:1 | ✅ Bom |
+| `--accent-ink` (#ffffff) | `--accent` (#0B2D3B) | 14.5:1 | ✅ Excelente |
+| `--accent` (#A7AFC7, escuro) | `--surface` (#0e2330) | 7.4:1 | ✅ Excelente |
 | `--ok` (#4a9d6f) | `--ok-bg` (#e9f3ee) | 5.2:1 | ✅ Bom |
 | `--bad` (#a85d52) | `--bad-bg` (#f9ede9) | 4.8:1 | ✅ Bom |
 

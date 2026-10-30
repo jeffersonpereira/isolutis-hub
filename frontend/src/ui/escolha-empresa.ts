@@ -17,7 +17,7 @@ function montarRaiz(): HTMLElement {
   return raiz;
 }
 
-const topo = `<div class="lg-topo"><img src="/logo-horizontal.png" alt="iSolutis" width="200" height="77"><span>Hub Comercial</span></div>`;
+const topo = `<div class="lg-topo"><img src="/aime-horizontal-reverso.svg" alt="AIME Tech" width="200" height="56"><span>Hub Comercial</span></div>`;
 
 /** Resolve com a empresa escolhida e remove a tela. `sugerida` (a última usada) vem pré-selecionada. */
 export function escolherEmpresa(empresas: readonly EmpresaAcesso[], sugerida: string | null, aoSair: () => void): Promise<EmpresaAcesso> {

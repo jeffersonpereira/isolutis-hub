@@ -42,7 +42,7 @@ function vista(): Safe {
   }
   ${
     !dados.projetos.length
-      ? html`<div class="empty"><b>Nenhum projeto ainda</b>Quando um negócio é ganho, abra o projeto: registre o escopo, monte as etapas da construção e acompanhe o andamento. No fim, gere o relatório de entrega com a identidade da iSolutis para mostrar ao cliente.${escrever ? html`<br><button class="btn primary" data-act="novoProjeto">Abrir o primeiro projeto</button>` : ""}</div>`
+      ? html`<div class="empty"><b>Nenhum projeto ainda</b>Quando um negócio é ganho, abra o projeto: registre o escopo, monte as etapas da construção e acompanhe o andamento. No fim, gere o relatório de entrega com a identidade da AIME Tech para mostrar ao cliente.${escrever ? html`<br><button class="btn primary" data-act="novoProjeto">Abrir o primeiro projeto</button>` : ""}</div>`
       : !lista.length
         ? html`<p class="sub">Nenhum projeto com esse filtro.</p>`
         : html`<div class="pgrid">${lista.map((p) => {
@@ -203,7 +203,7 @@ export function formProjeto(p?: Projeto, inicial: Partial<ProjetoEntrada> = {}):
     </div>
     <div><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap"><h2 style="margin:0">Passo a passo da construção</h2><span class="sub" id="progTxt"></span></div>
       <div id="etapasBox" class="etapas"></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn" type="button" id="addEtapa">Adicionar etapa</button><button class="btn ghost" type="button" id="padrao">Usar as etapas padrão da iSolutis</button></div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn" type="button" id="addEtapa">Adicionar etapa</button><button class="btn ghost" type="button" id="padrao">Usar as etapas padrão da AIME Tech</button></div></div>
     ${p ? SECAO_PARTICIPANTES : ""}`,
     rodape: html`${botaoSalvar()}${p || podeEscrever() ? html`<button class="btn" data-relatorio>Gerar relatório de entrega</button>` : ""}${espaco}${botaoExcluir(!!p)}`,
     montar: (f, fechar, L) => {

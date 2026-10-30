@@ -43,7 +43,7 @@ function vista(): Safe {
     return html`${cabecalho}${estadoVazio({
       icone: "clientes",
       titulo: "Nenhum cliente ainda",
-      texto: "Cadastre as empresas com quem a iSolutis conversa: quem pediu diagnóstico, quem já é cliente de manutenção, quem veio por indicação.",
+      texto: "Cadastre as empresas com quem a AIME Tech conversa: quem pediu diagnóstico, quem já é cliente de manutenção, quem veio por indicação.",
       acao: podeEscrever() ? html`<button class="btn primary" data-act="novoCliente">Cadastrar o primeiro cliente</button>` : undefined,
     })}`;
   }

@@ -25,7 +25,7 @@ registrarConsulta("produtos", (id) => dados.produtos.find((p) => p.id === id));
 function vista(): Safe {
   const lista = [...dados.produtos].sort((a, b) => compararTexto(a.tipo, b.tipo) || compararTexto(a.nome, b.nome));
   const semPreco = lista.filter((p) => !numero(p.preco)).length;
-  return html`<div class="head"><div><h1>Cadastro de produtos</h1><p>O que a iSolutis vende. Os preços daqui preenchem os orçamentos, e você pode ajustar em cada um.</p></div><div class="tools">${botaoNovo("novoProduto", "Novo produto")}</div></div>
+  return html`<div class="head"><div><h1>Cadastro de produtos</h1><p>O que a AIME Tech vende. Os preços daqui preenchem os orçamentos, e você pode ajustar em cada um.</p></div><div class="tools">${botaoNovo("novoProduto", "Novo produto")}</div></div>
   ${
     !lista.length
       ? html`<div class="empty"><b>Nenhum produto cadastrado</b>Você pode começar pelo catálogo do site: três faixas de sistema sob medida, as manutenções mensais correspondentes e consultoria. Os preços ficam em branco para você definir.${podeEscrever() ? html`<br><button class="btn primary" data-act="catalogo">Criar a partir do catálogo do site</button> <button class="btn" data-act="novoProduto">Cadastrar manualmente</button>` : ""}</div>`

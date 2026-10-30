@@ -87,7 +87,7 @@ deste módulo (títulos, contas bancárias, plano de contas) e pode ser feita a 
 
 ## Parceiro de negócio como hub (migração 0003)
 
-`parceiro_negocio` é o cadastro único de pessoas e empresas; o que cada uma é para a iSolutis vem de **papéis**
+`parceiro_negocio` é o cadastro único de pessoas e empresas; o que cada uma é para a AIME Tech vem de **papéis**
 (`papel_parceiro`: cliente, fornecedor, funcionário — extensível por INSERT — e `parceiro_papel`, N:N). A tabela `clientes`
 foi **removida**: seus registros foram copiados com o **mesmo id** para `parceiro_negocio` (papel `cliente`) e as FKs
 `cliente_id` de negócios, orçamentos, lançamentos de receita, projetos e tarefas passaram a apontar para o parceiro.
